@@ -83,9 +83,10 @@ struct SuccessOverlay: View {
                 .padding(.vertical, 8)
                 .background(
                     Capsule()
-                        .fill(
-                            Theme.Colors.conceptColor(level.concept)
-                                .opacity(0.2)
+                        .fill(.ultraThinMaterial)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white.opacity(0.18), lineWidth: 1)
                         )
                 )
                 .scaleEffect(isVisible ? 1.0 : 0.8)
@@ -102,20 +103,28 @@ struct SuccessOverlay: View {
             .padding(40)
             
             
-            // MARK: PREMIUM CARD BACKGROUND
+            // MARK: PREMIUM GLASS CARD BACKGROUND
             .background(
-                RoundedRectangle(cornerRadius: 30, style: .continuous)
-                    .fill(.ultraThinMaterial)
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .fill(.regularMaterial)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 30)
-                            .stroke(Color.white.opacity(0.08))
+                        RoundedRectangle(cornerRadius: 28, style: .continuous)
+                            .stroke(Color.white.opacity(0.14), lineWidth: 1)
                     )
-                    .shadow(
-                        color: .black.opacity(0.45),
-                        radius: 40,
-                        y: 25
-                    )
+                    .shadow(color: .black.opacity(0.25), radius: 30, y: 18)
+                    .shadow(color: .green.opacity(0.15), radius: 40)
             )
+            .overlay(alignment: .top) {
+                LinearGradient(
+                    colors: [Color.white.opacity(0.25), .clear],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                .blendMode(.overlay)
+                .allowsHitTesting(false)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
             .padding(.horizontal, 24)
         }
         .sensoryFeedback(.success, trigger: isVisible)

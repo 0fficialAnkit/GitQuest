@@ -17,6 +17,8 @@ struct TutorialView: View {
     let onComplete: () -> Void
     
     @State private var currentPage = 0
+    @State private var isSkipPressed = false
+    @State private var isStartPressed = false
     
     private let tutorialPages: [(icon: String, title: String, description: String, color: Color)] = [
         ("folder.badge.gearshape", "What is Git?",
@@ -39,19 +41,32 @@ struct TutorialView: View {
             )
             
             VStack(spacing: 0) {
-                // Skip button
+                // Skip button — Glass Style (top-right)
                 HStack {
                     Spacer()
                     Button("Skip") {
                         onComplete()
                     }
                     .font(Theme.Typography.bodyBold)
-                    .foregroundStyle(Theme.Colors.textPrimary)
+                    .foregroundStyle(.primary)
                     .padding(.horizontal, Theme.Spacing.md)
                     .padding(.vertical, Theme.Spacing.sm)
                     .background(
-                        Capsule()
+                        Capsule(style: .continuous)
                             .fill(.ultraThinMaterial)
+                    )
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                    )
+                    .clipShape(Capsule(style: .continuous))
+                    .shadow(color: Color.black.opacity(0.15), radius: 8, y: 4)
+                    .scaleEffect(isSkipPressed ? 0.96 : 1)
+                    .animation(.easeInOut(duration: 0.15), value: isSkipPressed)
+                    .simultaneousGesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { _ in isSkipPressed = true }
+                            .onEnded { _ in isSkipPressed = false }
                     )
                     .padding(Theme.Spacing.lg)
                 }
@@ -71,61 +86,42 @@ struct TutorialView: View {
                 .tabViewStyle(.page(indexDisplayMode: .always))
                 .animation(.easeInOut(duration: 0.3), value: currentPage)
                 
-                // Navigation buttons
-                HStack(spacing: Theme.Spacing.lg) {
-                    if currentPage > 0 {
-                        Button {
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                                currentPage -= 1
-                            }
-                        } label: {
-                            HStack {
-                                Image(systemName: "chevron.left")
-                                Text("Back")
-                            }
-                            .font(Theme.Typography.bodyBold)
-                            .foregroundStyle(Theme.Colors.textPrimary)
+                // "Start Learning" button — only on last page
+                if currentPage == tutorialPages.count - 1 {
+                    Button {
+                        onComplete()
+                    } label: {
+                        Text("Start Learning")
+                            .font(Theme.Typography.h3)
+                            .foregroundStyle(.primary)
                             .frame(maxWidth: .infinity)
                             .frame(height: Constants.Layout.buttonHeight)
                             .background(
-                                RoundedRectangle(cornerRadius: Constants.Layout.cornerRadius)
-                                    .fill(.ultraThinMaterial)
+                                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                    .fill(.regularMaterial)
                             )
-                        }
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                    .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                            .shadow(color: Color.black.opacity(0.15), radius: 10, y: 5)
                     }
-                    
-                    Button {
-                        if currentPage == tutorialPages.count - 1 {
-                            onComplete()
-                        } else {
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                                currentPage += 1
-                            }
-                        }
-                    } label: {
-                        HStack {
-                            Text(currentPage == tutorialPages.count - 1 ? "Start Learning" : "Next")
-                            Image(systemName: "chevron.right")
-                        }
-                        .font(Theme.Typography.bodyBold)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: Constants.Layout.buttonHeight)
-                        .background(
-                            RoundedRectangle(cornerRadius: Constants.Layout.cornerRadius)
-                                .fill(
-                                    LinearGradient(
-                                        colors: [Theme.Colors.primary, Theme.Colors.secondary],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                        )
-                    }
+                    .scaleEffect(isStartPressed ? 0.96 : 1)
+                    .animation(.easeInOut(duration: 0.15), value: isStartPressed)
+                    .simultaneousGesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { _ in isStartPressed = true }
+                            .onEnded { _ in isStartPressed = false }
+                    )
+                    .padding(.horizontal, Theme.Spacing.lg)
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
                 }
-                .padding(.horizontal, Theme.Spacing.lg)
-                .padding(.bottom, Theme.Spacing.xl)
+                
+                Spacer()
+                    .frame(height: Theme.Spacing.xl)
             }
+            .animation(.easeInOut(duration: 0.3), value: currentPage)
         }
         .toolbar(.hidden, for: .navigationBar)
     }

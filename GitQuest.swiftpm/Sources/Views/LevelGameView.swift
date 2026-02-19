@@ -1,4 +1,3 @@
-
 //
 //  LevelGameView.swift
 //  GitQuest
@@ -43,6 +42,16 @@ struct LevelGameView: View {
             // Full dark background
             bgColor.ignoresSafeArea()
             
+            // Subtle ambient depth glow
+            RadialGradient(
+                colors: [Color.blue.opacity(0.18), .clear],
+                center: .center,
+                startRadius: 10,
+                endRadius: 500
+            )
+            .ignoresSafeArea()
+            .allowsHitTesting(false)
+            
             VStack(spacing: 12) {
                 // ── DARK HEADER (56pt) ──
                 darkHeader
@@ -58,7 +67,30 @@ struct LevelGameView: View {
                             resetId: chatResetId
                         )
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                            .background(
+                                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                    .fill(.regularMaterial)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                            )
+                            .overlay(alignment: .top) {
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.25),
+                                        Color.white.opacity(0.05),
+                                        .clear
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                                .blendMode(.overlay)
+                                .allowsHitTesting(false)
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                            .shadow(color: Color.black.opacity(0.2), radius: 18, y: 10)
                             .tutorialAnchor(.chat)
                         
                         // Right Column: Concept Card
@@ -67,6 +99,30 @@ struct LevelGameView: View {
                                 command: viewModel.getSuggestedCommands().first ?? step.expectedCommand
                             )
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(
+                                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                    .fill(.regularMaterial)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                            )
+                            .overlay(alignment: .top) {
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.25),
+                                        Color.white.opacity(0.05),
+                                        .clear
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                                .blendMode(.overlay)
+                                .allowsHitTesting(false)
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                            .shadow(color: Color.black.opacity(0.2), radius: 18, y: 10)
                             .tutorialAnchor(.concept)
                         } else {
                             // Completion state placeholder
@@ -76,11 +132,33 @@ struct LevelGameView: View {
                                     .foregroundStyle(Theme.Colors.success)
                                 Text("All Steps Complete!")
                                     .font(.system(size: 16, weight: .bold))
-                                    .foregroundStyle(.white)
+                                    .foregroundStyle(.primary)
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background(Color(red: 0.12, green: 0.12, blue: 0.14))
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                            .background(
+                                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                    .fill(.regularMaterial)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                            )
+                            .overlay(alignment: .top) {
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.25),
+                                        Color.white.opacity(0.05),
+                                        .clear
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                                .blendMode(.overlay)
+                                .allowsHitTesting(false)
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                            .shadow(color: Color.black.opacity(0.2), radius: 18, y: 10)
                         }
                     }
                     
@@ -91,13 +169,59 @@ struct LevelGameView: View {
                         GitVisualizerView(repoState: repoState)
                             .frame(maxWidth: .infinity)
                             .frame(height: 280)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                            .background(
+                                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                    .fill(.regularMaterial)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                            )
+                            .overlay(alignment: .top) {
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.25),
+                                        Color.white.opacity(0.05),
+                                        .clear
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                                .blendMode(.overlay)
+                                .allowsHitTesting(false)
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                            .shadow(color: Color.black.opacity(0.2), radius: 18, y: 10)
                             .tutorialAnchor(.visualizer)
 
                         GitStateCard(repoState: repoState)
                             .frame(maxWidth: .infinity)
                             .frame(maxHeight: .infinity)
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                            .background(
+                                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                    .fill(.regularMaterial)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                            )
+                            .overlay(alignment: .top) {
+                                LinearGradient(
+                                    colors: [
+                                        Color.white.opacity(0.25),
+                                        Color.white.opacity(0.05),
+                                        .clear
+                                    ],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                                .blendMode(.overlay)
+                                .allowsHitTesting(false)
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                            .shadow(color: Color.black.opacity(0.2), radius: 18, y: 10)
                             .tutorialAnchor(.repoState)
                     }
                     .frame(height: 280)
@@ -182,7 +306,7 @@ struct LevelGameView: View {
         }
         .padding(.horizontal, 16)
         .frame(height: 56)
-        .background(Color(red: 0.10, green: 0.10, blue: 0.12))
+        .background(.ultraThinMaterial)
     }
 
     private var consolePanel: some View {
@@ -199,6 +323,30 @@ struct LevelGameView: View {
                     viewModel.commandInput = command
                 }
             )
+            .background(
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .fill(.regularMaterial)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+            )
+            .overlay(alignment: .top) {
+                LinearGradient(
+                    colors: [
+                        Color.white.opacity(0.25),
+                        Color.white.opacity(0.05),
+                        .clear
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                .blendMode(.overlay)
+                .allowsHitTesting(false)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .shadow(color: Color.black.opacity(0.2), radius: 18, y: 10)
             
             // Info button — positioned just below the header
             if gameState.completedLevels.contains(currentLevel.id) {
@@ -211,18 +359,21 @@ struct LevelGameView: View {
                         .padding(12)
                         .background(
                             Circle()
-                                .fill(Color.blue.opacity(0.2))
-                                .shadow(
-                                    color: glowInfoButton ? .blue.opacity(0.8) : .clear,
-                                    radius: glowInfoButton ? 15 : 0
+                                .fill(.ultraThinMaterial)
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.white.opacity(0.18), lineWidth: 1)
                                 )
                         )
-                        .scaleEffect(glowInfoButton ? 1.15 : 1.0)
+                        .shadow(color: Color.black.opacity(0.18), radius: 10, y: 6)
+                        .shadow(color: Color.cyan.opacity(0.7), radius: 12)
+                        .shadow(color: Color.blue.opacity(0.5), radius: 24)
+                        .scaleEffect(1.1)
+                        .animation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true), value: gameState.completedLevels.contains(currentLevel.id))
                 }
                 .buttonStyle(.plain)
-                .padding(.top, 44)      // Position below header (header height ~36-40pt + some spacing)
-                .padding(.trailing, 8)   // Distance from right edge
-                .animation(.easeInOut(duration: 0.3), value: glowInfoButton)
+                .padding(.top, 44)
+                .padding(.trailing, 8)
             }
         }
         .sheet(isPresented: $showLearningSheet) {
@@ -300,13 +451,19 @@ struct LevelGameView: View {
                 .foregroundStyle(GitTheme.red)
             Text(viewModel.errorMessage)
                 .font(.system(.body, design: .rounded).weight(.medium))
-                .foregroundStyle(.white)
+                .foregroundStyle(.primary)
         }
         .padding(16)
         .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(Color(red: 0.18, green: 0.10, blue: 0.10))
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(.regularMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color.white.opacity(0.14), lineWidth: 1)
+                )
         )
+        .shadow(color: Color.black.opacity(0.2), radius: 14, y: 8)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .padding(16)
     }
     
@@ -718,7 +875,11 @@ private struct LearningDetailSheet: View {
             .padding(.bottom, 30)
         }
         .scrollIndicators(.hidden)
-        .background(sheetBg.ignoresSafeArea())
+        .background(
+            Rectangle()
+                .fill(.regularMaterial)
+                .ignoresSafeArea()
+        )
         .preferredColorScheme(.dark)
         .onAppear {
             withAnimation(.easeOut(duration: 0.4)) {
@@ -741,6 +902,10 @@ private struct LearningDetailSheet: View {
                         )
                     )
                     .frame(width: 56, height: 56)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                    )
                     .shadow(color: Theme.Colors.conceptColor(level.concept).opacity(0.4), radius: 10)
                 
                 Image(systemName: level.icon)
@@ -791,9 +956,13 @@ private struct LearningDetailSheet: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 Group {
-                    if let tint = tint {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(tint)
+                    if tint != nil {
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(.ultraThinMaterial)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                            )
                     }
                 }
             )
@@ -817,3 +986,4 @@ private struct LearningDetailSheet: View {
         }
     }
 }
+

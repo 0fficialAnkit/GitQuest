@@ -42,7 +42,7 @@ struct CommandExplanationCard: View {
                             .font(.title2)
                             .foregroundStyle(.yellow)
                         
-                        Text("What You Just Learned")
+                        Text("What You Used")
                             .font(.title2.bold())
                             .foregroundStyle(.primary)
                         
@@ -52,6 +52,15 @@ struct CommandExplanationCard: View {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.title3)
                                 .foregroundStyle(.secondary)
+                                .padding(4)
+                                .background(
+                                    Circle()
+                                        .fill(.ultraThinMaterial)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                                        )
+                                )
                         }
                     }
                     
@@ -100,9 +109,17 @@ struct CommandExplanationCard: View {
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.secondary.opacity(0.2))
+                            .background(
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    .fill(.ultraThinMaterial)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                                    )
+                            )
                             .foregroundStyle(.primary)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .shadow(color: Color.black.opacity(0.12), radius: 8, y: 4)
                         }
                         
                         Button(action: onNextLevel) {
@@ -114,23 +131,49 @@ struct CommandExplanationCard: View {
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(
-                                LinearGradient(
-                                    colors: [.blue, .purple],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    .fill(.ultraThinMaterial)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                                    )
+                                    .overlay(
+                                        LinearGradient(
+                                            colors: [.blue.opacity(0.5), .purple.opacity(0.5)],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                        .blendMode(.overlay)
+                                    )
                             )
-                            .foregroundStyle(Color.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .foregroundStyle(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .shadow(color: Color.blue.opacity(0.25), radius: 12, y: 6)
                         }
                     }
                 }
                 .padding(24)
                 .background(
-                    RoundedRectangle(cornerRadius: 24)
-                        .fill(.ultraThickMaterial)
-                        .shadow(color: .black.opacity(0.3), radius: 30)
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .fill(.regularMaterial)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                                .stroke(Color.white.opacity(0.14), lineWidth: 1)
+                        )
+                        .shadow(color: .black.opacity(0.25), radius: 30, y: 18)
                 )
+                .overlay(alignment: .top) {
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.25), .clear],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                    .blendMode(.overlay)
+                    .allowsHitTesting(false)
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
                 .padding(.horizontal, 20)
                 .padding(.bottom, 40)
                 .offset(y: contentOffset)
@@ -183,8 +226,14 @@ struct CommandBlock: View {
                 .foregroundStyle(.blue)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(Color.blue.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .background(
+                    Capsule()
+                        .fill(.ultraThinMaterial)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                        )
+                )
             
             Text(description)
                 .font(.subheadline)
@@ -225,8 +274,15 @@ struct InsightBlock: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(color.opacity(0.1))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 }
 

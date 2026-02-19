@@ -16,6 +16,7 @@ struct WelcomeView: View {
     let onStart: () -> Void
 
     @State private var showResetAlert = false
+    @State private var isStartPressed = false
 
     var body: some View {
         ZStack {
@@ -61,25 +62,33 @@ struct WelcomeView: View {
                 // MARK: - Primary & Secondary Actions
                 VStack(spacing: Theme.Spacing.md) {
 
-                    // Start Journey Button
+                    // Start Journey Button — Glass Style
                     Button {
                         onStart()
                     } label: {
                         Text("Start Your Journey")
                             .font(Theme.Typography.h3)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.primary)
                             .frame(maxWidth: .infinity)
                             .frame(height: Constants.Layout.buttonHeight)
                             .background(
-                                RoundedRectangle(cornerRadius: Constants.Layout.cornerRadius)
-                                    .fill(Theme.Colors.primary)
+                                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                    .fill(.ultraThinMaterial)
                             )
-                            .shadow(
-                                color: Theme.Colors.primary.opacity(0.3),
-                                radius: 10,
-                                y: 6
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                                    .stroke(Color.white.opacity(0.15), lineWidth: 1)
                             )
+                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                            .shadow(color: Color.black.opacity(0.15), radius: 10, y: 5)
                     }
+                    .scaleEffect(isStartPressed ? 0.96 : 1)
+                    .animation(.easeInOut(duration: 0.15), value: isStartPressed)
+                    .simultaneousGesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { _ in isStartPressed = true }
+                            .onEnded { _ in isStartPressed = false }
+                    )
 
                     // Reset Progress (only if progress exists)
                     if !gameState.completedLevels.isEmpty {

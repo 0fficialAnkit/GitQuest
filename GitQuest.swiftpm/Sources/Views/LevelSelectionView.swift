@@ -125,19 +125,17 @@ struct LevelNode: View {
                 
                 // Main circle with gradient
                 Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: isUnlocked ? [levelColor, levelColor.opacity(0.7)] : [Color.gray.opacity(0.4), Color.gray.opacity(0.6)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .fill(isUnlocked ? AnyShapeStyle(.regularMaterial) : AnyShapeStyle(.ultraThinMaterial))
                     .frame(width: 120, height: 120)
-                    .shadow(color: isUnlocked ? levelColor.opacity(0.5) : Color.gray.opacity(0.3), radius: 15)
                     .overlay(
                         Circle()
-                            .stroke(Color.primary.opacity(isUnlocked ? 0.3 : 0.15), lineWidth: 4)
+                            .fill(levelColor.opacity(isUnlocked ? 0.25 : 0.08))
                     )
+                    .overlay(
+                        Circle()
+                            .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                    )
+                    .shadow(color: Color.black.opacity(0.15), radius: 10, y: 5)
                 
                 // Icon or status
                 if isCompleted {
