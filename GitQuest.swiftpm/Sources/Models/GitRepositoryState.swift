@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import Observation
 
 // MARK: - Git Commit
 
@@ -99,37 +100,38 @@ struct GitAction {
 
 /// Observable model representing the entire state of a simulated Git repository.
 ///
-/// Published properties drive the Visualiser, Repository Status card, and
+/// Properties drive the Visualiser, Repository Status card, and
 /// Console views. The class is `@MainActor` because all mutations originate
 /// from SwiftUI callbacks.
+@Observable
 @MainActor
-class GitRepositoryState: ObservableObject {
+class GitRepositoryState {
     
-    // MARK: - Published State
+    // MARK: - State
     
     /// Whether `git init` has been run.
-    @Published var isInitialized: Bool = false
+    var isInitialized: Bool = false
     
     /// Ordered list of all commits in the repository.
-    @Published var commits: [GitCommit] = []
+    var commits: [GitCommit] = []
     
     /// All branches that currently exist.
-    @Published var branches: [GitBranch] = []
+    var branches: [GitBranch] = []
     
     /// Name of the currently checked-out branch.
-    @Published var currentBranch: String = "main"
+    var currentBranch: String = "main"
     
     /// Files that have been staged with `git add`.
-    @Published var stagedFiles: [String] = []
+    var stagedFiles: [String] = []
     
     /// Whether a remote has been configured.
-    @Published var hasRemote: Bool = false
+    var hasRemote: Bool = false
     
     /// Name of the configured remote (defaults to `"origin"`).
-    @Published var remoteName: String = "origin"
+    var remoteName: String = "origin"
     
     /// The most recent action for display in the UI.
-    @Published var lastAction: GitAction?
+    var lastAction: GitAction?
     
     // MARK: - Computed Properties
     

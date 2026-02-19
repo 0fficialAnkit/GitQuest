@@ -94,13 +94,15 @@ struct GameTutorialOverlay: ViewModifier {
     @State private var overlayOpacity: Double = 0
     @State private var tipOpacity: Double = 0
     @State private var tipOffset: CGFloat = 20
-    @State private var nextHapticTrigger = false
+    @State private var stepHapticTrigger = false
     @State private var doneHapticTrigger = false
     
     private let steps = TutorialStep.allSteps
     
     func body(content: Content) -> some View {
         content
+            .sensoryFeedback(.impact(flexibility: .soft), trigger: stepHapticTrigger)
+            .sensoryFeedback(.impact(weight: .medium), trigger: doneHapticTrigger)
             .overlayPreferenceValue(TutorialCardFrameKey.self) { anchors in
                 if isShowing {
                     GeometryReader { geo in
@@ -130,9 +132,6 @@ struct GameTutorialOverlay: ViewModifier {
                         }
                     }
                     .ignoresSafeArea()
-                    .sensoryFeedback(.impact(flexibility: .soft), trigger: nextHapticTrigger)
-                    .sensoryFeedback(.impact(weight: .medium), trigger: doneHapticTrigger)
-                    
                     .onAppear {
                         withAnimation(.easeOut(duration: 0.4)) {
                             overlayOpacity = 1
@@ -326,79 +325,46 @@ struct GameTutorialOverlay: ViewModifier {
     
     // MARK: - Navigation
     
-//    private func handleNext() {
-////        let haptic = UIImpactFeedbackGenerator(style: .light)
-////        haptic.impactOccurred()
-//        
-//        if currentStep < steps.count - 1 {
-//            // Fade out tip
-//            withAnimation(.easeIn(duration: 0.15)) {
-//                tipOpacity = 0
-//                tipOffset = -12
-//            }
-//            
-//            // Move to next step
-//            DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
-//                currentStep += 1
-//                tipOffset = 20
-//                
-//                // Fade in new tip
-//                withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
-//                    tipOpacity = 1
-//                    tipOffset = 0
-//                }
-//            }
-//        } else {
-//            // Dismiss tutorial
-////            let haptic2 = UIImpactFeedbackGenerator(style: .medium)
-////            haptic2.impactOccurred()
-//            
-//            withAnimation(.easeOut(duration: 0.3)) {
-//                tipOpacity = 0
-//                overlayOpacity = 0
-//            }
-//            
-//            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-//                isShowing = false
-//            }
-//        }
-//    }
     private func handleNext() {
-
-        nextHapticTrigger.toggle()
-
         if currentStep < steps.count - 1 {
-
+            stepHapticTrigger.toggle()
+            
+            // Fade out tip
             withAnimation(.easeIn(duration: 0.15)) {
                 tipOpacity = 0
                 tipOffset = -12
             }
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+            
+            // Move to next step
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(0.18))
                 currentStep += 1
                 tipOffset = 20
-
+                
+                // Fade in new tip
                 withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
                     tipOpacity = 1
                     tipOffset = 0
                 }
             }
-
         } else {
-
+            // Dismiss tutorial
             doneHapticTrigger.toggle()
-
+            
+            // Mark tutorial as seen permanently
+            UserDefaults.standard.set(true, forKey: "hasSeenGameTutorial")
+            
             withAnimation(.easeOut(duration: 0.3)) {
                 tipOpacity = 0
                 overlayOpacity = 0
             }
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(0.35))
                 isShowing = false
             }
         }
     }
-
 }
 
 extension View {
@@ -406,73 +372,3 @@ extension View {
         modifier(GameTutorialOverlay(isShowing: isShowing))
     }
 }
-
-
-
-
-// // //
-// MARK: - Preview Playground
-
-private struct TutorialPreviewScreen: View {
-
-    @State private var showTutorial = true
-
-    var body: some View {
-        ZStack {
-            // Fake background
-            Color(red: 0.08, green: 0.09, blue: 0.12)
-                .ignoresSafeArea()
-
-            VStack(spacing: 18) {
-
-                // Chat card
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.blue.opacity(0.25))
-                    .frame(height: 120)
-                    .overlay(Text("Chat Card").foregroundStyle(.white))
-                    .tutorialAnchor(.chat)
-
-                HStack(spacing: 16) {
-
-                    // Concept card
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.purple.opacity(0.25))
-                        .frame(height: 120)
-                        .overlay(Text("Concept").foregroundStyle(.white))
-                        .tutorialAnchor(.concept)
-
-                    // Repo state
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.orange.opacity(0.25))
-                        .frame(height: 120)
-                        .overlay(Text("Repo State").foregroundStyle(.white))
-                        .tutorialAnchor(.repoState)
-                }
-
-                // Console
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.green.opacity(0.25))
-                    .frame(height: 90)
-                    .overlay(Text("Console").foregroundStyle(.white))
-                    .tutorialAnchor(.console)
-
-                // Visualizer
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.cyan.opacity(0.25))
-                    .frame(height: 160)
-                    .overlay(Text("Visualizer").foregroundStyle(.white))
-                    .tutorialAnchor(.visualizer)
-
-                Spacer()
-            }
-            .padding()
-        }
-        .gameTutorial(isShowing: $showTutorial)
-    }
-}
-
-#Preview("Tutorial Overlay") {
-    TutorialPreviewScreen()
-}
-
-

@@ -100,7 +100,7 @@ struct ConceptTip: Tip {
     }
     
     var message: Text? {
-        Text("Before typing anything, study this card. It explains every single word - what 'git', 'commit', '-m', and the message each mean. Understanding beats memorizing.")
+        Text("Before typing anything, study this card. It explains every single word — what 'git', 'commit', '-m', and the message each mean. Understanding beats memorizing.")
             .foregroundStyle(.white.opacity(0.85))
     }
     
@@ -251,13 +251,15 @@ struct RepoStateTip: Tip {
 }
 
 // MARK: - Tip Orchestrator
+// MARK: - Tip Orchestrator
 
+@Observable
 @MainActor
-class GameTipsOrchestrator: ObservableObject {
+class GameTipsOrchestrator {
     static let shared = GameTipsOrchestrator()
     
-    @Published var currentTipIndex = 0
-    @Published var showingTips = false
+    var currentTipIndex = 0
+    var showingTips = false
     
     let chatTip = ChatTip()
     let chatStoryTip = ChatStoryTip()
@@ -299,7 +301,8 @@ class GameTipsOrchestrator: ObservableObject {
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                     deactivateTip(at: tipIndex)
                     currentTipIndex = tipIndex + 1
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .seconds(0.1))
                         self.activateTip(at: tipIndex + 1)
                     }
                 }
@@ -309,7 +312,8 @@ class GameTipsOrchestrator: ObservableObject {
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                     deactivateTip(at: tipIndex)
                     currentTipIndex = tipIndex - 1
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .seconds(0.1))
                         self.activateTip(at: tipIndex - 1)
                     }
                 }

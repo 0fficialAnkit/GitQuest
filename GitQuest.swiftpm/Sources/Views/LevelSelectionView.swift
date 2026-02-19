@@ -9,7 +9,7 @@ import SwiftUI
 
 /// Level selection screen with colorful animated design
 struct LevelSelectionView: View {
-    @EnvironmentObject var gameState: GameState
+    @Environment(GameState.self) var gameState
     @Binding var navigationPath: NavigationPath
     
     var body: some View {
@@ -25,7 +25,7 @@ struct LevelSelectionView: View {
             
             // ScrollView takes full available height
             ScrollViewReader { proxy in
-                ScrollView(.vertical, showsIndicators: false) {
+                ScrollView(.vertical) {
                     VStack(spacing: Theme.Spacing.xl) {
                         // Header
                         headerSection
@@ -55,6 +55,7 @@ struct LevelSelectionView: View {
                     }
                     .frame(maxWidth: .infinity)
                 }
+                .scrollIndicators(.hidden)
                 .scrollBounceBehavior(.basedOnSize)
                 .onChange(of: gameState.currentLevel) { _, newLevel in
                     withAnimation(.easeInOut(duration: 0.8)) {
@@ -204,7 +205,8 @@ struct LevelNode: View {
             
             // Pulse animation for current level
             if isCurrent && !isCompleted {
-                DispatchQueue.main.asyncAfter(deadline: .now() + Double(level.id) * 0.1) {
+                Task { @MainActor in
+                    try? await Task.sleep(for: .seconds(Double(level.id) * 0.1))
                     withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: false)) {
                         pulse = true
                     }
@@ -220,14 +222,13 @@ struct LevelNode: View {
 // MARK: - Preview Container
 
 struct LevelSelectionPreviewContainer: View {
-    
     @State private var path = NavigationPath()
-    @StateObject private var gameState = GameState()
+    @State private var gameState = GameState()
     
     var body: some View {
         NavigationStack(path: $path) {
             LevelSelectionView(navigationPath: $path)
-                .environmentObject(gameState)
+                .environment(gameState)
         }
     }
 }
@@ -236,4 +237,3 @@ struct LevelSelectionPreviewContainer: View {
 #Preview("Level Selection") {
     LevelSelectionPreviewContainer()
 }
-

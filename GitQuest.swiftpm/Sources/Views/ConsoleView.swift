@@ -40,6 +40,7 @@ struct ConsoleView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(12)
                 }
+                .scrollIndicators(.hidden)
                 .frame(minHeight: 80, idealHeight: 120, maxHeight: 160)
                 .background(terminalBg)
                 .onChange(of: terminalOutput.count) { _, _ in

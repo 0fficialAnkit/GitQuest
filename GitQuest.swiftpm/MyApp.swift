@@ -26,14 +26,14 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct MyApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @StateObject private var gameState = GameState()
-    @StateObject private var repoState = GitRepositoryState()
+    @State private var gameState = GameState()
+    @State private var repoState = GitRepositoryState()
     
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(gameState)
-                .environmentObject(repoState)
+                .environment(gameState)
+                .environment(repoState)
                 .preferredColorScheme(.dark)
         }
     }

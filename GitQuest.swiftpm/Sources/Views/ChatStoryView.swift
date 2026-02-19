@@ -30,7 +30,7 @@ struct ChatStoryView: View {
             statusHeader
             
             ScrollViewReader { proxy in
-                ScrollView(showsIndicators: false) {
+                ScrollView {
                     LazyVStack(spacing: 0) {
                         ForEach(messages) { message in
                             let index = messageIndex(for: message)
@@ -59,10 +59,12 @@ struct ChatStoryView: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 14)
                 }
+                .scrollIndicators(.hidden)
                 .onAppear {
                     suppressBottomScroll = true
                     scrollToTop(proxy: proxy)
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .seconds(0.4))
                         suppressBottomScroll = false
                     }
                 }
@@ -70,18 +72,21 @@ struct ChatStoryView: View {
                 .onChange(of: resetId) { _, _ in
                     suppressBottomScroll = true
                     animatedMessageIDs.removeAll()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .seconds(0.05))
                         scrollToTop(proxy: proxy)
                     }
                     // Re-enable bottom-scroll after the initial messages settle
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .seconds(0.4))
                         suppressBottomScroll = false
                     }
                 }
                 // New messages appended after a step completes → scroll to bottom
                 .onChange(of: messages.count) { oldCount, newCount in
                     guard newCount > oldCount, !suppressBottomScroll else { return }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .seconds(0.15))
                         scrollToBottom(proxy: proxy)
                     }
                 }
@@ -212,7 +217,8 @@ private struct TypingDotsView: View {
         withAnimation(.easeInOut(duration: 0.35).repeatForever(autoreverses: false)) {
             activeDot = 1
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(0.35))
             withAnimation(.easeInOut(duration: 0.35).repeatForever(autoreverses: false)) {
                 activeDot = 2
             }

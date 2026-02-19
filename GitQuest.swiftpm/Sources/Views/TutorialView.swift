@@ -14,20 +14,19 @@ import SwiftUI
 /// Uses a `TabView` with page-style indicators. The player can
 /// swipe or tap "Next" to advance, and "Skip" to jump ahead.
 struct TutorialView: View {
-    @EnvironmentObject var gameState: GameState
     let onComplete: () -> Void
     
     @State private var currentPage = 0
     
     private let tutorialPages: [(icon: String, title: String, description: String, color: Color)] = [
-        ("folder.badge.gearshape", "What is Git?", 
-         "Git is a version control system that tracks changes in your code. Think of it as a time machine for your projects!", 
+        ("folder.badge.gearshape", "What is Git?",
+         "Git is a version control system that tracks changes in your code. Think of it as a time machine for your projects!",
          .purple),
-        ("terminal", "How It Works", 
-         "You'll learn Git by typing real commands. Each level teaches a new concept with a story that explains why developers use these commands.", 
+        ("terminal", "How It Works",
+         "You'll learn Git by typing real commands. Each level teaches a new concept with a story that explains why developers use these commands.",
          .blue),
-        ("arrow.triangle.branch", "Key Concepts", 
-         "You'll master repositories, commits, branches, merging, and collaboration. These are the building blocks every developer needs.", 
+        ("arrow.triangle.branch", "Key Concepts",
+         "You'll master repositories, commits, branches, merging, and collaboration. These are the building blocks every developer needs.",
          .green)
     ]
     

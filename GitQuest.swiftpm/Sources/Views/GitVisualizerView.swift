@@ -13,7 +13,7 @@ import SwiftUI
 /// and HEAD. Tapping a commit node opens a detail inspector.
 struct GitVisualizerView: View {
     
-    @ObservedObject var repoState: GitRepositoryState
+    var repoState: GitRepositoryState
     
     private let commitSize: CGFloat = 44
     private let commitSpacing: CGFloat = 75
@@ -419,7 +419,7 @@ struct VisualizerGuideSheet: View {
                     .foregroundStyle(.white)
                     .padding(.top, 10)
                 
-                ScrollView() {
+                ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
                         guideSection(
                             title: "Commits (Circles)",

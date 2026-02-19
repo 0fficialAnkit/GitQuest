@@ -12,7 +12,7 @@ import SwiftUI
 /// Launch screen presenting the app identity, a "Start" button,
 /// and an optional progress-reset action.
 struct WelcomeView: View {
-    @EnvironmentObject var gameState: GameState
+    @Environment(GameState.self) var gameState
     let onStart: () -> Void
 
     @State private var showResetAlert = false
@@ -114,5 +114,5 @@ struct WelcomeView: View {
     WelcomeView {
         // Preview action
     }
-    .environmentObject(GameState())
+    .environment(GameState())
 }

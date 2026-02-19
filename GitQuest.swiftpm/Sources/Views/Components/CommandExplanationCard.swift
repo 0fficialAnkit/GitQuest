@@ -55,7 +55,7 @@ struct CommandExplanationCard: View {
                         }
                     }
                     
-                    ScrollView () {
+                    ScrollView {
                         VStack(alignment: .leading, spacing: 20) {
                             // Command details
                             commandDetailsView
@@ -162,7 +162,8 @@ struct CommandExplanationCard: View {
             show = false
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(0.3))
             onDismiss()
         }
     }

@@ -1,3 +1,4 @@
+
 //
 //  LevelGameView.swift
 //  GitQuest
@@ -14,9 +15,9 @@ import SwiftUI
 struct LevelGameView: View {
     let initialLevel: Level
     
-    @EnvironmentObject var gameState: GameState
-    @EnvironmentObject var repoState: GitRepositoryState
-    @StateObject private var viewModel = GameViewModel()
+    @Environment(GameState.self) var gameState
+    @Environment(GitRepositoryState.self) var repoState
+    @State private var viewModel = GameViewModel()
     @Environment(\.dismiss) var dismiss
     
     @State private var currentLevel: Level
@@ -121,13 +122,14 @@ struct LevelGameView: View {
             viewModel.startLevel(currentLevel)
             setupVisualizerState()
 
-            // Show tutorial only once ever (until user resets progress)
-            if currentLevel.id == 1, !gameState.hasSeenGameTutorial {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            // Show tutorial every time on level 1
+            // Show tutorial only once ever, only on level 1
+            if currentLevel.id == 1 && !UserDefaults.standard.bool(forKey: "hasSeenGameTutorial") {
+                Task { @MainActor in
+                    try? await Task.sleep(for: .seconds(0.8))
                     withAnimation {
                         showTutorial = true
                     }
-                    gameState.hasSeenGameTutorial = true
                 }
             }
         }
@@ -139,7 +141,8 @@ struct LevelGameView: View {
                 }
                 
                 // Stop glowing after 1 second
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                Task { @MainActor in
+                    try? await Task.sleep(for: .seconds(1.0))
                     withAnimation {
                         glowInfoButton = false
                     }
@@ -181,8 +184,7 @@ struct LevelGameView: View {
         .frame(height: 56)
         .background(Color(red: 0.10, green: 0.10, blue: 0.12))
     }
-    
-    // MARK: - Console
+
     private var consolePanel: some View {
         ZStack(alignment: .topTrailing) {
             ConsoleView(
@@ -420,7 +422,8 @@ struct LevelGameView: View {
             showExplanationCard = false
         }
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(0.4))
             chatResetId = UUID()   // ← reset chat scroll to top for new level
             currentLevel = nextLevel
             viewModel.startLevel(nextLevel)

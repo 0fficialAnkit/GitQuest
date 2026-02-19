@@ -21,7 +21,8 @@ enum AppScreen: Hashable {
 /// Root view that controls the top-level navigation flow:
 /// Welcome → Tutorial (if needed) → Level Selection → Game.
 struct ContentView: View {
-    @EnvironmentObject var gameState: GameState
+    
+    @Environment(GameState.self) var gameState
     @State private var navigationPath = NavigationPath()
     @State private var showingWelcome = true
     
@@ -59,4 +60,9 @@ struct ContentView: View {
             }
         }
     }
+}
+
+#Preview("Welcome Screen") {
+    WelcomeView { }
+    .environment(GameState())
 }

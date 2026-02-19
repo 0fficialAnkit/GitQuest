@@ -15,7 +15,7 @@ import SwiftUI
 /// staged files, remote connection, and a mini visualiser guide.
 struct GitStateCard: View {
     
-    @ObservedObject var repoState: GitRepositoryState
+    var repoState: GitRepositoryState
     
     @State private var prevCommitCount: Int = 0
     @State private var prevBranch: String = ""
@@ -76,7 +76,7 @@ struct GitStateCard: View {
             .padding(.vertical, 4)
             // Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity) 
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(cardBg)
@@ -172,61 +172,14 @@ struct GitStateCard: View {
         )
     }
     
-    // MARK: - State Row (Legacy)
-    
-//    private func stateRow(
-//        id: String,
-//        icon: String,
-//        label: String,
-//        value: String,
-//        detail: String,
-//        statusColor: Color
-//    ) -> some View {
-//        let isHighlighted = highlightedRow == id
-//        
-//        return HStack(spacing: 12) {
-//            Image(systemName: icon)
-//                .font(.system(size: 12, weight: .semibold))
-//                .foregroundStyle(statusColor)
-//                .frame(width: 18)
-//            
-//            VStack(alignment: .leading, spacing: 1) {
-//                Text(label)
-//                    .font(.system(size: 11, weight: .semibold))
-//                    .foregroundStyle(.white.opacity(0.9))
-//                
-//                Text(detail)
-//                    .font(.system(size: 9, weight: .medium))
-//                    .foregroundStyle(.white.opacity(0.35))
-//                    .lineLimit(1)
-//            }
-//            
-//            Spacer()
-//            
-//            Text(value)
-//                .font(.system(.caption, design: .monospaced))
-//                .fontWeight(.bold)
-//                .foregroundStyle(statusColor)
-//                .lineLimit(1)
-//                .contentTransition(.numericText())
-//                .animation(.easeInOut(duration: 0.3), value: value)
-//        }
-//        .padding(.horizontal, 16)
-//        .padding(.vertical, 6)
-//        .background(
-//            RoundedRectangle(cornerRadius: 8)
-//                .fill(isHighlighted ? statusColor.opacity(0.12) : Color.clear)
-//                .animation(.easeOut(duration: 0.6), value: isHighlighted)
-//        )
-//    }
-//    
     // MARK: - Flash Animation
     
     private func flashRow(_ id: String) {
         withAnimation(.easeIn(duration: 0.15)) {
             highlightedRow = id
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(0.8))
             withAnimation(.easeOut(duration: 0.4)) {
                 if highlightedRow == id {
                     highlightedRow = nil
@@ -260,12 +213,6 @@ struct GitStateCard: View {
         if repoState.stagedFiles.contains(".") { return "All files" }
         return "\(count) file\(count == 1 ? "" : "s")"
     }
-    
-//    private var lastCommitMessage: String {
-//        guard let lastCommit = repoState.headCommit else { return "—" }
-//        let message = lastCommit.message
-//        return message.count > 22 ? String(message.prefix(19)) + "..." : message
-//    }
 }
 
 // MARK: - Git Theme Colors

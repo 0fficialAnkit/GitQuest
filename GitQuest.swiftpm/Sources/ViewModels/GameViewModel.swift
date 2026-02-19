@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import Observation
 
 // MARK: - Game View Model
 
@@ -17,23 +18,21 @@ import SwiftUI
 /// - Manages terminal output lines and chat messages
 /// - Triggers success / error feedback
 /// - Provides suggested commands for the hint bar
+@Observable
 @MainActor
-class GameViewModel: ObservableObject {
+class GameViewModel {
     
     // MARK: - Dependencies
     var gameState: GameState = GameState()
     
     // MARK: - Gameplay State
-    @Published var currentStep: Int = 0
-    @Published var terminalOutput: [TerminalLine] = []
-    @Published var commandInput: String = ""
-    @Published var showSuccess: Bool = false
-    @Published var showError: Bool = false
-    @Published var errorMessage: String = ""
-    
-//    @Published var currentTeamMessage: String? = nil
-    
-    @Published var chatMessages: [ChatMessage] = []
+    var currentStep: Int = 0
+    var terminalOutput: [TerminalLine] = []
+    var commandInput: String = ""
+    var showSuccess: Bool = false
+    var showError: Bool = false
+    var errorMessage: String = ""
+    var chatMessages: [ChatMessage] = []
     
     var currentPlayingLevel: Level?
     
@@ -44,7 +43,6 @@ class GameViewModel: ObservableObject {
         currentPlayingLevel = level
         currentStep = 0
         terminalOutput = []
-//        currentTeamMessage = nil
         chatMessages = level.initialChat
         
         // Welcome message
@@ -150,7 +148,7 @@ class GameViewModel: ObservableObject {
                       (fix conflicts and run "git commit")
                     
                     Unmerged paths:
-                      (use "git add <file>..." to mark resolution)
+                      (use "git add <file>...\" to mark resolution)
                         both modified:   dashboard.js
                     
                     no changes added to commit
@@ -222,11 +220,6 @@ class GameViewModel: ObservableObject {
         addTerminalOutput("✓ " + step.successMessage, type: .success)
         addTerminalOutput("", type: .system)
         
-        // Show team reaction if available
-//        if let teamReaction = step.teamReaction {
-//            showTeamMessage(teamReaction)
-//        }
-        
         let completedStepIndex = currentStep
         currentStep += 1
         
@@ -234,7 +227,8 @@ class GameViewModel: ObservableObject {
         if let stepMessages = level.stepChats[completedStepIndex] {
             for (index, message) in stepMessages.enumerated() {
                 let delay = Double(index) * 0.5
-                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                Task { @MainActor in
+                    try? await Task.sleep(for: .seconds(delay))
                     withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                         self.chatMessages.append(message)
                     }
@@ -261,7 +255,8 @@ class GameViewModel: ObservableObject {
         addTerminalOutput("🎉 Level Complete!", type: .success)
         
         // Show success overlay after short delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(0.3))
             withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                 self.showSuccess = true
             }
@@ -282,31 +277,13 @@ class GameViewModel: ObservableObject {
             showError = true
         }
         
-        Task {
-            try? await Task.sleep(nanoseconds: 2_500_000_000)
-            await MainActor.run {
-                withAnimation {
-                    showError = false
-                }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2.5))
+            withAnimation {
+                self.showError = false
             }
         }
     }
-    
-    /// Displays and auto-dismisses a team-mate reaction bubble.
-//    private func showTeamMessage(_ message: String) {
-//        withAnimation {
-//            currentTeamMessage = message
-//        }
-//        
-//        Task {
-//            try? await Task.sleep(nanoseconds: 4_000_000_000)
-//            await MainActor.run {
-//                withAnimation {
-//                    currentTeamMessage = nil
-//                }
-//            }
-//        }
-//    }
     
     // MARK: - Helper Methods
     
@@ -410,26 +387,25 @@ enum TerminalLineType {
     case system
     
     /// Colour used when rendering this line type.
-//    var color: Color {
-//        switch self {
-//        case .command: return .blue
-//        case .success: return .green
-//        case .error: return .red
-//        case .info: return .cyan
-//        case .instruction: return .yellow
-//        case .system: return .gray
-//        }
-//    }
+    var color: Color {
+        switch self {
+        case .command: return .blue
+        case .success: return .green
+        case .error: return .red
+        case .info: return .cyan
+        case .instruction: return .yellow
+        case .system: return .gray
+        }
+    }
     
     /// Optional SF Symbol shown before the line text.
-//    var icon: String? {
-//        switch self {
-//        case .command: return "chevron.right"
-//        case .success: return "checkmark.circle.fill"
-//        case .error: return "xmark.circle.fill"
-//        case .instruction: return "lightbulb.fill"
-//        default: return nil
-//        }
-//    }
+    var icon: String? {
+        switch self {
+        case .command: return "chevron.right"
+        case .success: return "checkmark.circle.fill"
+        case .error: return "xmark.circle.fill"
+        case .instruction: return "lightbulb.fill"
+        default: return nil
+        }
+    }
 }
-

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Observation
 
 // MARK: - Game State
 
@@ -13,8 +14,9 @@ import Foundation
 ///
 /// Persists completed levels and tutorial status to `UserDefaults`
 /// so the player picks up where they left off between launches.
+@Observable
 @MainActor
-class GameState: ObservableObject {
+class GameState {
     
     // MARK: - Persistence Keys
     
@@ -22,23 +24,17 @@ class GameState: ObservableObject {
     private enum StorageKey {
         static let completedLevels = "completedLevels"
         static let hasCompletedTutorial = "hasCompletedTutorial"
-        static let hasSeenGameTutorial = "hasSeenGameTutorial"
     }
     
-    // MARK: - Published State
+    // MARK: - State
     
     /// Set of level IDs the player has finished.
-    @Published var completedLevels: Set<Int> {
+    var completedLevels: Set<Int> {
         didSet { save() }
     }
     
     /// Whether the onboarding tutorial has been shown and dismissed.
-    @Published var hasCompletedTutorial: Bool {
-        didSet { save() }
-    }
-    
-    /// Whether the in-game tutorial (spotlight tips on Level 1) has been shown.
-    @Published var hasSeenGameTutorial: Bool {
+    var hasCompletedTutorial: Bool {
         didSet { save() }
     }
     
@@ -56,7 +52,6 @@ class GameState: ObservableObject {
         let saved = UserDefaults.standard.array(forKey: StorageKey.completedLevels) as? [Int] ?? []
         self.completedLevels = Set(saved)
         self.hasCompletedTutorial = UserDefaults.standard.bool(forKey: StorageKey.hasCompletedTutorial)
-        self.hasSeenGameTutorial = UserDefaults.standard.bool(forKey: StorageKey.hasSeenGameTutorial)
     }
     
     // MARK: - Actions
@@ -80,7 +75,7 @@ class GameState: ObservableObject {
     func resetAllProgress() {
         completedLevels.removeAll()
         hasCompletedTutorial = false
-        hasSeenGameTutorial = false
+        UserDefaults.standard.removeObject(forKey: "hasSeenGameTutorial")
     }
     
     // MARK: - Persistence
@@ -89,6 +84,5 @@ class GameState: ObservableObject {
     private func save() {
         UserDefaults.standard.set(Array(completedLevels), forKey: StorageKey.completedLevels)
         UserDefaults.standard.set(hasCompletedTutorial, forKey: StorageKey.hasCompletedTutorial)
-        UserDefaults.standard.set(hasSeenGameTutorial, forKey: StorageKey.hasSeenGameTutorial)
     }
 }
