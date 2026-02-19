@@ -100,7 +100,7 @@ struct ConceptTip: Tip {
     }
     
     var message: Text? {
-        Text("Before typing anything, study this card. It explains every single word — what 'git', 'commit', '-m', and the message each mean. Understanding beats memorizing.")
+        Text("Before typing anything, study this card. It explains every single word - what 'git', 'commit', '-m', and the message each mean. Understanding beats memorizing.")
             .foregroundStyle(.white.opacity(0.85))
     }
     

@@ -1,4 +1,3 @@
-////
 ////  LevelGameView.swift
 ////  GitQuest
 ////
@@ -25,8 +24,7 @@
 //    @State private var glowInfoButton = false
 //    @State private var chatResetId = UUID()
 //    @State private var showTutorial = false
-//    
-//    private static let tutorialShownKey = "hasShownGameTutorial"
+//    private static var tutorialShownThisSession = false
 //    
 //    // Dark palette constants
 //    private let bgColor = Color(red: 0.07, green: 0.07, blue: 0.09)
@@ -123,17 +121,30 @@
 //            viewModel.startLevel(currentLevel)
 //            setupVisualizerState()
 //
-//            // Show tutorial only once, only on level 1
-//            if currentLevel.id == 1,
-//               !UserDefaults.standard.bool(forKey: LevelGameView.tutorialShownKey) {
-//                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+//            // Show tutorial every time on level 1
+//            if currentLevel.id == 1 {
+//                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
 //                    withAnimation {
 //                        showTutorial = true
 //                    }
-//                    UserDefaults.standard.set(true, forKey: LevelGameView.tutorialShownKey)
 //                }
 //            }
 //        }
+////        .onAppear {
+////                    viewModel.gameState = gameState
+////                    viewModel.startLevel(currentLevel)
+////                    setupVisualizerState()
+////
+////                    // Show tutorial every time on level 1
+////                    if currentLevel.id == 1 {
+////                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+////                            withAnimation {
+////                                showTutorial = true
+////                            }
+////                        }
+////                    }
+////                }
+//        
 //        .onChange(of: gameState.completedLevels) { _, newValue in
 //            // Trigger glow when level is completed
 //            if newValue.contains(currentLevel.id) {
@@ -186,98 +197,6 @@
 //    }
 //    
 //    // MARK: - Console
-//    
-////    private var consolePanel: some View {
-////        ZStack(alignment: .topTrailing) {
-////            ConsoleView(
-////                commandInput: $viewModel.commandInput,
-////                terminalOutput: viewModel.terminalOutput,
-////                suggestedCommands: viewModel.getSuggestedCommands(),
-////                onExecute: {
-////                    viewModel.executeCommand()
-////                    executeOnVisualizer()
-////                },
-////                onCommandTap: { command in
-////                    viewModel.commandInput = command
-////                }
-////            )
-////
-////            // Info button — only rendered after level completion
-////            if gameState.completedLevels.contains(currentLevel.id) {
-////                Button {
-////                    showLearningSheet = true
-////                } label: {
-////                    Image(systemName: "info.circle")
-////                        .font(.system(size: 16, weight: .medium))
-////                        .foregroundStyle(.white.opacity(0.55))
-////                        .padding(10)
-////                }
-////                .buttonStyle(.plain)
-////            }
-////        }
-////        .sheet(isPresented: $showLearningSheet) {
-////            LearningDetailSheet(
-////                level: currentLevel,
-////                content: LearningContent.content(for: currentLevel.id)
-////            )
-////            .presentationDetents([.medium, .large])
-////            .presentationCornerRadius(28)
-////            .presentationDragIndicator(.visible)
-////        }
-////    }
-//    
-//    
-////    // // /// //////////////
-////    private var consolePanel: some View {
-////        ZStack(alignment: .topTrailing) {
-////            ConsoleView(
-////                commandInput: $viewModel.commandInput,
-////                terminalOutput: viewModel.terminalOutput,
-////                suggestedCommands: viewModel.getSuggestedCommands(),
-////                onExecute: {
-////                    viewModel.executeCommand()
-////                    executeOnVisualizer()
-////                },
-////                onCommandTap: { command in
-////                    viewModel.commandInput = command
-////                }
-////            )
-////
-////            // Info button — only rendered after level completion
-////            if gameState.completedLevels.contains(currentLevel.id) {
-////                Button {
-////                    showLearningSheet = true
-////                } label: {
-////                    Image(systemName: "info.circle.fill")
-////                        .font(.system(size: 18, weight: .semibold))
-////                        .foregroundStyle(.white.opacity(0.9))
-////                        .padding(5)
-////                        .background(
-////                            Circle()
-////                                .fill(Color.yellow.opacity(0.2))
-////                                .shadow(
-////                                    color: glowInfoButton ? .blue.opacity(0.8) : .clear,
-////                                    radius: glowInfoButton ? 15 : 0
-////                                )
-////                        )
-////                        .scaleEffect(glowInfoButton ? 1.15 : 1.0)
-////                }
-////                .buttonStyle(.plain)
-////                .padding(.top, 8)
-////                .padding(.trailing, 8)
-////                .animation(.easeInOut(duration: 0.3), value: glowInfoButton)
-////            }
-////        }
-////        .sheet(isPresented: $showLearningSheet) {
-////            LearningDetailSheet(
-////                level: currentLevel,
-////                content: LearningContent.content(for: currentLevel.id)
-////            )
-////            .presentationDetents([.medium, .large])
-////            .presentationCornerRadius(28)
-////            .presentationDragIndicator(.visible)
-////        }
-////    }
 //    private var consolePanel: some View {
 //        ZStack(alignment: .topTrailing) {
 //            ConsoleView(
@@ -1076,6 +995,7 @@
 //}
 
 
+
 //
 //  LevelGameView.swift
 //  GitQuest
@@ -1199,12 +1119,13 @@ struct LevelGameView: View {
             viewModel.startLevel(currentLevel)
             setupVisualizerState()
 
-            // Show tutorial every time on level 1
-            if currentLevel.id == 1 {
+            // Show tutorial only once ever (until user resets progress)
+            if currentLevel.id == 1, !gameState.hasSeenGameTutorial {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                     withAnimation {
                         showTutorial = true
                     }
+                    gameState.hasSeenGameTutorial = true
                 }
             }
         }

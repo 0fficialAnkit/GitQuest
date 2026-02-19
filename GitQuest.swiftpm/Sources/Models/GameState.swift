@@ -22,6 +22,7 @@ class GameState: ObservableObject {
     private enum StorageKey {
         static let completedLevels = "completedLevels"
         static let hasCompletedTutorial = "hasCompletedTutorial"
+        static let hasSeenGameTutorial = "hasSeenGameTutorial"
     }
     
     // MARK: - Published State
@@ -33,6 +34,11 @@ class GameState: ObservableObject {
     
     /// Whether the onboarding tutorial has been shown and dismissed.
     @Published var hasCompletedTutorial: Bool {
+        didSet { save() }
+    }
+    
+    /// Whether the in-game tutorial (spotlight tips on Level 1) has been shown.
+    @Published var hasSeenGameTutorial: Bool {
         didSet { save() }
     }
     
@@ -50,6 +56,7 @@ class GameState: ObservableObject {
         let saved = UserDefaults.standard.array(forKey: StorageKey.completedLevels) as? [Int] ?? []
         self.completedLevels = Set(saved)
         self.hasCompletedTutorial = UserDefaults.standard.bool(forKey: StorageKey.hasCompletedTutorial)
+        self.hasSeenGameTutorial = UserDefaults.standard.bool(forKey: StorageKey.hasSeenGameTutorial)
     }
     
     // MARK: - Actions
@@ -73,6 +80,7 @@ class GameState: ObservableObject {
     func resetAllProgress() {
         completedLevels.removeAll()
         hasCompletedTutorial = false
+        hasSeenGameTutorial = false
     }
     
     // MARK: - Persistence
@@ -81,5 +89,6 @@ class GameState: ObservableObject {
     private func save() {
         UserDefaults.standard.set(Array(completedLevels), forKey: StorageKey.completedLevels)
         UserDefaults.standard.set(hasCompletedTutorial, forKey: StorageKey.hasCompletedTutorial)
+        UserDefaults.standard.set(hasSeenGameTutorial, forKey: StorageKey.hasSeenGameTutorial)
     }
 }
