@@ -115,7 +115,7 @@ struct LevelGameView: View {
         }
         .gameTutorial(isShowing: $showTutorial)
         .preferredColorScheme(.dark)
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .onAppear {
             viewModel.gameState = gameState
             viewModel.startLevel(currentLevel)
@@ -429,172 +429,6 @@ struct LevelGameView: View {
     }
 }
 
-
-// MARK: - Steps To Perform Card
-
-struct StepsToPerformCard: View {
-    let currentStep: LevelStep?
-    let stepNumber: Int
-    let totalSteps: Int
-    
-    private let cardBg = Color(red: 0.12, green: 0.12, blue: 0.14)
-    private let headerBg = Color(red: 0.10, green: 0.10, blue: 0.12)
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text("Steps to Perform")
-                    .font(.system(size: 13, weight: .bold, design: .monospaced))
-                    .foregroundStyle(.white)
-                
-                Spacer()
-                
-                Text("[\(stepNumber) of \(totalSteps)]")
-                    .font(.system(size: 11, weight: .bold, design: .monospaced))
-                    .foregroundStyle(.white.opacity(0.5))
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(headerBg)
-            
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    if let step = currentStep {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("• STEP \(stepNumber)")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundStyle(GitTheme.blue)
-                            
-                            Text(extractTaskTitle(from: step.contextMessage))
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundStyle(.white)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("COMMAND TO USE")
-                                .font(.system(size: 9, weight: .bold))
-                                .foregroundStyle(.white.opacity(0.4))
-                            
-                            Text("▶ \(step.expectedCommand)")
-                                .font(.system(size: 11, weight: .bold, design: .monospaced))
-                                .foregroundStyle(GitTheme.green)
-                                .padding(8)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Color.black.opacity(0.3))
-                                .clipShape(RoundedRectangle(cornerRadius: 6))
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "lightbulb.fill")
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(GitTheme.yellow)
-                                Text("WHY USE THIS?")
-                                    .font(.system(size: 9, weight: .bold))
-                                    .foregroundStyle(GitTheme.yellow.opacity(0.8))
-                            }
-                            
-                            Text(whyExplanation(for: step.expectedCommand))
-                                .font(.system(size: 10, weight: .medium))
-                                .foregroundStyle(.white.opacity(0.7))
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    } else {
-                        VStack(spacing: 12) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 32))
-                                .foregroundStyle(GitTheme.green)
-                            Text("All steps complete!")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundStyle(.white)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 20)
-                    }
-                }
-                .padding(16)
-            }
-        }
-        .background(cardBg)
-    }
-    
-    private func extractTaskTitle(from message: String) -> String {
-        let components = message.components(separatedBy: "\n\n")
-        let cleanText = components.first ?? message
-        return cleanText
-            .replacingOccurrences(of: "📍 ", with: "")
-            .replacingOccurrences(of: "INITIALIZE REPOSITORY", with: "Initialize the repository to start tracking your project")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-    
-    private func whyExplanation(for command: String) -> String {
-        let cmd = command.lowercased()
-        if cmd.contains("git init") {
-            return "This creates the hidden .git folder that tracks your project's history."
-        } else if cmd.contains("git add") {
-            return "This stages your changes, choosing what to include in your next save."
-        } else if cmd.contains("git commit") {
-            return "This saves your staged changes as a permanent snapshot."
-        } else if cmd.contains("git checkout -b") {
-            return "This creates a new branch and switches you to it immediately."
-        } else if cmd.contains("git checkout") {
-            return "This lets you hop between different branches to work on different tasks."
-        } else if cmd.contains("git remote") {
-            return "This connects your local repo to a server URL."
-        } else if cmd.contains("git push") {
-            return "This uploads your local snapshots to the server."
-        } else if cmd.contains("git pull") {
-            return "This downloads and integrates changes from the server."
-        } else if cmd.contains("git merge") {
-            return "This combines work from one branch into another."
-        }
-        return "This command updates your repository state."
-    }
-}
-
-// MARK: - Supporting Views
-
-struct TeamMessageBubble: View {
-    let message: String
-    
-    var body: some View {
-        HStack(spacing: 8) {
-            Circle()
-                .fill(GitTheme.purple)
-                .frame(width: 32, height: 32)
-                .overlay(
-                    Image(systemName: "person.2.fill")
-                        .font(.system(size: 14))
-                        .foregroundColor(.white)
-                )
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Team")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.5))
-                
-                Text(message)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.white)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(red: 0.15, green: 0.15, blue: 0.18))
-        )
-        .frame(maxWidth: 280)
-    }
-}
-
-#Preview {
-    LevelGameView(level: Level.allLevels[0])
-        .environmentObject(GameState())
-        .environmentObject(GitRepositoryState())
-}
-
 // MARK: - Learning Content Model (Local to LevelGameView)
 
 private struct LearningContent {
@@ -821,7 +655,7 @@ private struct LearningDetailSheet: View {
     private let accentPurple = Color(red: 0.7, green: 0.4, blue: 1.0)
     
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
+        ScrollView(.vertical) {
             VStack(alignment: .leading, spacing: 24) {
                 
                 // Header
@@ -880,6 +714,7 @@ private struct LearningDetailSheet: View {
             .padding(20)
             .padding(.bottom, 30)
         }
+        .scrollIndicators(.hidden)
         .background(sheetBg.ignoresSafeArea())
         .preferredColorScheme(.dark)
         .onAppear {

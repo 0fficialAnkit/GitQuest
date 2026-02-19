@@ -99,7 +99,7 @@ struct ConsoleView: View {
     // MARK: - Suggested Commands
     
     private var suggestedCommandsRow: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
+        ScrollView(.horizontal) {
             HStack(spacing: 8) {
                 Text("Hints:")
                     .font(.system(size: 11, weight: .medium))
@@ -123,6 +123,7 @@ struct ConsoleView: View {
             }
             .padding(.horizontal, 12)
         }
+        .scrollIndicators(.hidden)
         .padding(.vertical, 8)
         .background(Color(red: 0.10, green: 0.10, blue: 0.12))
     }

@@ -171,7 +171,7 @@ private struct TypingDotsView: View {
                 .overlay(
                     Text(String(senderName.prefix(1)))
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(.white.opacity(0.7))
+                        .foregroundStyle(.white.opacity(0.7))
                 )
             
             VStack(alignment: .leading, spacing: 3) {
@@ -189,7 +189,7 @@ private struct TypingDotsView: View {
                 
                 Text("\(senderName) is typing…")
                     .font(.system(size: 11))
-                    .foregroundColor(.white.opacity(0.3))
+                    .foregroundStyle(.white.opacity(0.3))
                     .padding(.leading, 4)
             }
             

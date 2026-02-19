@@ -30,7 +30,7 @@ struct ConceptCardView: View {
             .background(headerBg)
             
             ScrollViewReader { proxy in
-                ScrollView(showsIndicators: false){
+                ScrollView(){
                     VStack(alignment: .leading, spacing: 16) {
                         // 1. COMMAND DISPLAY
                         VStack(alignment: .leading, spacing: 8) {
@@ -64,6 +64,7 @@ struct ConceptCardView: View {
                     }
                     .padding(16)
                 }
+                .scrollIndicators(.hidden)
                 .onChange(of: command) { _, _ in
                     withAnimation(.easeOut(duration: 0.3)) {
                         proxy.scrollTo("top", anchor: .top)

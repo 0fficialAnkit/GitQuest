@@ -55,7 +55,7 @@ struct CommandExplanationCard: View {
                         }
                     }
                     
-                    ScrollView (showsIndicators: false) {
+                    ScrollView () {
                         VStack(alignment: .leading, spacing: 20) {
                             // Command details
                             commandDetailsView
@@ -87,6 +87,7 @@ struct CommandExplanationCard: View {
                             )
                         }
                     }
+                    .scrollIndicators(.hidden)
                     .frame(maxHeight: 400)
                     
                     // Action buttons
@@ -101,7 +102,7 @@ struct CommandExplanationCard: View {
                             .padding()
                             .background(Color.secondary.opacity(0.2))
                             .foregroundStyle(.primary)
-                            .cornerRadius(12)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                         
                         Button(action: onNextLevel) {
@@ -120,7 +121,7 @@ struct CommandExplanationCard: View {
                                 )
                             )
                             .foregroundStyle(Color.white)
-                            .cornerRadius(12)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                     }
                 }
@@ -182,7 +183,7 @@ struct CommandBlock: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background(Color.blue.opacity(0.1))
-                .cornerRadius(6)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
             
             Text(description)
                 .font(.subheadline)
@@ -224,7 +225,7 @@ struct InsightBlock: View {
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(color.opacity(0.1))
-        .cornerRadius(10)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 

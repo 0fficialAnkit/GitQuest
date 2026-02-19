@@ -31,11 +31,12 @@ struct GitVisualizerView: View {
                 
                 ScrollViewReader { proxy in
                     
-                    ScrollView(.horizontal, showsIndicators: false) {
+                    ScrollView(.horizontal) {
                         commitGraph
                             .padding(.horizontal, 24)
                             .padding(.vertical, 20)
                     }
+                    .scrollIndicators(.hidden)
                     .onChange(of: repoState.commits.count) { _ , _ in
                         if let last = repoState.commits.last {
                             withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
@@ -418,7 +419,7 @@ struct VisualizerGuideSheet: View {
                     .foregroundStyle(.white)
                     .padding(.top, 10)
                 
-                ScrollView(showsIndicators: false) {
+                ScrollView() {
                     VStack(alignment: .leading, spacing: 20) {
                         guideSection(
                             title: "Commits (Circles)",
@@ -478,6 +479,7 @@ struct VisualizerGuideSheet: View {
                     }
                     .padding(.bottom, 30)
                 }
+                .scrollIndicators(.hidden)
             }
             .padding(24)
             
@@ -494,27 +496,6 @@ struct VisualizerGuideSheet: View {
         .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
     }
-    
-    //    private func guideSection(title: String, description: String, icon: AnyView) -> some View {
-    //        VStack(alignment: .leading, spacing: 8) {
-    //            HStack(spacing: 10) {
-    //                icon
-    //                Text(title)
-    //                    .font(.system(size: 13, weight: .semibold))
-    //                    .foregroundStyle(.white)
-    //            }
-    //
-    //            Text(description)
-    //                .font(.system(size: 12, weight: .regular))
-    //                .foregroundStyle(.white.opacity(0.7))
-    //                .lineSpacing(4)
-    //        }
-    //        .padding(.horizontal, 12)
-    //        .padding(.vertical, 12)
-    //        .background(Color.white.opacity(0.04))
-    //        .cornerRadius(12)
-    //    }
-    //}
     private func guideSection(title: String, description: String, icon: AnyView) -> some View {
         HStack(alignment: .top, spacing: 12) {
             // Icon container with fixed width

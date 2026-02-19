@@ -20,6 +20,7 @@ struct SuccessOverlay: View {
     let onDismiss: () -> Void
     
     @State private var isVisible = false
+    @State private var dismissHapticTrigger = false
     
     var body: some View {
         ZStack {
@@ -117,17 +118,25 @@ struct SuccessOverlay: View {
             )
             .padding(.horizontal, 24)
         }
+//        .onAppear {
+//            
+//            // Entrance animation
+//            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+//                isVisible = true
+//            }
+//            
+//            // Haptic feedback
+//            let generator = UINotificationFeedbackGenerator()
+//            generator.notificationOccurred(.success)
+//        }
         .onAppear {
-            
             // Entrance animation
             withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                 isVisible = true
             }
-            
-            // Haptic feedback
-            let generator = UINotificationFeedbackGenerator()
-            generator.notificationOccurred(.success)
         }
+        .sensoryFeedback(.success, trigger: isVisible)
+        .sensoryFeedback(.impact(flexibility: .soft), trigger: dismissHapticTrigger)
     }
     
     
@@ -136,17 +145,14 @@ struct SuccessOverlay: View {
         withAnimation(.easeOut(duration: 0.2)) {
             isVisible = false
         }
-        
-        let impact = UIImpactFeedbackGenerator(style: .light)
-        impact.impactOccurred()
-        
+
+        dismissHapticTrigger.toggle()
+
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             onDismiss()
         }
     }
 }
-
-
 
 #Preview("Success – Branching Level") {
     ZStack {

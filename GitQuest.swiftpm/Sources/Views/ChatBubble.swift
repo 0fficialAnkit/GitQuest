@@ -29,7 +29,7 @@ struct ChatBubble: View {
     private var senderHeader: some View {
         Text(message.sender.displayName)
             .font(.system(size: 12, weight: .semibold))
-            .foregroundColor(.white.opacity(0.45))
+            .foregroundStyle(.white.opacity(0.45))
             .padding(.leading, isLastInGroup ? 40 : 12)
             .padding(.bottom, 2)
     }
@@ -60,7 +60,7 @@ struct ChatBubble: View {
                     .overlay(
                         Text(message.sender.avatarInitial)
                             .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(.white)
+                            .foregroundStyle(.white)
                     )
             } else {
                 Color.clear
@@ -75,7 +75,7 @@ struct ChatBubble: View {
         VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 3) {
             Text(message.text)
                 .font(.system(size: 16))
-                .foregroundColor(message.sender.textColor)
+                .foregroundStyle(message.sender.textColor)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .background(
@@ -87,7 +87,7 @@ struct ChatBubble: View {
             if isLastInGroup {
                 Text(formatTime(message.timestamp))
                     .font(.system(size: 11))
-                    .foregroundColor(.white.opacity(0.3))
+                    .foregroundStyle(.white.opacity(0.3))
                     .padding(.horizontal, 4)
             }
         }

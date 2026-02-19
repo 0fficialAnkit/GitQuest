@@ -128,7 +128,7 @@ struct TutorialView: View {
                 .padding(.bottom, Theme.Spacing.xl)
             }
         }
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
     }
 }
 

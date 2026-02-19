@@ -174,52 +174,52 @@ struct GitStateCard: View {
     
     // MARK: - State Row (Legacy)
     
-    private func stateRow(
-        id: String,
-        icon: String,
-        label: String,
-        value: String,
-        detail: String,
-        statusColor: Color
-    ) -> some View {
-        let isHighlighted = highlightedRow == id
-        
-        return HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(statusColor)
-                .frame(width: 18)
-            
-            VStack(alignment: .leading, spacing: 1) {
-                Text(label)
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.9))
-                
-                Text(detail)
-                    .font(.system(size: 9, weight: .medium))
-                    .foregroundStyle(.white.opacity(0.35))
-                    .lineLimit(1)
-            }
-            
-            Spacer()
-            
-            Text(value)
-                .font(.system(.caption, design: .monospaced))
-                .fontWeight(.bold)
-                .foregroundStyle(statusColor)
-                .lineLimit(1)
-                .contentTransition(.numericText())
-                .animation(.easeInOut(duration: 0.3), value: value)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 6)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(isHighlighted ? statusColor.opacity(0.12) : Color.clear)
-                .animation(.easeOut(duration: 0.6), value: isHighlighted)
-        )
-    }
-    
+//    private func stateRow(
+//        id: String,
+//        icon: String,
+//        label: String,
+//        value: String,
+//        detail: String,
+//        statusColor: Color
+//    ) -> some View {
+//        let isHighlighted = highlightedRow == id
+//        
+//        return HStack(spacing: 12) {
+//            Image(systemName: icon)
+//                .font(.system(size: 12, weight: .semibold))
+//                .foregroundStyle(statusColor)
+//                .frame(width: 18)
+//            
+//            VStack(alignment: .leading, spacing: 1) {
+//                Text(label)
+//                    .font(.system(size: 11, weight: .semibold))
+//                    .foregroundStyle(.white.opacity(0.9))
+//                
+//                Text(detail)
+//                    .font(.system(size: 9, weight: .medium))
+//                    .foregroundStyle(.white.opacity(0.35))
+//                    .lineLimit(1)
+//            }
+//            
+//            Spacer()
+//            
+//            Text(value)
+//                .font(.system(.caption, design: .monospaced))
+//                .fontWeight(.bold)
+//                .foregroundStyle(statusColor)
+//                .lineLimit(1)
+//                .contentTransition(.numericText())
+//                .animation(.easeInOut(duration: 0.3), value: value)
+//        }
+//        .padding(.horizontal, 16)
+//        .padding(.vertical, 6)
+//        .background(
+//            RoundedRectangle(cornerRadius: 8)
+//                .fill(isHighlighted ? statusColor.opacity(0.12) : Color.clear)
+//                .animation(.easeOut(duration: 0.6), value: isHighlighted)
+//        )
+//    }
+//    
     // MARK: - Flash Animation
     
     private func flashRow(_ id: String) {
@@ -261,11 +261,11 @@ struct GitStateCard: View {
         return "\(count) file\(count == 1 ? "" : "s")"
     }
     
-    private var lastCommitMessage: String {
-        guard let lastCommit = repoState.headCommit else { return "—" }
-        let message = lastCommit.message
-        return message.count > 22 ? String(message.prefix(19)) + "..." : message
-    }
+//    private var lastCommitMessage: String {
+//        guard let lastCommit = repoState.headCommit else { return "—" }
+//        let message = lastCommit.message
+//        return message.count > 22 ? String(message.prefix(19)) + "..." : message
+//    }
 }
 
 // MARK: - Git Theme Colors

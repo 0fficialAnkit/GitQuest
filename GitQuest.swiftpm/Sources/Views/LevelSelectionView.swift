@@ -64,7 +64,7 @@ struct LevelSelectionView: View {
             }
         }
         .ignoresSafeArea(edges: .bottom)
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
     }
     
     private var headerSection: some View {

@@ -30,7 +30,9 @@ class GameViewModel: ObservableObject {
     @Published var showSuccess: Bool = false
     @Published var showError: Bool = false
     @Published var errorMessage: String = ""
-    @Published var currentTeamMessage: String? = nil
+    
+//    @Published var currentTeamMessage: String? = nil
+    
     @Published var chatMessages: [ChatMessage] = []
     
     var currentPlayingLevel: Level?
@@ -42,7 +44,7 @@ class GameViewModel: ObservableObject {
         currentPlayingLevel = level
         currentStep = 0
         terminalOutput = []
-        currentTeamMessage = nil
+//        currentTeamMessage = nil
         chatMessages = level.initialChat
         
         // Welcome message
@@ -221,9 +223,9 @@ class GameViewModel: ObservableObject {
         addTerminalOutput("", type: .system)
         
         // Show team reaction if available
-        if let teamReaction = step.teamReaction {
-            showTeamMessage(teamReaction)
-        }
+//        if let teamReaction = step.teamReaction {
+//            showTeamMessage(teamReaction)
+//        }
         
         let completedStepIndex = currentStep
         currentStep += 1
@@ -291,20 +293,20 @@ class GameViewModel: ObservableObject {
     }
     
     /// Displays and auto-dismisses a team-mate reaction bubble.
-    private func showTeamMessage(_ message: String) {
-        withAnimation {
-            currentTeamMessage = message
-        }
-        
-        Task {
-            try? await Task.sleep(nanoseconds: 4_000_000_000)
-            await MainActor.run {
-                withAnimation {
-                    currentTeamMessage = nil
-                }
-            }
-        }
-    }
+//    private func showTeamMessage(_ message: String) {
+//        withAnimation {
+//            currentTeamMessage = message
+//        }
+//        
+//        Task {
+//            try? await Task.sleep(nanoseconds: 4_000_000_000)
+//            await MainActor.run {
+//                withAnimation {
+//                    currentTeamMessage = nil
+//                }
+//            }
+//        }
+//    }
     
     // MARK: - Helper Methods
     
@@ -408,26 +410,26 @@ enum TerminalLineType {
     case system
     
     /// Colour used when rendering this line type.
-    var color: Color {
-        switch self {
-        case .command: return .blue
-        case .success: return .green
-        case .error: return .red
-        case .info: return .cyan
-        case .instruction: return .yellow
-        case .system: return .gray
-        }
-    }
+//    var color: Color {
+//        switch self {
+//        case .command: return .blue
+//        case .success: return .green
+//        case .error: return .red
+//        case .info: return .cyan
+//        case .instruction: return .yellow
+//        case .system: return .gray
+//        }
+//    }
     
     /// Optional SF Symbol shown before the line text.
-    var icon: String? {
-        switch self {
-        case .command: return "chevron.right"
-        case .success: return "checkmark.circle.fill"
-        case .error: return "xmark.circle.fill"
-        case .instruction: return "lightbulb.fill"
-        default: return nil
-        }
-    }
+//    var icon: String? {
+//        switch self {
+//        case .command: return "chevron.right"
+//        case .success: return "checkmark.circle.fill"
+//        case .error: return "xmark.circle.fill"
+//        case .instruction: return "lightbulb.fill"
+//        default: return nil
+//        }
+//    }
 }
 
