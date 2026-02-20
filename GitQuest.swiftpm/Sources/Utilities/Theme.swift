@@ -77,21 +77,21 @@ enum Theme {
         // MARK: Display
         
         /// Extra-large display font (welcome screen title).
-        static let hero = Font.system(size: 100, weight: .bold, design: .rounded)
+        static let hero = Font.system(size: 100, weight: .bold)
         
         /// Section title (level selection header).
-        static let title = Font.system(size: 50, weight: .bold, design: .rounded)
+        static let title = Font.system(size: 50, weight: .bold)
         
         // MARK: Headings
         
         /// Heading level 1.
-        static let h1 = Font.system(size: 32, weight: .bold, design: .rounded)
+        static let h1 = Font.system(size: 32, weight: .bold)
         
         /// Heading level 2.
-        static let h2 = Font.system(size: 24, weight: .semibold, design: .rounded)
+        static let h2 = Font.system(size: 24, weight: .semibold)
         
         /// Heading level 3.
-        static let h3 = Font.system(size: 20, weight: .semibold, design: .rounded)
+        static let h3 = Font.system(size: 20, weight: .semibold)
         
         // MARK: Body
         

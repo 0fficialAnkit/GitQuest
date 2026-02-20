@@ -59,7 +59,7 @@ struct SuccessOverlay: View {
                 VStack(spacing: 10) {
                     
                     Text("Level Complete!")
-                        .font(.system(size: 38, weight: .bold, design: .rounded))
+                        .font(.system(size: 38, weight: .bold))
                         .foregroundStyle(Theme.Colors.textPrimary)
                     
                     Text(level.title)

@@ -159,7 +159,7 @@ struct GitStateCard: View {
             Spacer()
             
             Text(value)
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(statusColor)
                 .lineLimit(1)
         }

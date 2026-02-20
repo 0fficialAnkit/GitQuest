@@ -90,7 +90,7 @@ extension GitVisualizerView {
                     .foregroundStyle(currentBranchColor)
                 
                 Text(repoState.currentBranch)
-                    .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.white)
             }
             .padding(.horizontal, 10)
@@ -147,7 +147,7 @@ private struct StatBadge: View {
             Image(systemName: icon)
                 .font(.system(size: 9))
             Text(value)
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                .font(.system(size: 11, weight: .medium))
         }
         .foregroundStyle(color.opacity(0.9))
     }
@@ -176,7 +176,7 @@ extension GitVisualizerView {
         return HStack(spacing: 0) {
             
             Text(branch.name)
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                .font(.system(size: 11, weight: .medium))
                 .foregroundStyle(branch.color)
                 .frame(width: 110, alignment: .trailing)
                 .padding(.trailing, 16)
@@ -246,7 +246,7 @@ extension GitVisualizerView {
                             .fill(GitTheme.green)
                             .frame(width: 5, height: 5)
                         Text("HEAD")
-                            .font(.system(size: 7, weight: .bold, design: .monospaced))
+                            .font(.system(size: 7, weight: .bold))
                             .foregroundStyle(.white)
                     }
                     .padding(.horizontal, 6)
@@ -305,7 +305,7 @@ extension GitVisualizerView {
                     
                     // Commit hash
                     Text(String(commit.id.prefix(4)))
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .font(.system(size: 10, weight: .bold))
                         .foregroundStyle(.white)
                 }
                 .scaleEffect(commit.isNew ? 1.1 : 1.0)
@@ -318,7 +318,7 @@ extension GitVisualizerView {
                 
                 // Commit message
                 Text(commit.message)
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .font(.system(size: 9, weight: .medium))
                     .foregroundStyle(Color.white.opacity(0.7))
                     .frame(width: commitSize + 40)
                     .lineLimit(1)
@@ -349,12 +349,12 @@ extension GitVisualizerView {
                 
                 HStack(spacing: 8) {
                     Text(commit.id)
-                        .font(.system(size: 11, design: .monospaced))
+                        .font(.system(size: 11))
                         .foregroundStyle(GitTheme.yellow)
                     
                     if let parent = commit.parentId {
                         Text("← \(parent)")
-                            .font(.system(size: 10, design: .monospaced))
+                            .font(.system(size: 10))
                             .foregroundStyle(Color.white.opacity(0.4))
                     }
                 }
@@ -400,7 +400,7 @@ extension GitVisualizerView {
                     .foregroundStyle(Color.white.opacity(0.7))
                 
                 Text("Run 'git init' to begin")
-                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(GitTheme.orange.opacity(0.8))
             }
         }
@@ -496,7 +496,7 @@ struct VisualizerGuideSheet: View {
                             description: "The green 'HEAD' label marks where you currently are in the project - your active commit.",
                             icon: AnyView(
                                 Text("HEAD")
-                                    .font(.system(size: 7, weight: .bold, design: .monospaced))
+                                    .font(.system(size: 7, weight: .bold))
                                     .padding(.horizontal, 4)
                                     .padding(.vertical, 2)
                                     .background(Capsule().stroke(GitTheme.green, lineWidth: 1))

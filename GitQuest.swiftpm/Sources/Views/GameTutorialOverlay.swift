@@ -219,12 +219,12 @@ struct GameTutorialOverlay: ViewModifier {
         return VStack(alignment: .leading, spacing: 14) {
             // Title
             Text(step.title)
-                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .font(.system(size: 20, weight: .bold))
                 .foregroundStyle(.primary)
 
             // Message
             Text(step.message)
-                .font(.system(size: 15, weight: .regular, design: .rounded))
+                .font(.system(size: 15, weight: .regular))
                 .foregroundStyle(.secondary)
                 .lineSpacing(5)
                 .fixedSize(horizontal: false, vertical: true)
@@ -252,7 +252,7 @@ struct GameTutorialOverlay: ViewModifier {
                 } label: {
                     HStack(spacing: 6) {
                         Text(currentStep == steps.count - 1 ? "Got it! 🚀" : "Next")
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .font(.system(size: 14, weight: .bold))
                         if currentStep < steps.count - 1 {
                             Image(systemName: "arrow.right")
                                 .font(.system(size: 12, weight: .bold))

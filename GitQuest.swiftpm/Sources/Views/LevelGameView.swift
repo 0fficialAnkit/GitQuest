@@ -1,4 +1,3 @@
-//
 //  LevelGameView.swift
 //  GitQuest
 //
@@ -21,10 +20,12 @@ struct LevelGameView: View {
     
     @State private var currentLevel: Level
     @State private var showExplanationCard = false
+    @State private var showCompletedInfoOverlay = false
     @State private var showLearningSheet = false
     @State private var glowInfoButton = false
     @State private var chatResetId = UUID()
     @State private var showTutorial = false
+    @State private var isInPracticeMode = false
     
     // Interaction feedback (visual only)
     @State private var correctPulse = false
@@ -73,9 +74,6 @@ struct LevelGameView: View {
             }
             
             VStack(spacing: 12) {
-                // ── DARK HEADER (56pt) ──
-                darkHeader
-                
                 // ── MAIN CONTENT ──
                 VStack(spacing: 16) {
                     // ── THE "INTEL" LAYER (Top Row) ──
@@ -282,19 +280,44 @@ struct LevelGameView: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 24)
             }
+            .padding(.top, 12)
+            .blur(radius: showCompletedInfoOverlay ? 10 : 0)
+            .allowsHitTesting(!showCompletedInfoOverlay)
             
             // Overlays
             successOverlay
             explanationOverlay
             errorOverlay
+            completedInfoOverlay
         }
         .gameTutorial(isShowing: $showTutorial)
         .preferredColorScheme(.dark)
-        .toolbar(.hidden, for: .navigationBar)
+        .navigationTitle(currentLevel.title)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Text("\(viewModel.currentStep)/\(currentLevel.requiredSteps.count)")
+                    .font(.system(size: 15, weight: .semibold))
+            }
+        }
         .onAppear {
             viewModel.gameState = gameState
-            viewModel.startLevel(currentLevel)
-            setupVisualizerState()
+            
+            // Always initialize level state first
+            if !isInPracticeMode {
+                viewModel.startLevel(currentLevel)
+                setupVisualizerState()
+            }
+            
+            // Only show overlay if level is completed AND not in practice mode
+            if gameState.completedLevels.contains(currentLevel.id) && !isInPracticeMode {
+                // Show the learning overlay on entry for completed levels
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.85)) {
+                    showCompletedInfoOverlay = true
+                }
+            }
 
             // Show tutorial every time on level 1
             // Show tutorial only once ever, only on level 1
@@ -347,9 +370,25 @@ struct LevelGameView: View {
                 }
             }
         }
+        // ── EXECUTE ON VISUALIZER (only on successful commands) ──
+        .onChange(of: viewModel.lastSuccessfulCommand) { _, command in
+            guard !command.isEmpty else { return }
+            executeOnVisualizer(command: command)
+        }
         // ── LEVEL COMPLETION FEEDBACK ──
         .onChange(of: viewModel.showSuccess) { _, isSuccess in
             guard isSuccess else { return }
+            
+            // Save this level's final repo state so revisiting it shows this exact state.
+            // When in practice mode we don't update the stored snapshot.
+            if !isInPracticeMode {
+                repoState.saveSnapshot(forLevel: currentLevel.id)
+            } else {
+                // If completing in practice mode, exit practice mode so UI reflects completed state
+                // (info button will appear, but we don't re-save snapshot or re-mark as completed)
+                isInPracticeMode = false
+            }
+            
             completionFloat = true
             completionPulse = true
             Task { @MainActor in
@@ -364,18 +403,6 @@ struct LevelGameView: View {
     
     private var darkHeader: some View {
         HStack {
-            // Back button
-            Button(action: { dismiss() }) {
-                HStack(spacing: 4) {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 16, weight: .semibold))
-                    Text("Back")
-                        .font(.system(size: 16, weight: .medium))
-                }
-                .foregroundStyle(.white.opacity(0.85))
-            }
-            .buttonStyle(TapScaleButtonStyle())
-            
             Spacer()
             
             // Level title
@@ -387,7 +414,7 @@ struct LevelGameView: View {
             
             // Progress
             Text("\(viewModel.currentStep)/\(currentLevel.requiredSteps.count)")
-                .font(.system(size: 15, weight: .semibold, design: .monospaced))
+                .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(.white.opacity(0.5))
         }
         .padding(.horizontal, 16)
@@ -402,9 +429,7 @@ struct LevelGameView: View {
                 terminalOutput: viewModel.terminalOutput,
                 suggestedCommands: viewModel.getSuggestedCommands(),
                 onExecute: {
-                    let command = viewModel.commandInput.trimmingCharacters(in: .whitespaces)
                     viewModel.executeCommand()
-                    executeOnVisualizer(command: command)
                 },
                 onCommandTap: { command in
                     viewModel.commandInput = command
@@ -436,7 +461,8 @@ struct LevelGameView: View {
             .shadow(color: Color.black.opacity(0.2), radius: 18, y: 10)
             
             // Info button — positioned just below the header
-            if gameState.completedLevels.contains(currentLevel.id) {
+            // Only show if level is completed AND not in practice mode
+            if gameState.completedLevels.contains(currentLevel.id) && !isInPracticeMode {
                 Button {
                     showLearningSheet = true
                 } label: {
@@ -537,7 +563,7 @@ struct LevelGameView: View {
             Image(systemName: "xmark.circle.fill")
                 .foregroundStyle(GitTheme.red)
             Text(viewModel.errorMessage)
-                .font(.system(.body, design: .rounded).weight(.medium))
+                .font(.system(.body, design: .default).weight(.medium))
                 .foregroundStyle(.primary)
         }
         .padding(16)
@@ -557,35 +583,75 @@ struct LevelGameView: View {
     // MARK: - Visualizer State Setup
     
     private func setupVisualizerState() {
+        // If the player has already completed this level and we're not in practice mode,
+        // restore its saved final state so revisiting shows the exact completed graph.
+        if !isInPracticeMode, let savedSnapshot = repoState.snapshot(forLevel: currentLevel.id) {
+            repoState.restore(from: savedSnapshot)
+            return
+        }
+        
+        // First time playing this level — always start clean, then seed the
+        // correct initial pre-state so the level narrative makes sense.
+        repoState.resetAll()
+        
         switch currentLevel.id {
         case 1:
+            // Level 1 starts from zero — no pre-seeding. Player does everything.
             break
+            
         case 2:
-            if !repoState.isInitialized {
-                repoState.initialize()
-                repoState.stageFiles()
-                repoState.commit(message: "Initial commit")
-            }
+            // Level 2 starts from the end of Level 1: repo initialized + 1 commit on main
+            repoState.initialize()
+            repoState.stageFiles(["README.md"])
+            repoState.commit(message: "Initial commit: Add README")
+            
         case 3:
-            if !repoState.isInitialized {
-                repoState.initialize()
-                repoState.stageFiles()
-                repoState.commit(message: "Initial commit")
-                repoState.commit(message: "Add features")
-            }
+            // Level 3 starts from end of Level 2: main + 1 commit, feature branch + 1 commit
+            repoState.initialize()
+            repoState.stageFiles(["README.md"])
+            repoState.commit(message: "Initial commit: Add README")
+            repoState.createBranch(name: "feature/dark-mode")
+            repoState.stageFiles(["settings.js"])
+            repoState.commit(message: "Add dark mode toggle to settings")
+            repoState.checkout(branch: "main")
+            
         case 4:
-            if !repoState.isInitialized {
-                repoState.initialize()
-                repoState.stageFiles()
-                repoState.commit(message: "Initial commit")
-            }
-        case 5, 6, 7:
-            if !repoState.isInitialized {
-                repoState.initialize()
-                repoState.stageFiles()
-                repoState.commit(message: "Initial commit")
-                repoState.commit(message: "Add features")
-            }
+            // Level 4 starts with a conflict scenario on main
+            repoState.initialize()
+            repoState.stageFiles(["README.md"])
+            repoState.commit(message: "Initial commit: Add README")
+            repoState.createBranch(name: "feature/dashboard")
+            repoState.stageFiles(["dashboard.js"])
+            repoState.commit(message: "Add dashboard layout")
+            repoState.checkout(branch: "main")
+            
+        case 5:
+            // Level 5 starts with remote configured + commits on main
+            repoState.initialize()
+            repoState.stageFiles(["README.md"])
+            repoState.commit(message: "Initial commit: Add README")
+            repoState.commit(message: "Add settings page")
+            repoState.addRemote(name: "origin", url: "https://github.com/pixel-labs/user-profiles.git")
+            
+        case 6:
+            // Level 6 starts with 2 good commits + 1 bad one to reset
+            repoState.initialize()
+            repoState.stageFiles(["README.md"])
+            repoState.commit(message: "Initial commit: Add README")
+            repoState.commit(message: "Add refactor module")
+            repoState.stageFiles([".env"])
+            repoState.commit(message: "OOPS: accidentally committed .env file with API keys")
+            
+        case 7:
+            // Level 7 starts from end of Level 3: feature branch ready to merge
+            repoState.initialize()
+            repoState.stageFiles(["README.md"])
+            repoState.commit(message: "Initial commit: Add README")
+            repoState.createBranch(name: "feature/dark-mode")
+            repoState.stageFiles(["settings.js"])
+            repoState.commit(message: "Add dark mode toggle to settings")
+            repoState.checkout(branch: "main")
+            
         default:
             break
         }
@@ -596,32 +662,37 @@ struct LevelGameView: View {
     private func executeOnVisualizer(command: String) {
         guard !command.isEmpty else { return }
         
-        if command.contains("git init") {
+        let cmd = command.lowercased()
+        
+        if cmd.contains("git init") {
             repoState.initialize()
-        } else if command.contains("git add") {
+        } else if cmd.contains("git add") {
             let files = extractFiles(from: command)
             repoState.stageFiles(files)
-        } else if command.contains("git commit") {
+        } else if cmd.contains("git commit") {
             let message = extractCommitMessage(from: command)
             repoState.commit(message: message)
-        } else if command.contains("git checkout -b") {
-            let branchName = extractBranchName(from: command)
-            repoState.createBranch(name: branchName)
-        } else if command.contains("git checkout") && !command.contains("-b") {
-            let branchName = extractBranchName(from: command)
-            repoState.checkout(branch: branchName)
-        } else if command.contains("git remote add") {
-            repoState.addRemote(name: "origin", url: "https://github.com/...")
-        } else if command.contains("git push") {
+        } else if cmd.contains("git checkout -b") {
+            let branch = extractBranchName(from: command, afterFlag: "-b")
+            repoState.createBranch(name: branch)
+        } else if cmd.contains("git checkout") {
+            let branch = extractBranchName(from: command, afterFlag: nil)
+            repoState.checkout(branch: branch)
+        } else if cmd.contains("git remote add") {
+            let parts = command.split(separator: " ").map(String.init)
+            let name = parts.count > 3 ? parts[3] : "origin"
+            let url = parts.count > 4 ? parts[4] : "https://github.com/..."
+            repoState.addRemote(name: name, url: url)
+        } else if cmd.contains("git push") {
             repoState.push()
-        } else if command.contains("git pull") {
+        } else if cmd.contains("git pull") {
             repoState.pull()
-        } else if command.contains("git merge") {
-            let branchName = extractBranchName(from: command)
-            repoState.merge(branch: branchName)
-        } else if command.contains("git status") {
+        } else if cmd.contains("git merge") {
+            let branch = extractBranchName(from: command, afterFlag: nil)
+            repoState.merge(branch: branch)
+        } else if cmd.contains("git status") {
             repoState.status()
-        } else if command.contains("git reset") {
+        } else if cmd.contains("git reset") {
             repoState.resetHead()
         }
     }
@@ -633,23 +704,22 @@ struct LevelGameView: View {
         return currentLevel.requiredSteps[viewModel.currentStep]
     }
     
-    private func extractBranchName(from command: String) -> String {
-        let parts = command.split(separator: " ").map(String.init)
-        // Handle "git checkout -b branchName" - branch name is after -b
-        if let bIndex = parts.firstIndex(of: "-b"), bIndex + 1 < parts.count {
-            return parts[bIndex + 1]
+    private func extractBranchName(from command: String, afterFlag flag: String?) -> String {
+        let parts = command.trimmingCharacters(in: .whitespaces).split(separator: " ").map(String.init)
+        if let flag = flag, let idx = parts.firstIndex(of: flag), parts.indices.contains(idx + 1) {
+            return parts[idx + 1]
         }
-        // Handle "git checkout branchName" - branch name is last
-        // Handle "git merge branchName" - branch name is last
-        return parts.last ?? "feature"
+        return parts.last ?? "branch"
     }
     
     private func extractCommitMessage(from command: String) -> String {
-        if let range = command.range(of: "-m \"([^\"]+)\"", options: .regularExpression) {
-            let match = command[range]
-            return String(match.dropFirst(4).dropLast(1))
+        let cleaned = command.hasPrefix("$ ") ? String(command.dropFirst(2)) : command
+        if let start = cleaned.firstIndex(of: "\""),
+           let end = cleaned.lastIndex(of: "\""),
+           start != end {
+            return String(cleaned[cleaned.index(after: start)..<end])
         }
-        return "Commit"
+        return "Update"
     }
     
     private func extractFiles(from command: String) -> [String] {
@@ -675,9 +745,312 @@ struct LevelGameView: View {
         Task { @MainActor in
             try? await Task.sleep(for: .seconds(0.4))
             chatResetId = UUID()   // ← reset chat scroll to top for new level
+            isInPracticeMode = false
+            showCompletedInfoOverlay = false
             currentLevel = nextLevel
             viewModel.startLevel(nextLevel)
             setupVisualizerState()
+        }
+    }
+
+    // MARK: - Practice Session
+    
+    private func startPracticeSession() {
+        // Keep completion/progression intact, only reset this play session.
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            showCompletedInfoOverlay = false
+        }
+        
+        // Reset practice state - this hides the info button and prevents overlay from showing
+        isInPracticeMode = true
+        
+        // Reset all UI state to first-time appearance
+        showExplanationCard = false
+        showLearningSheet = false
+        glowInfoButton = false
+        correctPulse = false
+        shakeError = false
+        errorFlash = false
+        completionFloat = false
+        completionPulse = false
+        
+        // Reset chat and level state with proper timing
+        Task { @MainActor in
+            // Small delay to ensure overlay animation completes
+            try? await Task.sleep(for: .seconds(0.3))
+            
+            // Reset level state first (this sets chatMessages to initialChat and resets all viewModel state)
+            viewModel.startLevel(currentLevel)
+            
+            // Explicitly reset any completion-related viewModel state
+            viewModel.showSuccess = false
+            viewModel.showError = false
+            viewModel.errorMessage = ""
+            
+            // Reset visualizer state (will use practice mode logic to start fresh)
+            setupVisualizerState()
+            
+            // Reset chat ID AFTER messages are set to trigger scroll reset and re-animation
+            // This ensures ChatStoryView properly resets its animation state
+            try? await Task.sleep(for: .seconds(0.1))
+            chatResetId = UUID()
+        }
+    }
+
+    // MARK: - Completed Info Overlay
+    
+    @ViewBuilder
+    private var completedInfoOverlay: some View {
+        if showCompletedInfoOverlay {
+            ZStack {
+                // Dimmed background
+                Color.black.opacity(0.55)
+                    .ignoresSafeArea()
+
+                // Card — constrained width, fills available vertical space with padding
+                CompletedInfoCard(
+                    level: currentLevel,
+                    content: LearningContent.content(for: currentLevel.id),
+                    onPracticeAgain: { startPracticeSession() }
+                )
+                .frame(maxWidth: 600)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 32)
+                .transition(.scale(scale: 0.96).combined(with: .opacity))
+            }
+        }
+    }
+}
+
+// MARK: - Completed Info Card
+
+/// Overlay card shown when revisiting a completed level.
+/// Mirrors LearningDetailSheet's exact visual language, with a
+/// sticky Practice Again button pinned below the scrollable content.
+private struct CompletedInfoCard: View {
+    let level: Level
+    let content: LearningContent
+    let onPracticeAgain: () -> Void
+
+    @State private var appeared = false
+
+    // Same accent palette as LearningDetailSheet
+    private let accentBlue   = Color(red: 0.3,  green: 0.5, blue: 1.0)
+    private let accentOrange = Color(red: 1.0,  green: 0.6, blue: 0.2)
+    private let accentCyan   = Color(red: 0.3,  green: 0.8, blue: 0.9)
+    private let accentPurple = Color(red: 0.7,  green: 0.4, blue: 1.0)
+
+    var body: some View {
+        VStack(spacing: 0) {
+
+            // ── HEADER (identical to LearningDetailSheet.headerSection) ──
+            VStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Theme.Colors.conceptColor(level.concept),
+                                    Theme.Colors.conceptColor(level.concept).opacity(0.6)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 56, height: 56)
+                        .overlay(Circle().stroke(Color.white.opacity(0.18), lineWidth: 1))
+                        .shadow(color: Theme.Colors.conceptColor(level.concept).opacity(0.4), radius: 10)
+
+                    Image(systemName: level.icon)
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .scaleEffect(appeared ? 1.0 : 0.9)
+                }
+
+                VStack(spacing: 4) {
+                    Text("What You Just Learned")
+                        .font(.title3.bold())
+                        .foregroundStyle(.white)
+
+                    Text(level.title)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.white.opacity(0.5))
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .opacity(appeared ? 1 : 0)
+            .offset(y: appeared ? 0 : 6)
+            .padding(.top, 28)
+            .padding(.bottom, 20)
+            .padding(.horizontal, 20)
+
+            Divider()
+                .overlay(Color.white.opacity(0.12))
+
+            // ── SCROLLABLE BODY (same sections as LearningDetailSheet) ──
+            ScrollView(.vertical) {
+                VStack(alignment: .leading, spacing: 24) {
+
+                    sectionCard(title: "Understanding the Concept", icon: "lightbulb.fill", color: .yellow) {
+                        Text(content.concept)
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.85))
+                            .lineSpacing(3)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        Text(content.whyItExists)
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.6))
+                            .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.top, 4)
+
+                        Text(content.whenUsed)
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.6))
+                            .lineSpacing(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.top, 2)
+                    }
+
+                    if !content.realWorldUsage.isEmpty {
+                        sectionCard(title: "Real-World Usage", icon: "briefcase.fill", color: accentCyan) {
+                            ForEach(content.realWorldUsage, id: \.self) { item in
+                                bulletRow(item, color: accentCyan)
+                            }
+                        }
+                    }
+
+                    if !content.tips.isEmpty {
+                        sectionCard(title: "Pro Tips", icon: "bolt.fill", color: accentBlue, tint: accentBlue.opacity(0.08)) {
+                            ForEach(content.tips, id: \.self) { tip in
+                                bulletRow(tip, color: accentBlue)
+                            }
+                        }
+                    }
+
+                    if !content.risks.isEmpty {
+                        sectionCard(title: "Common Risks", icon: "exclamationmark.triangle.fill", color: accentOrange, tint: accentOrange.opacity(0.08)) {
+                            ForEach(content.risks, id: \.self) { risk in
+                                bulletRow(risk, color: accentOrange)
+                            }
+                        }
+                    }
+
+                    sectionCard(title: "Real Scenario", icon: "person.2.fill", color: accentPurple) {
+                        Text(content.scenario)
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.75))
+                            .lineSpacing(3)
+                            .italic()
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(20)
+                .padding(.bottom, 8)
+            }
+            .scrollIndicators(.hidden)
+
+            Divider()
+                .overlay(Color.white.opacity(0.12))
+
+            // ── PRACTICE AGAIN — always visible, pinned at bottom ──
+            Button(action: onPracticeAgain) {
+                HStack(spacing: 8) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 14, weight: .bold))
+                    Text("Practice Again")
+                        .font(.system(size: 15, weight: .semibold))
+                }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 15)
+                .background(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(Color.white.opacity(0.12))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                        )
+                )
+            }
+            .buttonStyle(TapScaleButtonStyle())
+            .padding(.horizontal, 20)
+            .padding(.top, 16)
+            .padding(.bottom, 20)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(Color(red: 0.10, green: 0.10, blue: 0.12))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                )
+                .shadow(color: Color.black.opacity(0.6), radius: 40, y: 24)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .preferredColorScheme(.dark)
+        .onAppear {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                appeared = true
+            }
+        }
+    }
+
+    // MARK: - Section Card (exact copy of LearningDetailSheet)
+
+    private func sectionCard<C: View>(
+        title: String,
+        icon: String,
+        color: Color,
+        tint: Color? = nil,
+        @ViewBuilder content: () -> C
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(color)
+
+                Text(title)
+                    .font(.callout.bold())
+                    .foregroundStyle(.white)
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                content()
+            }
+            .padding(tint != nil ? 14 : 0)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                Group {
+                    if tint != nil {
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(.ultraThinMaterial)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                            )
+                    }
+                }
+            )
+        }
+    }
+
+    // MARK: - Bullet Row (exact copy of LearningDetailSheet)
+
+    private func bulletRow(_ text: String, color: Color) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Circle()
+                .fill(color.opacity(0.7))
+                .frame(width: 5, height: 5)
+                .padding(.top, 6)
+
+            Text(text)
+                .font(.caption)
+                .foregroundStyle(.white.opacity(0.75))
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 }
@@ -1090,4 +1463,3 @@ private struct TapScaleButtonStyle: ButtonStyle {
             .animation(.spring(response: 0.35, dampingFraction: 0.7), value: configuration.isPressed)
     }
 }
-

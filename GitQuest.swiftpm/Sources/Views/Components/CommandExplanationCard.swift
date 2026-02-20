@@ -222,7 +222,7 @@ struct CommandBlock: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(command)
-                .font(.system(.body, design: .monospaced).weight(.semibold))
+                .font(.system(.body, design: .default).weight(.semibold))
                 .foregroundStyle(.blue)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)

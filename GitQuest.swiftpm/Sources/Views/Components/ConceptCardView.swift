@@ -21,7 +21,7 @@ struct ConceptCardView: View {
                     .foregroundStyle(Theme.Colors.primary)
                 
                 Text("Understanding the Command")
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(.white)
             }
             .padding(.horizontal, 16)
@@ -36,7 +36,7 @@ struct ConceptCardView: View {
                         VStack(alignment: .leading, spacing: 8) {
                             headerLabel("FULL COMMAND", color: .white.opacity(0.4))
                             Text(command)
-                                .font(.system(size: 13, weight: .bold, design: .monospaced))
+                                .font(.system(size: 13, weight: .bold))
                                 .foregroundStyle(Theme.Colors.success)
                                 .padding(12)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -86,7 +86,7 @@ struct ConceptCardView: View {
                     .foregroundStyle(color)
             }
             Text(text)
-                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(color)
         }
     }
@@ -96,7 +96,7 @@ struct ConceptCardView: View {
         VStack(alignment: .leading, spacing: 8) {
             // Token
             Text(explanation.part)
-                .font(.system(size: 14, weight: .bold, design: .monospaced))
+                .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(Theme.Colors.secondary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)

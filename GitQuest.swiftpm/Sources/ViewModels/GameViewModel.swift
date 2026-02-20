@@ -33,6 +33,7 @@ class GameViewModel {
     var showError: Bool = false
     var errorMessage: String = ""
     var chatMessages: [ChatMessage] = []
+    var lastSuccessfulCommand: String = ""
     
     var currentPlayingLevel: Level?
     
@@ -212,6 +213,9 @@ class GameViewModel {
     private func checkStepCompletion(_ command: String) {
         guard let level = currentPlayingLevel else { return }
         guard currentStep < level.requiredSteps.count else { return }
+        
+        // Track successful command for visualizer updates
+        lastSuccessfulCommand = command
         
         let step = level.requiredSteps[currentStep]
         

@@ -560,6 +560,9 @@ class GitRepositoryState {
     /// The most recent action for display in the UI.
     var lastAction: GitAction?
     
+    /// Per-level snapshots storing the completed state for each level.
+    private var levelSnapshots: [Int: GitRepositorySnapshot] = [:]
+    
     // MARK: - Init
     
     init() {
@@ -610,6 +613,21 @@ class GitRepositoryState {
         hasRemote = snapshot.hasRemote
         remoteName = snapshot.remoteName
         lastAction = nil
+    }
+    
+    /// Saves the current repository state as the completed snapshot for a given level.
+    func saveSnapshot(forLevel levelId: Int) {
+        levelSnapshots[levelId] = makeSnapshot()
+    }
+    
+    /// Returns the saved completed snapshot for a level, or nil if never saved.
+    func snapshot(forLevel levelId: Int) -> GitRepositorySnapshot? {
+        return levelSnapshots[levelId]
+    }
+    
+    /// Returns true if a completed snapshot exists for the given level.
+    func hasSnapshot(forLevel levelId: Int) -> Bool {
+        return levelSnapshots[levelId] != nil
     }
     
     // MARK: - Git Operations
