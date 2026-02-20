@@ -15,9 +15,10 @@ struct GitVisualizerView: View {
     
     var repoState: GitRepositoryState
     
-    private let commitSize: CGFloat = 44
-    private let commitSpacing: CGFloat = 75
-    private let branchSpacing: CGFloat = 65
+    private let commitSize: CGFloat = 40
+    private let commitSpacing: CGFloat = 80
+    private let branchSpacing: CGFloat = 42
+    private let headIndicatorHeight: CGFloat = 20
     
     @State private var selectedCommit: GitCommit?
     @State private var showVisualizerGuide = false
@@ -33,14 +34,21 @@ struct GitVisualizerView: View {
                     
                     ScrollView(.horizontal) {
                         commitGraph
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 20)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
                     }
                     .scrollIndicators(.hidden)
                     .onChange(of: repoState.commits.count) { _ , _ in
                         if let last = repoState.commits.last {
                             withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
                                 proxy.scrollTo(last.id, anchor: .center)
+                            }
+                        }
+                    }
+                    .onChange(of: repoState.branches.count) { _ , _ in
+                        if let lastCommit = repoState.commits.last {
+                            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                                proxy.scrollTo(lastCommit.id, anchor: .center)
                             }
                         }
                     }
@@ -158,6 +166,7 @@ extension GitVisualizerView {
             }
         }
         .frame(minHeight: 120)
+        .padding(.vertical, 4)
     }
     
     private func branchRow(branch: GitBranch) -> some View {
@@ -167,29 +176,53 @@ extension GitVisualizerView {
         return HStack(spacing: 0) {
             
             Text(branch.name)
-                .font(.system(.caption, design: .monospaced))
+                .font(.system(size: 11, weight: .medium, design: .monospaced))
                 .foregroundStyle(branch.color)
-                .frame(width: 100, alignment: .trailing)
-                .padding(.trailing, 12)
+                .frame(width: 110, alignment: .trailing)
+                .padding(.trailing, 16)
+                .padding(.top, headIndicatorHeight / 2) // Align with commit circles
             
-            HStack(spacing: 0) {
-                ForEach(Array(branchCommits.enumerated()), id: \.element.id) { index, commit in
-                    
-                    commitNode(commit: commit, branch: branch, isLast: index == branchCommits.count - 1)
-                        .id(commit.id)
-                    
-                    if index < branchCommits.count - 1 {
-                        Rectangle()
-                            .fill(branch.color.opacity(0.5))
-                            .frame(width: commitSpacing - commitSize, height: 3)
+            HStack(alignment: .top, spacing: 0) {
+                if branchCommits.isEmpty {
+                    // Show empty branch indicator
+                    VStack(spacing: 0) {
+                        Color.clear.frame(height: headIndicatorHeight)
+                        Circle()
+                            .stroke(branch.color.opacity(0.4), lineWidth: 2)
+                            .frame(width: commitSize, height: commitSize)
+                            .overlay(
+                                Text("—")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundStyle(branch.color.opacity(0.5))
+                            )
+                    }
+                    .frame(width: commitSpacing, alignment: .center)
+                } else {
+                    ForEach(Array(branchCommits.enumerated()), id: \.element.id) { index, commit in
+                        
+                        commitNode(commit: commit, branch: branch, isLast: index == branchCommits.count - 1)
+                            .id(commit.id)
+                        
+                        // Connecting line between commits
+                        if index < branchCommits.count - 1 {
+                            VStack(spacing: 0) {
+                                Color.clear.frame(height: headIndicatorHeight)
+                                Rectangle()
+                                    .fill(branch.color.opacity(0.6))
+                                    .frame(width: commitSpacing - commitSize, height: 2.5)
+                                    .frame(height: commitSize + 6, alignment: .center)
+                            }
+                        }
                     }
                 }
             }
             
             Spacer(minLength: 20)
         }
-        .padding(.vertical, 6)
+        .frame(height: headIndicatorHeight + commitSize + 24) // Fixed height for consistent alignment
+        .padding(.vertical, 1)
         .animation(.easeInOut, value: repoState.currentBranch)
+        .animation(.easeInOut, value: repoState.branches.count)
     }
 }
 
@@ -203,90 +236,96 @@ extension GitVisualizerView {
         
         let isHead = isLast && branch.id == repoState.currentBranch
         
-        return VStack(spacing: 6) {
+        return VStack(spacing: 0) {
             
-            // HEAD indicator (GitHub-style)
-            if isHead {
-                HStack(spacing: 3) {
+            // Fixed-height HEAD indicator area for consistent alignment
+            VStack(spacing: 0) {
+                if isHead {
+                    HStack(spacing: 3) {
+                        Circle()
+                            .fill(GitTheme.green)
+                            .frame(width: 5, height: 5)
+                        Text("HEAD")
+                            .font(.system(size: 7, weight: .bold, design: .monospaced))
+                            .foregroundStyle(.white)
+                    }
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(
+                        Capsule()
+                            .fill(Color.white.opacity(0.15))
+                            .overlay(
+                                Capsule()
+                                    .stroke(GitTheme.green.opacity(0.6), lineWidth: 1)
+                            )
+                    )
+                }
+            }
+            .frame(height: headIndicatorHeight)
+            
+            // Commit circle area
+            VStack(spacing: 6) {
+                // Commit node with shadow and glow
+                ZStack {
+                    // Outer glow for new commits
+                    if commit.isNew {
+                        Circle()
+                            .fill(branch.color.opacity(0.3))
+                            .frame(width: commitSize + 12, height: commitSize + 12)
+                            .blur(radius: 6)
+                    }
+                    
+                    // Shadow circle
                     Circle()
-                        .fill(GitTheme.green)
-                        .frame(width: 6, height: 6)
-                    Text("HEAD")
-                        .font(.system(size: 8, weight: .bold, design: .monospaced))
+                        .fill(Color.black.opacity(0.4))
+                        .frame(width: commitSize, height: commitSize)
+                        .offset(y: 2)
+                    
+                    // Main commit circle
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [branch.color, branch.color.opacity(0.7)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: commitSize, height: commitSize)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white.opacity(0.3), lineWidth: 1.5)
+                        )
+                    
+                    // New commit ring
+                    if commit.isNew {
+                        Circle()
+                            .stroke(Color.white, lineWidth: 2.5)
+                            .frame(width: commitSize - 4, height: commitSize - 4)
+                    }
+                    
+                    // Commit hash
+                    Text(String(commit.id.prefix(4)))
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
                         .foregroundStyle(.white)
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 3)
-                .background(
-                    Capsule()
-                        .fill(Color.white.opacity(0.15))
-                        .overlay(
-                            Capsule()
-                                .stroke(GitTheme.green.opacity(0.6), lineWidth: 1)
-                        )
-                )
-            } else {
-                Color.clear.frame(height: 18)
-            }
-            
-            // Commit node with shadow and glow
-            ZStack {
-                // Outer glow for new commits
-                if commit.isNew {
-                    Circle()
-                        .fill(branch.color.opacity(0.3))
-                        .frame(width: commitSize + 12, height: commitSize + 12)
-                        .blur(radius: 6)
+                .scaleEffect(commit.isNew ? 1.1 : 1.0)
+                .animation(.spring(response: 0.5, dampingFraction: 0.6), value: commit.isNew)
+                .onTapGesture {
+                    withAnimation(.spring(response: 0.3)) {
+                        selectedCommit = selectedCommit?.id == commit.id ? nil : commit
+                    }
                 }
                 
-                // Shadow circle
-                Circle()
-                    .fill(Color.black.opacity(0.4))
-                    .frame(width: commitSize, height: commitSize)
-                    .offset(y: 2)
-                
-                // Main commit circle
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [branch.color, branch.color.opacity(0.7)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: commitSize, height: commitSize)
-                    .overlay(
-                        Circle()
-                            .stroke(Color.white.opacity(0.3), lineWidth: 1.5)
-                    )
-                
-                // New commit ring
-                if commit.isNew {
-                    Circle()
-                        .stroke(Color.white, lineWidth: 2.5)
-                        .frame(width: commitSize - 4, height: commitSize - 4)
-                }
-                
-                // Commit hash
-                Text(String(commit.id.prefix(4)))
-                    .font(.system(size: 10, weight: .bold, design: .monospaced))
-                    .foregroundStyle(.white)
+                // Commit message
+                Text(commit.message)
+                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .foregroundStyle(Color.white.opacity(0.7))
+                    .frame(width: commitSize + 40)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
-            .scaleEffect(commit.isNew ? 1.1 : 1.0)
-            .animation(.spring(response: 0.5, dampingFraction: 0.6), value: commit.isNew)
-            .onTapGesture {
-                withAnimation(.spring(response: 0.3)) {
-                    selectedCommit = selectedCommit?.id == commit.id ? nil : commit
-                }
-            }
-            
-            // Commit message
-            Text(commit.message)
-                .font(.system(size: 9, weight: .medium, design: .monospaced))
-                .foregroundStyle(Color.white.opacity(0.6))
-                .frame(width: commitSize + 35)
-                .lineLimit(1)
         }
+        .frame(width: commitSpacing, alignment: .center)
     }
 }
 

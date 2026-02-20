@@ -402,8 +402,9 @@ struct LevelGameView: View {
                 terminalOutput: viewModel.terminalOutput,
                 suggestedCommands: viewModel.getSuggestedCommands(),
                 onExecute: {
+                    let command = viewModel.commandInput.trimmingCharacters(in: .whitespaces)
                     viewModel.executeCommand()
-                    executeOnVisualizer()
+                    executeOnVisualizer(command: command)
                 },
                 onCommandTap: { command in
                     viewModel.commandInput = command
@@ -592,8 +593,8 @@ struct LevelGameView: View {
     
     // MARK: - Execute on Visualizer
     
-    private func executeOnVisualizer() {
-        let command = viewModel.terminalOutput.last?.text ?? ""
+    private func executeOnVisualizer(command: String) {
+        guard !command.isEmpty else { return }
         
         if command.contains("git init") {
             repoState.initialize()
@@ -634,6 +635,12 @@ struct LevelGameView: View {
     
     private func extractBranchName(from command: String) -> String {
         let parts = command.split(separator: " ").map(String.init)
+        // Handle "git checkout -b branchName" - branch name is after -b
+        if let bIndex = parts.firstIndex(of: "-b"), bIndex + 1 < parts.count {
+            return parts[bIndex + 1]
+        }
+        // Handle "git checkout branchName" - branch name is last
+        // Handle "git merge branchName" - branch name is last
         return parts.last ?? "feature"
     }
     
