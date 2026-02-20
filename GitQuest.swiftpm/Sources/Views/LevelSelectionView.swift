@@ -11,6 +11,7 @@ import SwiftUI
 struct LevelSelectionView: View {
     @Environment(GameState.self) var gameState
     @Binding var navigationPath: NavigationPath
+    @State private var lockedTapId: Int? = nil
     
     var body: some View {
         ZStack {
@@ -45,8 +46,27 @@ struct LevelSelectionView: View {
                                 .onTapGesture {
                                     if gameState.isLevelUnlocked(level.id) {
                                         navigationPath.append(AppScreen.game(level))
+                                    } else {
+                                        // Locked tap → bounce + flash
+                                        withAnimation(.easeInOut(duration: 0.06).repeatCount(4, autoreverses: true)) {
+                                            lockedTapId = level.id
+                                        }
+                                        Task { @MainActor in
+                                            try? await Task.sleep(for: .seconds(0.3))
+                                            withAnimation(.easeOut(duration: 0.2)) {
+                                                lockedTapId = nil
+                                            }
+                                        }
                                     }
                                 }
+                                // Locked level visual feedback
+                                .offset(x: lockedTapId == level.id ? 6 : 0)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 60, style: .continuous)
+                                        .fill(Color.gray.opacity(0.12))
+                                        .opacity(lockedTapId == level.id ? 1 : 0)
+                                        .allowsHitTesting(false)
+                                )
                                 .offset(x: offsetForLevel(index))
                             }
                         }
@@ -140,11 +160,11 @@ struct LevelNode: View {
                 // Icon or status
                 if isCompleted {
                     VStack(spacing: Theme.Spacing.xs) {
-                        Image(systemName: "checkmark.circle.fill")
+                        Image(systemName: level.concept.icon)
                             .font(.system(size: 50))
                             .foregroundStyle(Color.white)
                         
-                        Text("DONE")
+                        Text("Done")
                             .font(Theme.Typography.small)
                             .fontWeight(.bold)
                             .foregroundStyle(Color.white)
@@ -181,7 +201,7 @@ struct LevelNode: View {
             
             // Title and info
             VStack(spacing: Theme.Spacing.xs) {
-                Text(level.title)
+                Text(level.concept.rawValue)
                     .font(Theme.Typography.h3)
                     .foregroundStyle(isUnlocked ? Theme.Colors.textPrimary : Theme.Colors.textTertiary)
                     .multilineTextAlignment(.center)

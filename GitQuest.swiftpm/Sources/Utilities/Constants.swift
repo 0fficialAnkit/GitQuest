@@ -24,20 +24,20 @@ enum Constants {
         static let cornerRadius: CGFloat = 16
         
         /// Standard size for level-node icons on the selection screen.
-        static let iconSize: CGFloat = 60
+//        static let iconSize: CGFloat = 60
     }
     
     // MARK: - Animation
     
     /// Shared timing curves used for page transitions and element entrances.
-    enum Animation {
-        /// Duration of a standard screen or element transition.
-        static let defaultDuration: Double = 0.3
-        
-        /// Spring response for bouncy entrance animations.
-        static let springResponse: Double = 0.6
-        
-        /// Damping fraction paired with `springResponse`.
-        static let springDamping: Double = 0.7
-    }
+//    enum Animation {
+//        /// Duration of a standard screen or element transition.
+//        static let defaultDuration: Double = 0.3
+//        
+//        /// Spring response for bouncy entrance animations.
+//        static let springResponse: Double = 0.6
+//        
+//        /// Damping fraction paired with `springResponse`.
+//        static let springDamping: Double = 0.7
+//    }
 }

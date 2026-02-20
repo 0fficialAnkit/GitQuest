@@ -26,6 +26,13 @@ struct LevelGameView: View {
     @State private var chatResetId = UUID()
     @State private var showTutorial = false
     
+    // Interaction feedback (visual only)
+    @State private var correctPulse = false
+    @State private var shakeError = false
+    @State private var errorFlash = false
+    @State private var completionFloat = false
+    @State private var completionPulse = false
+    
     // Dark palette constants
     private let bgColor = Color(red: 0.07, green: 0.07, blue: 0.09)
     private let cardBg = Color(red: 0.12, green: 0.12, blue: 0.14)
@@ -51,6 +58,19 @@ struct LevelGameView: View {
             )
             .ignoresSafeArea()
             .allowsHitTesting(false)
+            
+            // ── Level completion radial pulse ──
+            if completionPulse {
+                RadialGradient(
+                    colors: [Color.green.opacity(0.22), Color.cyan.opacity(0.08), .clear],
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: 600
+                )
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
+                .transition(.opacity)
+            }
             
             VStack(spacing: 12) {
                 // ── DARK HEADER (56pt) ──
@@ -91,6 +111,8 @@ struct LevelGameView: View {
                             }
                             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                             .shadow(color: Color.black.opacity(0.2), radius: 18, y: 10)
+                            .offset(y: completionFloat ? -4 : 0)
+                            .animation(.spring(response: 0.5, dampingFraction: 0.7), value: completionFloat)
                             .tutorialAnchor(.chat)
                         
                         // Right Column: Concept Card
@@ -123,6 +145,8 @@ struct LevelGameView: View {
                             }
                             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                             .shadow(color: Color.black.opacity(0.2), radius: 18, y: 10)
+                            .offset(y: completionFloat ? -4 : 0)
+                            .animation(.spring(response: 0.5, dampingFraction: 0.7), value: completionFloat)
                             .tutorialAnchor(.concept)
                         } else {
                             // Completion state placeholder
@@ -193,6 +217,8 @@ struct LevelGameView: View {
                             }
                             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                             .shadow(color: Color.black.opacity(0.2), radius: 18, y: 10)
+                            .offset(y: completionFloat ? -4 : 0)
+                            .animation(.spring(response: 0.5, dampingFraction: 0.7), value: completionFloat)
                             .tutorialAnchor(.visualizer)
 
                         GitStateCard(repoState: repoState)
@@ -222,12 +248,36 @@ struct LevelGameView: View {
                             }
                             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                             .shadow(color: Color.black.opacity(0.2), radius: 18, y: 10)
+                            .offset(y: completionFloat ? -4 : 0)
+                            .animation(.spring(response: 0.5, dampingFraction: 0.7), value: completionFloat)
                             .tutorialAnchor(.repoState)
                     }
                     .frame(height: 280)
 
                     // ── THE "TERMINAL" LAYER (Bottom Row) ──
                     consolePanel
+                        // Correct tap → glow + scale + lift
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                .stroke(Color.cyan.opacity(0.55), lineWidth: 2)
+                                .blur(radius: 6)
+                                .opacity(correctPulse ? 1 : 0)
+                                .allowsHitTesting(false)
+                        )
+                        .scaleEffect(correctPulse ? 1.06 : 1.0)
+                        .offset(y: correctPulse ? -3 : 0)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.55), value: correctPulse)
+                        // Incorrect tap → shake + red flash
+                        .offset(x: shakeError ? 8 : 0)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                .fill(Color.red.opacity(0.12))
+                                .opacity(errorFlash ? 1 : 0)
+                                .allowsHitTesting(false)
+                        )
+                        // Completion float
+                        .offset(y: completionFloat ? -4 : 0)
+                        .animation(.spring(response: 0.5, dampingFraction: 0.7), value: completionFloat)
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 24)
@@ -273,6 +323,41 @@ struct LevelGameView: View {
                 }
             }
         }
+        // ── CORRECT TAP FEEDBACK ──
+        .onChange(of: viewModel.currentStep) { oldVal, newVal in
+            guard newVal > oldVal else { return }
+            correctPulse = true
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(0.45))
+                correctPulse = false
+            }
+        }
+        // ── INCORRECT TAP FEEDBACK ──
+        .onChange(of: viewModel.showError) { _, isError in
+            guard isError else { return }
+            withAnimation(.easeInOut(duration: 0.06).repeatCount(5, autoreverses: true)) {
+                shakeError = true
+            }
+            errorFlash = true
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(0.35))
+                withAnimation(.easeOut(duration: 0.2)) {
+                    shakeError = false
+                    errorFlash = false
+                }
+            }
+        }
+        // ── LEVEL COMPLETION FEEDBACK ──
+        .onChange(of: viewModel.showSuccess) { _, isSuccess in
+            guard isSuccess else { return }
+            completionFloat = true
+            completionPulse = true
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(1.5))
+                completionFloat = false
+                completionPulse = false
+            }
+        }
     }
     
     // MARK: - Dark Header (56pt)
@@ -289,6 +374,7 @@ struct LevelGameView: View {
                 }
                 .foregroundStyle(.white.opacity(0.85))
             }
+            .buttonStyle(TapScaleButtonStyle())
             
             Spacer()
             
@@ -371,7 +457,7 @@ struct LevelGameView: View {
                         .scaleEffect(1.1)
                         .animation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true), value: gameState.completedLevels.contains(currentLevel.id))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(TapScaleButtonStyle())
                 .padding(.top, 44)
                 .padding(.trailing, 8)
             }
@@ -984,6 +1070,17 @@ private struct LearningDetailSheet: View {
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
         }
+    }
+}
+
+// MARK: - Tap Scale Button Style
+
+/// Press-scale microinteraction for buttons (Part 4).
+private struct TapScaleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.94 : 1.0)
+            .animation(.spring(response: 0.35, dampingFraction: 0.7), value: configuration.isPressed)
     }
 }
 

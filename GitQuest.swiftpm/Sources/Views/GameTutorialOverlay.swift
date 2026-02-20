@@ -96,6 +96,8 @@ struct GameTutorialOverlay: ViewModifier {
     @State private var tipOffset: CGFloat = 20
     @State private var stepHapticTrigger = false
     @State private var doneHapticTrigger = false
+    @State private var floatAnimate = false
+    @State private var buttonPressed = false
     
     private let steps = TutorialStep.allSteps
     
@@ -128,6 +130,12 @@ struct GameTutorialOverlay: ViewModifier {
                                 )
                                 .opacity(tipOpacity)
                                 .offset(y: tipOffset)
+                                .offset(y: floatAnimate ? -4 : 4)
+                                .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: floatAnimate)
+                                .transition(.asymmetric(
+                                    insertion: .scale(scale: 0.92).combined(with: .opacity).combined(with: .move(edge: .bottom)),
+                                    removal: .opacity
+                                ))
                             }
                         }
                     }
@@ -139,6 +147,9 @@ struct GameTutorialOverlay: ViewModifier {
                         withAnimation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.25)) {
                             tipOpacity = 1
                             tipOffset = 0
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                            floatAnimate = true
                         }
                     }
                 }
@@ -205,26 +216,26 @@ struct GameTutorialOverlay: ViewModifier {
             padding: padding
         )
         
-        return VStack(alignment: .leading, spacing: 12) {
+        return VStack(alignment: .leading, spacing: 14) {
             // Title
             Text(step.title)
-                .font(.system(size: 17, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
-            
+                .font(.system(size: 20, weight: .bold, design: .rounded))
+                .foregroundStyle(.primary)
+
             // Message
             Text(step.message)
-                .font(.system(size: 14, weight: .regular, design: .rounded))
-                .foregroundStyle(.white.opacity(0.85))
-                .lineSpacing(4)
+                .font(.system(size: 15, weight: .regular, design: .rounded))
+                .foregroundStyle(.secondary)
+                .lineSpacing(5)
                 .fixedSize(horizontal: false, vertical: true)
-            
+
             // Progress dots + Next button
             HStack {
                 // Dots
                 HStack(spacing: 6) {
                     ForEach(0..<steps.count, id: \.self) { i in
                         Circle()
-                            .fill(i == currentStep ? Color.white : Color.white.opacity(0.25))
+                            .fill(i == currentStep ? Color.primary : Color.secondary.opacity(0.35))
                             .frame(
                                 width: i == currentStep ? 8 : 6,
                                 height: i == currentStep ? 8 : 6
@@ -232,10 +243,10 @@ struct GameTutorialOverlay: ViewModifier {
                             .animation(.spring(response: 0.3), value: currentStep)
                     }
                 }
-                
+
                 Spacer()
-                
-                // Next / Got it button
+
+                // Next / Got it button — glass capsule
                 Button {
                     handleNext()
                 } label: {
@@ -247,36 +258,44 @@ struct GameTutorialOverlay: ViewModifier {
                                 .font(.system(size: 12, weight: .bold))
                         }
                     }
-                    .foregroundStyle(.black)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
+                    .foregroundStyle(.primary)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 11)
                     .background(
                         Capsule()
-                            .fill(.white)
+                            .fill(.ultraThinMaterial)
+                            .overlay(Capsule().stroke(Color.white.opacity(0.18), lineWidth: 1))
                     )
                 }
+                .scaleEffect(buttonPressed ? 0.96 : 1)
+                .animation(.spring(response: 0.25, dampingFraction: 0.7), value: buttonPressed)
+                .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in
+                    buttonPressed = pressing
+                }, perform: {})
             }
         }
-        .padding(18)
+        .padding(22)
         .frame(width: boxWidth)
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(
+            RoundedRectangle(cornerRadius: 30, style: .continuous)
+                .fill(.regularMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 30, style: .continuous)
+                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                )
+                .overlay(alignment: .top) {
                     LinearGradient(
-                        colors: [
-                            Color(red: 0.14, green: 0.14, blue: 0.18),
-                            Color(red: 0.10, green: 0.10, blue: 0.13)
-                        ],
+                        colors: [Color.white.opacity(0.25), .clear],
                         startPoint: .top,
                         endPoint: .bottom
                     )
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                )
-                .shadow(color: .black.opacity(0.5), radius: 25, y: 8)
+                    .frame(height: 80)
+                    .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
+                    .blendMode(.overlay)
+                }
+                .shadow(color: Color.black.opacity(0.3), radius: 35, y: 20)
         )
+        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         .position(x: position.x, y: position.y)
         .animation(.spring(response: 0.5, dampingFraction: 0.82), value: currentStep)
     }

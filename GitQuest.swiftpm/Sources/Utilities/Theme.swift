@@ -23,21 +23,6 @@ enum Theme {
         /// Primary screen background.
         static let background = Color(uiColor: .systemBackground)
         
-        /// Secondary-level background (cards, grouped sections).
-        static let secondaryBackground = Color(uiColor: .secondarySystemBackground)
-        
-        /// Grouped-content background (e.g. settings-style lists).
-        static let groupedBackground = Color(uiColor: .systemGroupedBackground)
-        
-        /// Card / elevated surface fill.
-        static let surface = Color(uiColor: .secondarySystemBackground)
-        
-        /// Highest-elevation surface (modals, popovers).
-        static let elevatedSurface = Color(uiColor: .tertiarySystemBackground)
-        
-        /// Thin separators and borders.
-        static let border = Color(uiColor: .separator)
-        
         // MARK: Brand
         
         /// Primary brand colour used for CTAs and key accents.
@@ -46,22 +31,13 @@ enum Theme {
         /// Secondary brand colour for gradients and supporting accents.
         static let secondary = Color.blue
         
-        /// Strong accent colour for high-contrast elements.
-        static let accent = Color.black
-        
         // MARK: Semantic
         
         /// Positive / success state.
         static let success = Color.green
         
-        /// Error / destructive state.
-        static let error = Color.red
-        
         /// Warning / caution state.
         static let warning = Color.yellow
-        
-        /// Informational accent.
-        static let info = Color.blue
         
         // MARK: Text
         
@@ -130,14 +106,6 @@ enum Theme {
         
         /// Smallest informational text.
         static let small = Font.system(size: 12, weight: .regular)
-        
-        // MARK: Code
-        
-        /// Inline code snippets.
-        static let code = Font.system(size: 14, design: .monospaced)
-        
-        /// Terminal / console output.
-        static let terminal = Font.system(size: 13, design: .monospaced)
     }
     
     // MARK: - Spacing
@@ -153,21 +121,9 @@ enum Theme {
     }
     
     // MARK: - Shadow
-    
     /// Pre-defined shadow colours (use with `.shadow(color:radius:x:y:)`).
     enum Shadow {
-        /// Subtle shadow for flat cards.
-        static let light = Color.black.opacity(0.1)
-        
         /// Medium shadow for raised surfaces.
         static let medium = Color.black.opacity(0.2)
-        
-        /// Heavy shadow for modals / popovers.
-        static let heavy = Color.black.opacity(0.3)
-        
-        /// Tinted shadow derived from an arbitrary colour.
-        static func colored(_ color: Color, opacity: Double = 0.5) -> Color {
-            color.opacity(opacity)
-        }
     }
 }

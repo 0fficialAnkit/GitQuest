@@ -1,10 +1,10 @@
 import Foundation
 
-struct CommandConcept {
-    let fullCommand: String
-    let parts: [CommandPart]
-    let explanation: String
-}
+//struct CommandConcept {
+//    let fullCommand: String
+//    let parts: [CommandPart]
+//    let explanation: String
+//}
 
 struct CommandPart: Identifiable {
     let id = UUID()
