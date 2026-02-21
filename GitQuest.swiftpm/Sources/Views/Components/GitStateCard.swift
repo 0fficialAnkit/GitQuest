@@ -131,7 +131,7 @@ struct GitStateCard: View {
                 .clipShape(Capsule())
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 17)
+        .padding(.vertical, 14)
         .background(headerBg)
     }
     
