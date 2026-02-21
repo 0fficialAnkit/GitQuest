@@ -148,18 +148,18 @@ struct GitStateCard: View {
         
         return HStack(spacing: 10) {
             Image(systemName: icon)
-                .font(.system(size: 10, weight: .semibold))
+                .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(statusColor)
-                .frame(width: 16)
+                .frame(width: 30)
             
             Text(label)
-                .font(.system(size: 10, weight: .medium))
+                .font(.system(size: 15, weight: .medium))
                 .foregroundStyle(.white.opacity(0.6))
             
             Spacer()
             
             Text(value)
-                .font(.system(size: 10, weight: .bold))
+                .font(.system(size: 15, weight: .bold))
                 .foregroundStyle(statusColor)
                 .lineLimit(1)
         }

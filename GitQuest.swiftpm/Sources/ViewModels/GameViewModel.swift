@@ -464,7 +464,10 @@ class GameViewModel {
         currentPlayingLevel = level
         currentStep = 0
         terminalOutput = []
-        chatMessages = level.initialChat
+        chatMessages = level.initialChat.enumerated().map { index, msg in
+            // Stagger initial messages by 1 second each, anchored to now
+            ChatMessage(sender: msg.sender, text: msg.text, timestamp: Date().addingTimeInterval(Double(index)))
+        }
         
         // Welcome message
         addTerminalOutput("", type: .system)
@@ -654,7 +657,7 @@ class GameViewModel {
                 Task { @MainActor in
                     try? await Task.sleep(for: .seconds(delay))
                     withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                        self.chatMessages.append(message)
+                        self.chatMessages.append(message.withCurrentTimestamp())
                     }
                 }
             }

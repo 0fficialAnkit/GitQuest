@@ -201,7 +201,7 @@ struct LevelNode: View {
             
             // Title and info
             VStack(spacing: Theme.Spacing.xs) {
-                Text(level.concept.rawValue)
+                Text(level.title)
                     .font(Theme.Typography.h3)
                     .foregroundStyle(isUnlocked ? Theme.Colors.textPrimary : Theme.Colors.textTertiary)
                     .multilineTextAlignment(.center)

@@ -15,6 +15,7 @@ import SwiftUI
 /// real-world usage examples, and "Continue" / "Explore" buttons.
 struct CommandExplanationCard: View {
     let level: Level
+    var isLastLevel: Bool = false
     let onNextLevel: () -> Void
     let onStayAndExplore: () -> Void
     let onDismiss: () -> Void
@@ -122,34 +123,36 @@ struct CommandExplanationCard: View {
                             .shadow(color: Color.black.opacity(0.12), radius: 8, y: 4)
                         }
                         
-                        Button(action: onNextLevel) {
-                            HStack {
-                                Text("Next Level")
-                                Image(systemName: "arrow.right")
-                            }
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(
-                                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                    .fill(.ultraThinMaterial)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
-                                    )
-                                    .overlay(
-                                        LinearGradient(
-                                            colors: [.blue.opacity(0.5), .purple.opacity(0.5)],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
+                        if !isLastLevel {
+                            Button(action: onNextLevel) {
+                                HStack {
+                                    Text("Next Level")
+                                    Image(systemName: "arrow.right")
+                                }
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(
+                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                        .fill(.ultraThinMaterial)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                                .stroke(Color.white.opacity(0.18), lineWidth: 1)
                                         )
-                                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                                        .blendMode(.overlay)
-                                    )
-                            )
-                            .foregroundStyle(.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                            .shadow(color: Color.blue.opacity(0.25), radius: 12, y: 6)
+                                        .overlay(
+                                            LinearGradient(
+                                                colors: [.blue.opacity(0.5), .purple.opacity(0.5)],
+                                                startPoint: .leading,
+                                                endPoint: .trailing
+                                            )
+                                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                            .blendMode(.overlay)
+                                        )
+                                )
+                                .foregroundStyle(.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                .shadow(color: Color.blue.opacity(0.25), radius: 12, y: 6)
+                            }
                         }
                     }
                 }

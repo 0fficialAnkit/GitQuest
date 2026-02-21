@@ -19,12 +19,18 @@ struct ChatMessage: Identifiable, Hashable {
     let id = UUID()
     let sender: Sender
     let text: String
-    let timestamp: Date
+    var timestamp: Date
     
     init(sender: Sender, text: String, timestamp: Date = Date()) {
         self.sender = sender
         self.text = text
         self.timestamp = timestamp
+    }
+    
+    /// Returns a copy with the timestamp set to the current device time.
+    func withCurrentTimestamp() -> ChatMessage {
+        var copy = ChatMessage(sender: sender, text: text, timestamp: Date())
+        return copy
     }
 }
 

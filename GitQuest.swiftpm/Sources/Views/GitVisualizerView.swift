@@ -996,8 +996,10 @@ struct VisualizerGuideSheet: View {
                         row(icon: AnyView(Image(systemName: "arrow.triangle.branch").font(.system(size: 11)).foregroundStyle(GitTheme.purple)),
                             title: "Branches (Lanes)",
                             desc: "Each horizontal lane is a parallel timeline. main is always at the top.")
-                        row(icon: AnyView(Text("HEAD").font(.system(size: 7, weight: .bold)).padding(.horizontal, 5).padding(.vertical, 2)
-                                .background(Capsule().stroke(GitTheme.green, lineWidth: 1)).foregroundStyle(GitTheme.green)),
+                        row(icon: AnyView(Text("HEAD").font(.system(size: 6, weight: .bold)).lineLimit(1)
+                            .fixedSize()
+                            .layoutPriority(1).padding(.horizontal, 5).padding(.vertical, 2)
+                                .background(Capsule().stroke(GitTheme.green, lineWidth: 2)).foregroundStyle(GitTheme.green)),
                             title: "HEAD Badge (Pulsing Green)",
                             desc: "Shows where you currently are. Moves on checkout or new commits.")
                         row(icon: AnyView(Circle().stroke(GitTheme.yellow, lineWidth: 2.5).frame(width: 14, height: 14)),

@@ -428,6 +428,9 @@ struct LevelGameView: View {
                 .allowsHitTesting(false)
             }
             .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .disabled(showTutorial)
+            .opacity(showTutorial ? 0.5 : 1.0)
+            .animation(.easeInOut(duration: 0.3), value: showTutorial)
             .shadow(color: Color.black.opacity(0.2), radius: 18, y: 10)
             
             // Info button — positioned just below the header
@@ -503,6 +506,7 @@ struct LevelGameView: View {
             
             CommandExplanationCard(
                 level: currentLevel,
+                isLastLevel: currentLevel.id == Level.allLevels.last?.id,
                 onNextLevel: { transitionToNextLevel() },
                 onStayAndExplore: {
                     withAnimation(.easeOut(duration: 0.3)) {
