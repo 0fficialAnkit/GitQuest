@@ -95,6 +95,18 @@ struct CommandExplanationCard: View {
                                 title: "Real World Usage",
                                 content: level.commandExplanation.realWorldUsage
                             )
+                            
+                            // Reset instructions for final level
+                            if isLastLevel {
+                                Divider()
+                                
+                                InsightBlock(
+                                    icon: "arrow.counterclockwise",
+                                    color: .green,
+                                    title: "Replay Journey",
+                                    content: "To reset your progress and replay from Level 1, completely close the app and reopen it, then tap 'Reset Progress'."
+                                )
+                            }
                         }
                     }
                     .scrollIndicators(.hidden)

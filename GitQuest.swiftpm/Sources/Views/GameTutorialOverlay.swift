@@ -152,6 +152,17 @@ struct GameTutorialOverlay: ViewModifier {
                             floatAnimate = true
                         }
                     }
+                    .onChange(of: currentStep) { _, _ in
+                        // Instantly reset animation state for the new tip
+                        tipOpacity = 0
+                        tipOffset = 20
+                        
+                        // Spring up exactly like the first appearance
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.1)) {
+                            tipOpacity = 1
+                            tipOffset = 0
+                        }
+                    }
                 }
             }
     }
