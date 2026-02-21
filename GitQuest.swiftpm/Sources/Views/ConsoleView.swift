@@ -137,7 +137,7 @@ struct ConsoleView: View {
                 .font(.system(size: 16, weight: .bold, design: .monospaced))
                 .foregroundStyle(terminalGreen)
             
-            Text(commandInput.isEmpty ? "Type git command..." : commandInput)
+            Text(commandInput.isEmpty ? "Tap a hint command below..." : commandInput)
                 .font(.system(size: 14, weight: .regular, design: .monospaced))
                 .foregroundStyle(commandInput.isEmpty ? terminalGray : .white)
                 .frame(maxWidth: .infinity, alignment: .leading)

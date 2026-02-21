@@ -25,7 +25,7 @@ struct TutorialView: View {
          "Git is a version control system that tracks changes in your code. Think of it as a time machine for your projects!",
          .purple),
         ("terminal", "How It Works",
-         "You'll learn Git by typing real commands. Each level teaches a new concept with a story that explains why developers use these commands.",
+         "You'll learn Git by running real commands. Tap the suggested commands in the console to execute them. Each level teaches a new concept with a story that explains why developers use these commands.",
          .blue),
         ("arrow.triangle.branch", "Key Concepts",
          "You'll master repositories, commits, branches, merging, and collaboration. These are the building blocks every developer needs.",

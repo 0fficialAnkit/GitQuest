@@ -40,14 +40,14 @@ extension TutorialStep {
             id: 1,
             cardKey: .concept,
             title: "Understand the Command",
-            message: "This card breaks down every word of the Git command you'll use. Study it before typing anything.",
+            message: "This card breaks down every word of the Git command you'll use. Study it before running any command.",
             tipPosition: .left
         ),
         TutorialStep(
             id: 2,
             cardKey: .console,
-            title: "Type Commands Here",
-            message: "This is your terminal. Type the Git command here or tap a hint chip to auto-fill it. Hit ↵ to execute.",
+            title: "Run Commands Here",
+            message: "This is your terminal. Tap a hint command to auto-fill it, then hit ↵ to execute.",
             tipPosition: .top
         ),
         TutorialStep(

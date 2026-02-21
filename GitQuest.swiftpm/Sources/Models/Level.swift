@@ -111,10 +111,10 @@ struct LevelStep: Identifiable, Hashable {
     /// Narrative context explaining *why* this command matters right now.
     let contextMessage: String
     
-    /// The Git command the player is expected to type.
+    /// The Git command the player is expected to run.
     let expectedCommand: String
     
-    /// Helpful hint shown when the player enters a wrong command.
+    /// Helpful hint shown when the player selects a wrong command.
     let hint: String
     
     /// Congratulatory message displayed after completing this step.
@@ -198,7 +198,7 @@ extension Level {
                     Think of it like: Starting a journal.
                     """,
                     expectedCommand: "git init",
-                    hint: "Type exactly: git init",
+                    hint: "Tap: git init",
                     successMessage: "✓ Repository Created",
                     teamReaction: nil
                 ),
@@ -215,7 +215,7 @@ extension Level {
                     Stage the README file.
                     """,
                     expectedCommand: "git add",
-                    hint: "Use: git add README.md",
+                    hint: "Tap: git add README.md",
                     successMessage: "Files staged and ready to commit",
                     teamReaction: "Jordan: Good call staging specific files — keeps the commit clean 👍"
                 ),
@@ -233,7 +233,7 @@ extension Level {
                     Why teams love this: Everyone can see what changed.
                     """,
                     expectedCommand: "git commit",
-                    hint: "Use: git commit -m \"Initial commit: Add README\"",
+                    hint: "Tap: git commit -m \"Initial commit: Add README\"",
                     successMessage: "🎉 You Just Shipped Your First Commit!",
                     teamReaction: "Maya: Clean commit message — that makes the history way easier to review 👍"
                 )
@@ -308,7 +308,7 @@ extension Level {
                     Create a branch called 'feature/dark-mode'
                     """,
                     expectedCommand: "git checkout",
-                    hint: "Use: git checkout -b feature/dark-mode",
+                    hint: "Tap: git checkout -b feature/dark-mode",
                     successMessage: "🌿 Feature Branch Created",
                     teamReaction: "Jordan: Perfect — now anything you commit stays off main until it's ready"
                 ),
@@ -325,7 +325,7 @@ extension Level {
                     • Before lunch (seriously)
                     """,
                     expectedCommand: "git commit",
-                    hint: "Use: git commit -m \"Add dark mode toggle to settings\"",
+                    hint: "Tap: git commit -m \"Add dark mode toggle to settings\"",
                     successMessage: "Feature committed to your branch!",
                     teamReaction: "Alex: Ooh can't wait to see this in the demo! 🌙"
                 )
@@ -395,7 +395,7 @@ extension Level {
                     Add the remote repository.
                     """,
                     expectedCommand: "git remote",
-                    hint: "Use: git remote add origin https://github.com/pixel-labs/user-profiles.git",
+                    hint: "Tap: git remote add origin https://github.com/pixel-labs/user-profiles.git",
                     successMessage: "Remote added! Your local repo knows about GitHub now.",
                     teamReaction: nil
                 ),
@@ -409,7 +409,7 @@ extension Level {
                     This uploads your commits to the remote repository.
                     """,
                     expectedCommand: "git push",
-                    hint: "Use: git push -u origin feature/dark-mode",
+                    hint: "Tap: git push -u origin feature/dark-mode",
                     successMessage: "☁️ Code Pushed to GitHub",
                     teamReaction: "Jordan: Got it! Pulling now... auth components look solid 👀"
                 )
@@ -483,7 +483,7 @@ extension Level {
                     First, check which files are conflicted.
                     """,
                     expectedCommand: "git status",
-                    hint: "Type: git status",
+                    hint: "Tap: git status",
                     successMessage: "Conflicts identified: dashboard.js",
                     teamReaction: "Jordan: There it is — dashboard.js has the conflict"
                 ),
@@ -505,7 +505,7 @@ extension Level {
                     After fixing the file, stage it to mark as resolved.
                     """,
                     expectedCommand: "git add",
-                    hint: "Use: git add dashboard.js",
+                    hint: "Tap: git add dashboard.js",
                     successMessage: "Conflict marked as resolved",
                     teamReaction: nil
                 ),
@@ -518,7 +518,7 @@ extension Level {
                     that brings both branches together.
                     """,
                     expectedCommand: "git commit",
-                    hint: "Use: git commit -m \"Resolve dashboard color conflict — use purple\"",
+                    hint: "Tap: git commit -m \"Resolve dashboard color conflict — use purple\"",
                     successMessage: "🎯 Conflict Resolved!",
                     teamReaction: """
                     Maya: Build is green. Nice work under pressure.
@@ -603,7 +603,7 @@ extension Level {
                     Pull the latest changes from main.
                     """,
                     expectedCommand: "git pull",
-                    hint: "Use: git pull origin main",
+                    hint: "Tap: git pull origin main",
                     successMessage: "🔄 Up to date! You have the latest team changes.",
                     teamReaction: "Jordan: Nice — now you've got Maya's auth refactor. Way cleaner API 👍"
                 )
@@ -667,7 +667,7 @@ extension Level {
                     committed anymore.
                     """,
                     expectedCommand: "git reset",
-                    hint: "Use: git reset HEAD~1",
+                    hint: "Tap: git reset HEAD~1",
                     successMessage: "⏮️ Commit undone! Changes are still in your files.",
                     teamReaction: "Jordan: Crisis averted 👍 Now remove the keys and add .env to .gitignore"
                 )
@@ -747,7 +747,7 @@ extension Level {
                     if you're not holding the mug.
                     """,
                     expectedCommand: "git checkout",
-                    hint: "Use: git checkout main",
+                    hint: "Tap: git checkout main",
                     successMessage: "Switched to branch 'main'",
                     teamReaction: nil
                 ),
@@ -762,7 +762,7 @@ extension Level {
                     main branch.
                     """,
                     expectedCommand: "git merge",
-                    hint: "Use: git merge feature/dark-mode",
+                    hint: "Tap: git merge feature/dark-mode",
                     successMessage: "🔀 Branches merged! Dark mode is now in main.",
                     teamReaction: """
                     Maya: Clean merge — no conflicts 🎉
