@@ -1,971 +1,750 @@
-////
-////  GitVisualizerView.swift
-////  GitQuest
-////
-////  Interactive 2D Git graph showing commits, branches, and HEAD
-////
-//
-//import SwiftUI
-//
-//// MARK: - Git Visualizer View
-//
-///// Interactive 2D Git graph that visualises commits, branch pointers,
-///// and HEAD. Tapping a commit node opens a detail inspector.
-//struct GitVisualizerView: View {
-//    
-//    var repoState: GitRepositoryState
-//    
-//    private let commitSize: CGFloat = 40
-//    private let commitSpacing: CGFloat = 80
-//    private let branchSpacing: CGFloat = 42
-//    private let headIndicatorHeight: CGFloat = 20
-//    
-//    @State private var selectedCommit: GitCommit?
-//    @State private var showVisualizerGuide = false
-//    
-//    var body: some View {
-//        VStack(spacing: 0) {
-//            
-//            visualizerHeader
-//            
-//            if repoState.isInitialized {
-//                
-//                ScrollViewReader { proxy in
-//                    
-//                    ScrollView(.horizontal) {
-//                        commitGraph
-//                            .padding(.horizontal, 20)
-//                            .padding(.vertical, 16)
-//                    }
-//                    .scrollIndicators(.hidden)
-//                    .onChange(of: repoState.commits.count) { _ , _ in
-//                        if let last = repoState.commits.last {
-//                            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-//                                proxy.scrollTo(last.id, anchor: .center)
-//                            }
-//                        }
-//                    }
-//                    .onChange(of: repoState.branches.count) { _ , _ in
-//                        if let lastCommit = repoState.commits.last {
-//                            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
-//                                proxy.scrollTo(lastCommit.id, anchor: .center)
-//                            }
-//                        }
-//                    }
-//                }
-//                .frame(maxHeight: .infinity)
-//                
-//            } else {
-//                emptyStateView
-//            }
-//            
-//            if let commit = selectedCommit {
-//                commitInspector(commit)
-//            }
-//        }
-//        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-//        .background(
-//            RoundedRectangle(cornerRadius: 20)
-//                .fill(GitTheme.darkBackground)
-//        )
-//        .sheet(isPresented: $showVisualizerGuide) {
-//            VisualizerGuideSheet()
-//        }
-//    }
-//}
-//
-////////////////////////////////////////////////////////////////
-//// MARK: HEADER
-////////////////////////////////////////////////////////////////
-//
-//extension GitVisualizerView {
-//    
-//    private var visualizerHeader: some View {
-//        HStack {
-//            
-//            // Branch badge (GitHub-style)
-//            HStack(spacing: 6) {
-//                Image(systemName: "arrow.triangle.branch")
-//                    .font(.system(size: 12, weight: .semibold))
-//                    .foregroundStyle(currentBranchColor)
-//                
-//                Text(repoState.currentBranch)
-//                    .font(.system(size: 13, weight: .semibold))
-//                    .foregroundStyle(.white)
-//            }
-//            .padding(.horizontal, 10)
-//            .padding(.vertical, 5)
-//            .background(
-//                Capsule()
-//                    .fill(currentBranchColor.opacity(0.25))
-//                    .overlay(
-//                        Capsule()
-//                            .stroke(currentBranchColor.opacity(0.5), lineWidth: 1)
-//                    )
-//            )
-//            
-//            Spacer()
-//            
-//            // Stats badges
-//            HStack(spacing: 12) {
-//                StatBadge(icon: "circle.fill", value: "\(repoState.commits.count)", color: GitTheme.blue)
-//                StatBadge(icon: "arrow.triangle.branch", value: "\(repoState.branches.count)", color: GitTheme.purple)
-//                
-//                if repoState.hasRemote {
-//                    Image(systemName: "cloud.fill")
-//                        .font(.system(size: 12))
-//                        .foregroundStyle(GitTheme.cyan)
-//                }
-//                
-//                // Help Button
-//                Button {
-//                    showVisualizerGuide = true
-//                } label: {
-//                    Image(systemName: "questionmark.circle.fill")
-//                        .font(.system(size: 25, weight: .medium))
-//                        .foregroundStyle(.white.opacity(0.5))
-//                        .padding(1)
-//                }
-//            }
-//        }
-//        .padding(.horizontal, 14)
-//        .padding(.vertical, 10)
-////        .background(Color(white: 0.15))
-//        .background(Color(red: 0.10, green: 0.10, blue: 0.12))
-//    }
-//}
-//
-//// MARK: - Stat Badge
-//// ... (lines 116-130 remain same)
-//private struct StatBadge: View {
-//    let icon: String
-//    let value: String
-//    let color: Color
-//    
-//    var body: some View {
-//        HStack(spacing: 4) {
-//            Image(systemName: icon)
-//                .font(.system(size: 9))
-//            Text(value)
-//                .font(.system(size: 11, weight: .medium))
-//        }
-//        .foregroundStyle(color.opacity(0.9))
-//    }
-//}
-//
-////////////////////////////////////////////////////////////////
-//// MARK: COMMIT GRAPH
-////////////////////////////////////////////////////////////////
-//
-//extension GitVisualizerView {
-//    
-//    private var commitGraph: some View {
-//        VStack(alignment: .leading, spacing: branchSpacing) {
-//            ForEach(repoState.branches) { branch in
-//                branchRow(branch: branch)
-//            }
-//        }
-//        .frame(minHeight: 120)
-//        .padding(.vertical, 4)
-//    }
-//    
-//    private func branchRow(branch: GitBranch) -> some View {
-//        
-//        let branchCommits = commitsForBranch(branch)
-//        
-//        return HStack(spacing: 0) {
-//            
-//            Text(branch.name)
-//                .font(.system(size: 11, weight: .medium))
-//                .foregroundStyle(branch.color)
-//                .frame(width: 110, alignment: .trailing)
-//                .padding(.trailing, 16)
-//                .padding(.top, headIndicatorHeight / 2) // Align with commit circles
-//            
-//            HStack(alignment: .top, spacing: 0) {
-//                if branchCommits.isEmpty {
-//                    // Show empty branch indicator
-//                    VStack(spacing: 0) {
-//                        Color.clear.frame(height: headIndicatorHeight)
-//                        Circle()
-//                            .stroke(branch.color.opacity(0.4), lineWidth: 2)
-//                            .frame(width: commitSize, height: commitSize)
-//                            .overlay(
-//                                Text("—")
-//                                    .font(.system(size: 16, weight: .medium))
-//                                    .foregroundStyle(branch.color.opacity(0.5))
-//                            )
-//                    }
-//                    .frame(width: commitSpacing, alignment: .center)
-//                } else {
-//                    ForEach(Array(branchCommits.enumerated()), id: \.element.id) { index, commit in
-//                        
-//                        commitNode(commit: commit, branch: branch, isLast: index == branchCommits.count - 1)
-//                            .id(commit.id)
-//                        
-//                        // Connecting line between commits
-//                        if index < branchCommits.count - 1 {
-//                            VStack(spacing: 0) {
-//                                Color.clear.frame(height: headIndicatorHeight)
-//                                Rectangle()
-//                                    .fill(branch.color.opacity(0.6))
-//                                    .frame(width: commitSpacing - commitSize, height: 2.5)
-//                                    .frame(height: commitSize + 6, alignment: .center)
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//            
-//            Spacer(minLength: 20)
-//        }
-//        .frame(height: headIndicatorHeight + commitSize + 24) // Fixed height for consistent alignment
-//        .padding(.vertical, 1)
-//        .animation(.easeInOut, value: repoState.currentBranch)
-//        .animation(.easeInOut, value: repoState.branches.count)
-//    }
-//}
-//
-////////////////////////////////////////////////////////////////
-//// MARK: COMMIT NODE
-////////////////////////////////////////////////////////////////
-//
-//extension GitVisualizerView {
-//    
-//    private func commitNode(commit: GitCommit, branch: GitBranch, isLast: Bool) -> some View {
-//        
-//        let isHead = isLast && branch.id == repoState.currentBranch
-//        
-//        return VStack(spacing: 0) {
-//            
-//            // Fixed-height HEAD indicator area for consistent alignment
-//            VStack(spacing: 0) {
-//                if isHead {
-//                    HStack(spacing: 3) {
-//                        Circle()
-//                            .fill(GitTheme.green)
-//                            .frame(width: 5, height: 5)
-//                        Text("HEAD")
-//                            .font(.system(size: 7, weight: .bold))
-//                            .foregroundStyle(.white)
-//                    }
-//                    .padding(.horizontal, 6)
-//                    .padding(.vertical, 2)
-//                    .background(
-//                        Capsule()
-//                            .fill(Color.white.opacity(0.15))
-//                            .overlay(
-//                                Capsule()
-//                                    .stroke(GitTheme.green.opacity(0.6), lineWidth: 1)
-//                            )
-//                    )
-//                }
-//            }
-//            .frame(height: headIndicatorHeight)
-//            
-//            // Commit circle area
-//            VStack(spacing: 6) {
-//                // Commit node with shadow and glow
-//                ZStack {
-//                    // Outer glow for new commits
-//                    if commit.isNew {
-//                        Circle()
-//                            .fill(branch.color.opacity(0.3))
-//                            .frame(width: commitSize + 12, height: commitSize + 12)
-//                            .blur(radius: 6)
-//                    }
-//                    
-//                    // Shadow circle
-//                    Circle()
-//                        .fill(Color.black.opacity(0.4))
-//                        .frame(width: commitSize, height: commitSize)
-//                        .offset(y: 2)
-//                    
-//                    // Main commit circle
-//                    Circle()
-//                        .fill(
-//                            LinearGradient(
-//                                colors: [branch.color, branch.color.opacity(0.7)],
-//                                startPoint: .topLeading,
-//                                endPoint: .bottomTrailing
-//                            )
-//                        )
-//                        .frame(width: commitSize, height: commitSize)
-//                        .overlay(
-//                            Circle()
-//                                .stroke(Color.white.opacity(0.3), lineWidth: 1.5)
-//                        )
-//                    
-//                    // New commit ring
-//                    if commit.isNew {
-//                        Circle()
-//                            .stroke(Color.white, lineWidth: 2.5)
-//                            .frame(width: commitSize - 4, height: commitSize - 4)
-//                    }
-//                    
-//                    // Commit hash
-//                    Text(String(commit.id.prefix(4)))
-//                        .font(.system(size: 10, weight: .bold))
-//                        .foregroundStyle(.white)
-//                }
-//                .scaleEffect(commit.isNew ? 1.1 : 1.0)
-//                .animation(.spring(response: 0.5, dampingFraction: 0.6), value: commit.isNew)
-//                .onTapGesture {
-//                    withAnimation(.spring(response: 0.3)) {
-//                        selectedCommit = selectedCommit?.id == commit.id ? nil : commit
-//                    }
-//                }
-//                
-//                // Commit message
-//                Text(commit.message)
-//                    .font(.system(size: 9, weight: .medium))
-//                    .foregroundStyle(Color.white.opacity(0.7))
-//                    .frame(width: commitSize + 40)
-//                    .lineLimit(1)
-//                    .truncationMode(.tail)
-//            }
-//        }
-//        .frame(width: commitSpacing, alignment: .center)
-//    }
-//}
-//
-////////////////////////////////////////////////////////////////
-//// MARK: COMMIT INSPECTOR
-////////////////////////////////////////////////////////////////
-//
-//extension GitVisualizerView {
-//    
-//    private func commitInspector(_ commit: GitCommit) -> some View {
-//        HStack(spacing: 12) {
-//            // Commit indicator
-//            Circle()
-//                .fill(GitTheme.blue)
-//                .frame(width: 10, height: 10)
-//            
-//            VStack(alignment: .leading, spacing: 2) {
-//                Text(commit.message)
-//                    .font(.system(size: 13, weight: .semibold))
-//                    .foregroundStyle(.white)
-//                
-//                HStack(spacing: 8) {
-//                    Text(commit.id)
-//                        .font(.system(size: 11))
-//                        .foregroundStyle(GitTheme.yellow)
-//                    
-//                    if let parent = commit.parentId {
-//                        Text("← \(parent)")
-//                            .font(.system(size: 10))
-//                            .foregroundStyle(Color.white.opacity(0.4))
-//                    }
-//                }
-//            }
-//            
-//            Spacer()
-//            
-//            Button {
-//                withAnimation { selectedCommit = nil }
-//            } label: {
-//                Image(systemName: "xmark.circle.fill")
-//                    .foregroundStyle(Color.white.opacity(0.4))
-//            }
-//        }
-//        .padding(.horizontal, 14)
-//        .padding(.vertical, 10)
-//        .background(Color.white.opacity(0.08))
-//        .transition(.move(edge: .bottom).combined(with: .opacity))
-//    }
-//}
-//
-////////////////////////////////////////////////////////////////
-//// MARK: EMPTY STATE
-////////////////////////////////////////////////////////////////
-//
-//extension GitVisualizerView {
-//    
-//    private var emptyStateView: some View {
-//        VStack(spacing: 16) {
-//            ZStack {
-//                Circle()
-//                    .fill(GitTheme.gray.opacity(0.1))
-//                    .frame(width: 70, height: 70)
-//                
-//                Image(systemName: "folder.badge.questionmark")
-//                    .font(.system(size: 32))
-//                    .foregroundStyle(GitTheme.gray.opacity(0.6))
-//            }
-//            
-//            VStack(spacing: 6) {
-//                Text("No Repository")
-//                    .font(.system(size: 15, weight: .semibold))
-//                    .foregroundStyle(Color.white.opacity(0.7))
-//                
-//                Text("Run 'git init' to begin")
-//                    .font(.system(size: 12, weight: .medium))
-//                    .foregroundStyle(GitTheme.orange.opacity(0.8))
-//            }
-//        }
-//        .frame(maxWidth: .infinity)
-//        .frame(height: 180)
-//        .background(GitTheme.darkBackground)
-//    }
-//}
-//
-////////////////////////////////////////////////////////////////
-//// MARK: HELPERS
-////////////////////////////////////////////////////////////////
-//
-//extension GitVisualizerView {
-//    
-//    private var currentBranchColor: Color {
-//        repoState.branches.first(where: {
-//            $0.id == repoState.currentBranch
-//        })?.color ?? Theme.Colors.primary
-//    }
-//    
-//    private func commitsForBranch(_ branch: GitBranch) -> [GitCommit] {
-//        guard let headId = branch.headCommitId else { return [] }
-//        
-//        var result: [GitCommit] = []
-//        var currentId: String? = headId
-//        
-//        while let id = currentId,
-//              let commit = repoState.commits.first(where: { $0.id == id }) {
-//            
-//            result.insert(commit, at: 0)
-//            currentId = commit.parentId
-//        }
-//        
-//        return result
-//    }
-//}
-//
-////////////////////////////////////////////////////////////////
-//// MARK: VISUALIZER GUIDE SHEET
-////////////////////////////////////////////////////////////////
-//
-//struct VisualizerGuideSheet: View {
-//    @Environment(\.dismiss) var dismiss
-//    
-//    var body: some View {
-//        ZStack(alignment: .topTrailing) {
-//            Color(red: 0.10, green: 0.10, blue: 0.12)
-//                .ignoresSafeArea()
-//            
-//            VStack(alignment: .leading, spacing: 24) {
-//                // Header
-//                Text("Understanding the Git Graph")
-//                    .font(.system(size: 18, weight: .bold))
-//                    .foregroundStyle(.white)
-//                    .padding(.top, 10)
-//                
-//                ScrollView {
-//                    VStack(alignment: .leading, spacing: 20) {
-//                        guideSection(
-//                            title: "Commits (Circles)",
-//                            description: "Each colored circle represents a saved snapshot (commit) in your project history. The 4-character code is the commit's unique ID.",
-//                            icon: AnyView(
-//                                Circle()
-//                                    .fill(GitTheme.blue)
-//                                    .frame(width: 12, height: 12)
-//                                    .overlay(Circle().stroke(.white.opacity(0.5), lineWidth: 1))
-//                            )
-//                        )
-//                        
-//                        guideSection(
-//                            title: "Branches (Rows)",
-//                            description: "Each horizontal row is a separate branch - a parallel timeline of your work. Branch names appear on the left.",
-//                            icon: AnyView(
-//                                Image(systemName: "arrow.triangle.branch")
-//                                    .font(.system(size: 10, weight: .bold))
-//                                    .foregroundStyle(GitTheme.purple)
-//                            )
-//                        )
-//                        
-//                        guideSection(
-//                            title: "Connections (Lines)",
-//                            description: "Lines connect commits in chronological order, showing the project's evolution from left to right.",
-//                            icon: AnyView(
-//                                Rectangle()
-//                                    .fill(GitTheme.purple.opacity(0.5))
-//                                    .frame(width: 15, height: 2)
-//                            )
-//                        )
-//                        
-//                        guideSection(
-//                            title: "HEAD Badge",
-//                            description: "The green 'HEAD' label marks where you currently are in the project - your active commit.",
-//                            icon: AnyView(
-//                                Text("HEAD")
-//                                    .font(.system(size: 7, weight: .bold))
-//                                    .padding(.horizontal, 4)
-//                                    .padding(.vertical, 2)
-//                                    .background(Capsule().stroke(GitTheme.green, lineWidth: 1))
-//                                    .foregroundStyle(GitTheme.green)
-//                            )
-//                        )
-//                        
-//                        guideSection(
-//                            title: "Colors",
-//                            description: "Each branch has its own color to help you visually track different lines of work.",
-//                            icon: AnyView(
-//                                HStack(spacing: 4) {
-//                                    Circle().fill(GitTheme.blue).frame(width: 8, height: 8)
-//                                    Circle().fill(GitTheme.purple).frame(width: 8, height: 8)
-//                                    Circle().fill(GitTheme.orange).frame(width: 8, height: 8)
-//                                }
-//                            )
-//                        )
-//                    }
-//                    .padding(.bottom, 30)
-//                }
-//                .scrollIndicators(.hidden)
-//            }
-//            .padding(24)
-//            
-//            // Close button
-//            Button {
-//                dismiss()
-//            } label: {
-//                Image(systemName: "xmark.circle.fill")
-//                    .font(.system(size: 24))
-//                    .foregroundStyle(.white.opacity(0.3))
-//                    .padding(16)
-//            }
-//        }
-//        .presentationDetents([.medium])
-//        .presentationDragIndicator(.visible)
-//    }
-//    private func guideSection(title: String, description: String, icon: AnyView) -> some View {
-//        HStack(alignment: .top, spacing: 12) {
-//            // Icon container with fixed width
-//            icon
-//                .frame(width: 30, alignment: .center)
-//            
-//            VStack(alignment: .leading, spacing: 6) {
-//                Text(title)
-//                    .font(.system(size: 13, weight: .semibold))
-//                    .foregroundStyle(.white)
-//                
-//                Text(description)
-//                    .font(.system(size: 12, weight: .regular))
-//                    .foregroundStyle(.white.opacity(0.7))
-//                    .lineSpacing(4)
-//                    .fixedSize(horizontal: false, vertical: true)
-//            }
-//        }
-//        .frame(maxWidth: .infinity, alignment: .leading)
-//        .padding(.horizontal, 14)
-//        .padding(.vertical, 14)
-//        .background(
-//            RoundedRectangle(cornerRadius: 12)
-//                .fill(Color.white.opacity(0.04))
-//        )
-//    }
-//}
-//
-////////////////////////////////////////////////////////////////
-//// MARK: PREVIEW
-////////////////////////////////////////////////////////////////
-//
-//#Preview {
-//    let state = GitRepositoryState()
-//    
-//    GitVisualizerView(repoState: state)
-////        .frame(height: 320)
-////        .padding()
-//        .onAppear {
-//            state.initialize()
-//            state.stageFiles()
-//            state.commit(message: "Initial commit")
-//            state.commit(message: "Add login")
-//            state.createBranch(name: "feature")
-//            state.commit(message: "Feature work")
-//        }
-//}
-
-
-
-
-
-
-
 //
 //  GitVisualizerView.swift
 //  GitQuest
 //
-//  Full git-graph visualizer: lane layout, bezier connections,
-//  merge arcs, animated HEAD, staging indicator, action banner.
+//  State-driven Git timeline visualizer.
+//  The graph is derived entirely from GitRepositoryState — no UI events
+//  drive structure. Animations are diff-based: previous model → new model.
 //
 
 import SwiftUI
 
-// MARK: - Private Layout Model
+// ============================================================
+// MARK: - Pure Data Graph Model
+// ============================================================
 
-/// Computed position for a single commit in the 2-D canvas.
-private struct CommitLayout: Identifiable {
-    let commit:      GitCommit
-    let lane:        Int       // horizontal row (0 = main)
-    let globalIndex: Int       // x-axis position (chronological order)
-    let center:      CGPoint   // pixel center in the canvas
-    let color:       Color
-    var id: String { commit.id }
+/// Visual representation of a single commit node in the graph.
+struct VNode: Identifiable, Equatable {
+    let id: String           // commit hash
+    let message: String
+    let branch: String
+    let lane: Int            // 0 = main, 1+ = feature lanes
+    let column: Int          // chronological x-position
+    let parentId: String?
+    let color: Color
+    var style: VNodeStyle
 }
 
-// MARK: - Git Visualizer View
+/// Visual style variants for commit nodes.
+enum VNodeStyle: Equatable {
+    case placeholder          // dashed circle — repo inited, no commits yet
+    case normal               // standard commit
+    case head                 // HEAD commit (green glow)
+    case staged               // HEAD + files staged (spinning gold ring)
+    case conflict             // HEAD with warning badge
+    case resolving            // HEAD with resolving indicator
+    case remote               // commit authored by remote (pull)
+    case merge                // merge commit (dual-color)
+    case dimmed               // branch was merged — visually de-emphasized
+}
+
+/// Visual representation of a branch lane.
+struct VLane: Identifiable, Equatable {
+    let id: String            // branch name
+    let lane: Int
+    let color: Color
+    var isActive: Bool
+    var isDimmed: Bool        // post-merge de-emphasis
+}
+
+/// A dashed arc from a source tip to a merge commit.
+struct VMergeArc: Identifiable, Equatable {
+    let id: String            // "\(fromId)->\(toId)"
+    let fromNodeId: String
+    let toNodeId: String
+    let color: Color
+}
+
+/// An animated arrow for push/pull operations.
+struct VArrow: Identifiable, Equatable {
+    enum Direction: Equatable { case up, down }
+    let id: String
+    let direction: Direction
+    let color: Color
+}
+
+/// Remote cloud indicator.
+struct VRemote: Equatable {
+    var isVisible: Bool
+    var isSynced: Bool
+    var anchorNodeId: String?   // pinned to this node's position
+}
+
+/// Complete visual graph model — a pure value type derived from GitRepositoryState.
+/// The renderer diffs consecutive models to produce animations.
+struct VGraphModel: Equatable {
+    var lanes: [VLane]      = []
+    var nodes: [VNode]      = []
+    var arcs:  [VMergeArc] = []
+    var headNodeId: String?
+    var floatingHead: Bool  = false   // HEAD badge not attached to any node (post-init, pre-commit)
+    var remote: VRemote     = VRemote(isVisible: false, isSynced: false)
+    var arrows: [VArrow]   = []
+}
+
+// ============================================================
+// MARK: - Graph Model Builder
+// ============================================================
+
+/// Derives a VGraphModel from the observable GitRepositoryState.
+/// This is the single source of truth for the visual layout.
+enum VGraphBuilder {
+
+    @MainActor static func build(from repo: GitRepositoryState) -> VGraphModel {
+        var model = VGraphModel()
+        guard repo.isInitialized else { return model }
+
+        // --- Lane assignment ---
+        var laneMap: [String: Int] = [:]
+        var colorMap: [String: Color] = [:]
+        var laneIndex = 0
+        for branch in repo.branches {
+            let assignedLane: Int
+            if branch.name == "main" || branch.name == "master" {
+                assignedLane = 0
+            } else {
+                if laneMap[branch.name] == nil { laneIndex += 1 }
+                assignedLane = laneMap[branch.name] ?? laneIndex
+            }
+            laneMap[branch.name] = assignedLane
+            colorMap[branch.name] = branch.color
+        }
+
+        // --- VLane objects ---
+        let mergedBranches = mergedBranchNames(repo)
+        for branch in repo.branches {
+            let lane = laneMap[branch.name] ?? 0
+            model.lanes.append(VLane(
+                id:       branch.name,
+                lane:     lane,
+                color:    branch.color,
+                isActive: branch.name == repo.currentBranch,
+                isDimmed: mergedBranches.contains(branch.name)
+            ))
+        }
+
+        // --- HEAD resolution ---
+        let currentBranch = repo.branches.first(where: { $0.name == repo.currentBranch })
+        let headCommitId  = currentBranch?.headCommitId
+
+        // --- No commits yet: show placeholder + floating HEAD ---
+        if repo.commits.isEmpty {
+            model.floatingHead = true
+            return model
+        }
+
+        // --- VNode objects ---
+        for (col, commit) in repo.commits.enumerated() {
+            let lane  = laneMap[commit.branch] ?? 0
+            let color = colorMap[commit.branch] ?? .purple
+            let isHead   = commit.id == headCommitId
+            let isStaged = isHead && !repo.stagedFiles.isEmpty
+
+            let style = nodeStyle(
+                commit:   commit,
+                isHead:   isHead,
+                isStaged: isStaged,
+                isDimmed: mergedBranches.contains(commit.branch) && !isHead,
+                repo:     repo
+            )
+
+            model.nodes.append(VNode(
+                id:       commit.id,
+                message:  commit.message,
+                branch:   commit.branch,
+                lane:     lane,
+                column:   col,
+                parentId: commit.parentId,
+                color:    color,
+                style:    style
+            ))
+        }
+
+        model.headNodeId  = headCommitId
+        model.floatingHead = false
+
+        // --- Merge arcs ---
+        for node in model.nodes where node.message.hasPrefix("Merge branch '") {
+            let rest = node.message.dropFirst("Merge branch '".count)
+            if let eq = rest.firstIndex(of: "'") {
+                let srcBranch = String(rest[..<eq])
+                if let tip = model.nodes.last(where: { $0.branch == srcBranch && $0.column < node.column }) {
+                    let color = colorMap[srcBranch] ?? .orange
+                    model.arcs.append(VMergeArc(
+                        id:         "\(tip.id)->\(node.id)",
+                        fromNodeId: tip.id,
+                        toNodeId:   node.id,
+                        color:      color
+                    ))
+                }
+            }
+        }
+
+        // --- Remote ---
+        if repo.hasRemote {
+            let anchor = model.nodes.filter { laneMap[$0.branch] == 0 }.last
+            let action = repo.lastAction
+            let isSynced = action?.type == .push
+            model.remote = VRemote(
+                isVisible:    true,
+                isSynced:     isSynced,
+                anchorNodeId: anchor?.id
+            )
+            // Arrows
+            if action?.type == .push {
+                model.arrows = [VArrow(id: "push", direction: .up, color: GitTheme.cyan)]
+            } else if action?.type == .pull {
+                model.arrows = [VArrow(id: "pull", direction: .down, color: GitTheme.blue)]
+            }
+        }
+
+        return model
+    }
+
+    // ---- Helpers ----
+
+    @MainActor private static func nodeStyle(
+        commit: GitCommit,
+        isHead: Bool,
+        isStaged: Bool,
+        isDimmed: Bool,
+        repo: GitRepositoryState
+    ) -> VNodeStyle {
+        let isMerge = commit.message.hasPrefix("Merge branch '")
+        let isRemotePull = commit.message == "Remote changes"
+
+        if isDimmed   { return .dimmed }
+        if isMerge    { return .merge }
+        if isRemotePull { return .remote }
+        if isStaged   { return .staged }
+        if isHead     {
+            // Check for conflict state (last action was status on conflict level)
+            if let action = repo.lastAction, action.type == .status { return .conflict }
+            return .head
+        }
+        return .normal
+    }
+
+    @MainActor private static func mergedBranchNames(_ repo: GitRepositoryState) -> Set<String> {
+        var result = Set<String>()
+        for commit in repo.commits where commit.message.hasPrefix("Merge branch '") {
+            let rest = commit.message.dropFirst("Merge branch '".count)
+            if let eq = rest.firstIndex(of: "'") {
+                result.insert(String(rest[..<eq]))
+            }
+        }
+        return result
+    }
+}
+
+// ============================================================
+// MARK: - Layout Engine
+// ============================================================
+
+/// Computes pixel-space positions for nodes, given a VGraphModel.
+struct VLayout {
+    let nodeRadius: CGFloat  = 20
+    let hSpacing:   CGFloat  = 88     // column width
+    let vSpacing:   CGFloat  = 64     // lane height
+    let leftPad:    CGFloat  = 40
+    let topPad:     CGFloat  = 56     // room above node for HEAD badge
+
+    func center(for node: VNode) -> CGPoint {
+        CGPoint(
+            x: leftPad + CGFloat(node.column) * hSpacing,
+            y: topPad  + CGFloat(node.lane)   * vSpacing
+        )
+    }
+
+    func placeholderCenter(lane: Int = 0) -> CGPoint {
+        CGPoint(x: leftPad, y: topPad + CGFloat(lane) * vSpacing)
+    }
+
+    func canvasSize(model: VGraphModel) -> CGSize {
+        let maxCol  = model.nodes.map(\.column).max() ?? 0
+        let maxLane = model.nodes.map(\.lane).max()   ?? 0
+        let w = leftPad + CGFloat(maxCol + 1) * hSpacing + 200
+        let h = topPad  + CGFloat(maxLane + 1) * vSpacing + 40
+        return CGSize(width: max(w, 300), height: max(h, 130))
+    }
+}
+
+// ============================================================
+// MARK: - GitVisualizerView  (SwiftUI entry point)
+// ============================================================
 
 struct GitVisualizerView: View {
 
     var repoState: GitRepositoryState
 
-    // Layout constants
-    private let r:    CGFloat = 18   // node radius
-    private let hSp:  CGFloat = 80   // horizontal spacing (center-to-center)
-    private let vSp:  CGFloat = 62   // vertical spacing (lane-to-lane)
-    private let lPad: CGFloat = 36   // left canvas padding
-    private let tPad: CGFloat = 50   // top padding (room for HEAD badge above)
+    // Diff-state: previous and current graph model
+    @State private var currentModel:  VGraphModel = VGraphModel()
+    @State private var previousModel: VGraphModel = VGraphModel()
 
-    @State private var selectedCommit: GitCommit?
-    @State private var pulseOn   = false
+    // Animation drivers
+    @State private var pulseHead       = false
+    @State private var spinStage       = false
+    @State private var pushArrowOffset: CGFloat = 0
+    @State private var pullArrowOffset: CGFloat = 0
+    @State private var arrowOpacity:   Double   = 0
+
+    @State private var selectedNodeId: String?
     @State private var showGuide = false
 
-    // MARK: – Lane & Color Maps
-
-    private var branchLanes: [String: Int] {
-        var result: [String: Int] = [:]
-        var next = 1
-        for branch in repoState.branches where branch.name == "main" { result["main"] = 0 }
-        if result.isEmpty, let first = repoState.branches.first { result[first.name] = 0; next = 1 }
-        for branch in repoState.branches where branch.name != "main" {
-            if result[branch.name] == nil { result[branch.name] = next; next += 1 }
-        }
-        return result
-    }
-
-    private var colorMap: [String: Color] {
-        Dictionary(uniqueKeysWithValues: repoState.branches.map { ($0.name, $0.color) })
-    }
-
-    // MARK: – Computed Layouts
-
-    private var layouts: [CommitLayout] {
-        let l = branchLanes; let c = colorMap
-        return repoState.commits.enumerated().map { idx, commit in
-            let lane  = l[commit.branch] ?? 0
-            let color = c[commit.branch] ?? GitTheme.purple
-            return CommitLayout(
-                commit:      commit,
-                lane:        lane,
-                globalIndex: idx,
-                center:      CGPoint(x: lPad + CGFloat(idx) * hSp,
-                                     y: tPad + CGFloat(lane) * vSp),
-                color:       color
-            )
-        }
-    }
-
-    private var byId: [String: CommitLayout] {
-        Dictionary(uniqueKeysWithValues: layouts.map { ($0.id, $0) })
-    }
-
-    private var headLayout: CommitLayout? {
-        guard let branch = repoState.branches.first(where: { $0.name == repoState.currentBranch }),
-              let headId = branch.headCommitId else { return nil }
-        return byId[headId]
-    }
-
-    private var canvasSize: CGSize {
-        let maxLane   = branchLanes.values.max() ?? 0
-        let commitCnt = max(repoState.commits.count, 1)
-        let w = lPad + CGFloat(commitCnt) * hSp + 190
-        let h = tPad + CGFloat(maxLane + 1) * vSp + 32
-        return CGSize(width: max(w, 280), height: max(h, 120))
-    }
-
-    /// Dashed arcs for merge commits.
-    private var mergeArcs: [(from: CommitLayout, to: CommitLayout)] {
-        layouts.compactMap { node in
-            guard node.commit.message.hasPrefix("Merge branch '") else { return nil }
-            let rest = node.commit.message.dropFirst("Merge branch '".count)
-            guard let eq = rest.firstIndex(of: "'") else { return nil }
-            let src = String(rest[..<eq])
-            let candidates = layouts.filter { $0.commit.branch == src && $0.globalIndex < node.globalIndex }
-            guard let tip = candidates.last else { return nil }
-            return (from: tip, to: node)
-        }
-    }
-
-    // MARK: – Body
+    private let layout = VLayout()
 
     var body: some View {
         VStack(spacing: 0) {
             headerBar
+            Divider().background(Color.white.opacity(0.06))
 
             if repoState.isInitialized {
                 graphScroller
-
-                if let commit = selectedCommit {
-                    Divider().overlay(Color.white.opacity(0.08))
-                    commitInspector(commit)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                } else if let action = repoState.lastAction {
-                    Divider().overlay(Color.white.opacity(0.08))
-                    actionStrip(action)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
-                }
+                    .frame(maxHeight: .infinity)
+                actionFooter
             } else {
                 emptyState
+                    .frame(maxHeight: .infinity)
             }
         }
-        .background(RoundedRectangle(cornerRadius: 20).fill(GitTheme.darkBackground))
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(GitTheme.darkBackground)
+        )
         .sheet(isPresented: $showGuide) { VisualizerGuideSheet() }
-        .onAppear { pulseOn = true }
+        .onAppear { pulseHead = true; spinStage = true }
+        // React to state changes → rebuild model and animate diff
+        .onChange(of: repoState.commits.count)        { _,_ in rebuildModel() }
+        .onChange(of: repoState.currentBranch)        { _,_ in rebuildModel() }
+        .onChange(of: repoState.stagedFiles.count)    { _,_ in rebuildModel() }
+        .onChange(of: repoState.hasRemote)            { _,_ in rebuildModel() }
+        .onChange(of: repoState.isInitialized)        { _,_ in rebuildModel() }
+        .onChange(of: repoState.lastAction?.command)  { _,_ in rebuildModel() }
+        .onAppear { rebuildModel() }
     }
 
-    // MARK: – Graph Scroller
+    // ── Rebuild: diff previous → new, then animate ──────────────────
+
+    private func rebuildModel() {
+        let newModel = VGraphBuilder.build(from: repoState)
+        guard newModel != currentModel else { return }
+        previousModel = currentModel
+
+        // Trigger arrow animations
+        if newModel.arrows.contains(where: { $0.direction == .up }) {
+            animatePushArrow()
+        }
+        if newModel.arrows.contains(where: { $0.direction == .down }) {
+            animatePullArrow()
+        }
+
+        withAnimation(.spring(response: 0.45, dampingFraction: 0.72)) {
+            currentModel = newModel
+        }
+    }
+
+    private func animatePushArrow() {
+        arrowOpacity = 1
+        pushArrowOffset = 0
+        withAnimation(.easeIn(duration: 0.7)) {
+            pushArrowOffset = -48
+        }
+        withAnimation(.easeIn(duration: 0.7).delay(0.5)) {
+            arrowOpacity = 0
+        }
+    }
+
+    private func animatePullArrow() {
+        arrowOpacity = 1
+        pullArrowOffset = 0
+        withAnimation(.easeOut(duration: 0.7)) {
+            pullArrowOffset = 48
+        }
+        withAnimation(.easeOut(duration: 0.7).delay(0.5)) {
+            arrowOpacity = 0
+        }
+    }
+
+    // ============================================================
+    // MARK: - Graph Scroller
+    // ============================================================
 
     private var graphScroller: some View {
-        ScrollViewReader { proxy in
+        let size = layout.canvasSize(model: currentModel)
+        return ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
-                graphCanvas
-                    .frame(width: canvasSize.width, height: canvasSize.height)
-            }
-            .onChange(of: repoState.commits.count) { _, _ in
-                if let last = layouts.last {
-                    withAnimation(.spring(response: 0.5)) { proxy.scrollTo(last.id, anchor: .trailing) }
+                ZStack(alignment: .topLeading) {
+                    graphCanvas(size: size)
+                        .frame(width: size.width, height: size.height)
                 }
             }
-            .onChange(of: repoState.currentBranch) { _, _ in
-                if let head = headLayout {
-                    withAnimation(.spring()) { proxy.scrollTo(head.id, anchor: .center) }
+            .onChange(of: currentModel.headNodeId) { _, headId in
+                if let headId {
+                    withAnimation(.spring()) { proxy.scrollTo(headId, anchor: .center) }
                 }
-            }
-        }
-        .frame(maxHeight: .infinity)
-    }
-
-    // MARK: – Graph Canvas
-
-    private var graphCanvas: some View {
-        ZStack(alignment: .topLeading) {
-            Canvas { ctx, _ in drawLaneTracks(&ctx) }
-                .frame(width: canvasSize.width, height: canvasSize.height)
-
-            Canvas { ctx, _ in drawConnections(&ctx) }
-                .frame(width: canvasSize.width, height: canvasSize.height)
-
-            Canvas { ctx, _ in drawMergeArcs(&ctx) }
-                .frame(width: canvasSize.width, height: canvasSize.height)
-
-            if repoState.hasRemote    { remoteOriginView }
-            if repoState.commits.isEmpty { initPlaceholder }
-
-            ForEach(layouts) { node in
-                commitNodeView(node).id(node.id)
-            }
-
-            ForEach(repoState.branches) { branch in
-                branchLabelView(for: branch)
             }
         }
     }
 
-    // MARK: – Canvas Drawing
+    // ============================================================
+    // MARK: - Graph Canvas
+    // ============================================================
+
+    @ViewBuilder
+    private func graphCanvas(size: CGSize) -> some View {
+
+        // 1. Background lane tracks
+        Canvas { ctx, _ in drawLaneTracks(&ctx) }
+
+        // 2. Parent–child connection lines
+        Canvas { ctx, _ in drawConnections(&ctx) }
+
+        // 3. Merge arcs (dashed + arrowhead)
+        Canvas { ctx, _ in drawMergeArcs(&ctx) }
+
+        // 4. Remote cloud + animated arrows
+        if currentModel.remote.isVisible {
+            remoteOverlay
+        }
+
+        // 5. Placeholder when no commits yet
+        if currentModel.nodes.isEmpty && currentModel.floatingHead == false {
+            initPlaceholder
+        } else if currentModel.floatingHead {
+            floatingHeadView
+        }
+
+        // 6. Commit nodes (identity-stable for diff animation)
+        ForEach(currentModel.nodes) { node in
+            nodeView(node)
+                .id(node.id)
+                .transition(
+                    node.style == .dimmed
+                        ? .opacity
+                        : .asymmetric(
+                            insertion:  .scale(scale: 0.4).combined(with: .opacity),
+                            removal:    .scale(scale: 0.1).combined(with: .opacity)
+                        )
+                )
+        }
+
+        // 7. Branch labels (right-of-head)
+        ForEach(currentModel.lanes) { lane in
+            branchLabel(lane)
+        }
+    }
+
+    // ============================================================
+    // MARK: - Canvas Drawing (pure geometry, no SwiftUI state)
+    // ============================================================
+
+    private func nodeCenter(_ nodeId: String) -> CGPoint? {
+        currentModel.nodes.first(where: { $0.id == nodeId }).map { layout.center(for: $0) }
+    }
 
     private func drawLaneTracks(_ ctx: inout GraphicsContext) {
-        for (branchName, lane) in branchLanes {
-            guard let color = colorMap[branchName] else { continue }
-            let laneNodes = layouts.filter { $0.lane == lane }
-            guard laneNodes.count >= 2,
-                  let first = laneNodes.first, let last = laneNodes.last else { continue }
+        for lane in currentModel.lanes {
+            let laneNodes = currentModel.nodes.filter { $0.lane == lane.lane }
+            guard let first = laneNodes.first, let last = laneNodes.last else { continue }
             var p = Path()
-            p.move(to: first.center); p.addLine(to: last.center)
-            ctx.stroke(p, with: .color(color.opacity(0.07)), lineWidth: 8)
+            p.move(to: layout.center(for: first))
+            p.addLine(to: layout.center(for: last))
+            ctx.stroke(p, with: .color(lane.color.opacity(lane.isDimmed ? 0.04 : 0.08)), lineWidth: 10)
         }
     }
 
     private func drawConnections(_ ctx: inout GraphicsContext) {
-        for node in layouts {
-            guard let parentId = node.commit.parentId,
-                  let parent   = byId[parentId] else { continue }
-            let from = CGPoint(x: parent.center.x + r, y: parent.center.y)
-            let to   = CGPoint(x: node.center.x   - r, y: node.center.y)
+        let r = layout.nodeRadius
+        for node in currentModel.nodes {
+            guard let parentId = node.parentId,
+                  let parent   = currentModel.nodes.first(where: { $0.id == parentId }) else { continue }
+            let from = CGPoint(x: layout.center(for: parent).x + r, y: layout.center(for: parent).y)
+            let to   = CGPoint(x: layout.center(for: node).x   - r, y: layout.center(for: node).y)
             var p = Path()
             if parent.lane == node.lane {
                 p.move(to: from); p.addLine(to: to)
-                ctx.stroke(p, with: .color(node.color.opacity(0.72)), lineWidth: 2.5)
+                let alpha: Double = node.style == .dimmed ? 0.22 : 0.72
+                ctx.stroke(p, with: .color(node.color.opacity(alpha)), lineWidth: 2.5)
             } else {
                 let dx = to.x - from.x
                 p.move(to: from)
-                p.addCurve(to: to,
-                           control1: CGPoint(x: from.x + dx * 0.55, y: from.y),
-                           control2: CGPoint(x: to.x   - dx * 0.2,  y: to.y))
-                ctx.stroke(p, with: .color(node.color.opacity(0.62)), lineWidth: 2.5)
+                p.addCurve(
+                    to:       to,
+                    control1: CGPoint(x: from.x + dx * 0.6, y: from.y),
+                    control2: CGPoint(x: to.x   - dx * 0.2, y: to.y)
+                )
+                ctx.stroke(p, with: .color(node.color.opacity(0.65)), lineWidth: 2.5)
             }
         }
     }
 
     private func drawMergeArcs(_ ctx: inout GraphicsContext) {
-        for arc in mergeArcs {
-            let from = CGPoint(x: arc.from.center.x + r, y: arc.from.center.y)
-            let to   = CGPoint(x: arc.to.center.x   - r, y: arc.to.center.y)
+        let r = layout.nodeRadius
+        for arc in currentModel.arcs {
+            guard let fromPt = nodeCenter(arc.fromNodeId),
+                  let toPt   = nodeCenter(arc.toNodeId) else { continue }
+            let from = CGPoint(x: fromPt.x + r, y: fromPt.y)
+            let to   = CGPoint(x: toPt.x   - r, y: toPt.y)
             var p = Path()
             p.move(to: from)
             p.addCurve(to: to,
-                       control1: CGPoint(x: to.x, y: from.y),
-                       control2: CGPoint(x: to.x - 18, y: to.y))
-            ctx.stroke(p, with: .color(arc.from.color.opacity(0.68)),
-                       style: StrokeStyle(lineWidth: 2.2, dash: [5, 3.5]))
+                       control1: CGPoint(x: to.x,      y: from.y),
+                       control2: CGPoint(x: to.x - 14, y: to.y))
+            ctx.stroke(p,
+                with: .color(arc.color.opacity(0.72)),
+                style: StrokeStyle(lineWidth: 2.2, dash: [5, 3.5]))
 
             // Arrowhead
             let angle  = atan2(to.y - from.y, to.x - from.x)
-            let arrowL: CGFloat = 9
-            var arrow  = Path()
+            let len: CGFloat = 9
+            var arrow = Path()
             arrow.move(to: to)
-            arrow.addLine(to: CGPoint(x: to.x - arrowL * cos(angle - 0.45),
-                                      y: to.y - arrowL * sin(angle - 0.45)))
+            arrow.addLine(to: CGPoint(x: to.x - len * cos(angle - 0.45),
+                                       y: to.y - len * sin(angle - 0.45)))
             arrow.move(to: to)
-            arrow.addLine(to: CGPoint(x: to.x - arrowL * cos(angle + 0.45),
-                                      y: to.y - arrowL * sin(angle + 0.45)))
-            ctx.stroke(arrow, with: .color(arc.from.color.opacity(0.7)), lineWidth: 1.8)
+            arrow.addLine(to: CGPoint(x: to.x - len * cos(angle + 0.45),
+                                       y: to.y - len * sin(angle + 0.45)))
+            ctx.stroke(arrow, with: .color(arc.color.opacity(0.75)), lineWidth: 1.8)
         }
     }
 
-    // MARK: – Special Overlays
+    // ============================================================
+    // MARK: - Special Overlays
+    // ============================================================
 
-    private var remoteOriginView: some View {
-        let mainNodes = layouts.filter { branchLanes[$0.commit.branch] == 0 }
-        guard let lastMain = mainNodes.last else { return AnyView(EmptyView()) }
-        return AnyView(
-            VStack(spacing: 3) {
-                Image(systemName: "cloud.fill")
-                    .font(.system(size: 22))
-                    .foregroundStyle(LinearGradient(
-                        colors: [GitTheme.cyan, GitTheme.blue], startPoint: .top, endPoint: .bottom))
-                    .shadow(color: GitTheme.cyan.opacity(0.45), radius: 6)
-                Text("origin")
-                    .font(.system(size: 8, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(GitTheme.cyan.opacity(0.65))
+    @ViewBuilder
+    private var remoteOverlay: some View {
+        if let anchorId = currentModel.remote.anchorNodeId,
+           let anchor = currentModel.nodes.first(where: { $0.id == anchorId }) {
+            let pt = layout.center(for: anchor)
+            ZStack {
+                // Animated push arrow
+                if currentModel.arrows.contains(where: { $0.direction == .up }) {
+                    Image(systemName: "arrow.up")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(GitTheme.cyan)
+                        .offset(y: pushArrowOffset)
+                        .opacity(arrowOpacity)
+                        .position(x: pt.x, y: pt.y - 30)
+                }
+                // Animated pull arrow
+                if currentModel.arrows.contains(where: { $0.direction == .down }) {
+                    Image(systemName: "arrow.down")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(GitTheme.blue)
+                        .offset(y: pullArrowOffset)
+                        .opacity(arrowOpacity)
+                        .position(x: pt.x, y: pt.y - 54)
+                }
+                // Cloud icon
+                VStack(spacing: 2) {
+                    Image(systemName: currentModel.remote.isSynced ? "checkmark.icloud.fill" : "icloud")
+                        .font(.system(size: 24))
+                        .foregroundStyle(LinearGradient(
+                            colors: [GitTheme.cyan, GitTheme.blue],
+                            startPoint: .top, endPoint: .bottom))
+                        .shadow(color: GitTheme.cyan.opacity(0.5), radius: 7)
+                    Text("origin")
+                        .font(.system(size: 8, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(GitTheme.cyan.opacity(0.65))
+                }
+                .position(x: pt.x + layout.hSpacing * 0.85, y: pt.y - 40)
             }
-            .position(x: lastMain.center.x + hSp * 0.85, y: lastMain.center.y - 36)
-        )
+        }
     }
 
     private var initPlaceholder: some View {
-        ZStack {
+        let pt = layout.placeholderCenter()
+        return ZStack {
             Circle()
                 .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [5, 4]))
-                .foregroundStyle(GitTheme.gray.opacity(0.35))
-                .frame(width: r * 2, height: r * 2)
-            Text("...")
-                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(GitTheme.gray.opacity(0.4))
+                .frame(width: 40, height: 40)
+            Text("···")
+                .font(.system(size: 11, weight: .bold))
                 .foregroundStyle(GitTheme.gray.opacity(0.5))
         }
-        .position(x: lPad, y: tPad)
+        .position(pt)
+        .transition(.opacity)
     }
 
-    // MARK: – Commit Node View
-
-    private func commitNodeView(_ node: CommitLayout) -> some View {
-        let isHead     = headLayout?.id == node.id
-        let isNew      = node.commit.isNew
-        let isStaged   = isHead && !repoState.stagedFiles.isEmpty
-        let isSelected = selectedCommit?.id == node.id
-        let d = r * 2
-
-        return ZStack {
-            // Ambient glow (new commits)
-            if isNew {
+    private var floatingHeadView: some View {
+        let pt = layout.placeholderCenter()
+        return VStack(spacing: 6) {
+            headBadge
+            ZStack {
                 Circle()
-                    .fill(node.color.opacity(0.28))
-                    .frame(width: d + 22, height: d + 22)
+                    .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [5, 4]))
+                    .foregroundStyle(GitTheme.gray.opacity(0.4))
+                    .frame(width: 40, height: 40)
+                // Staging ring on placeholder
+                if !repoState.stagedFiles.isEmpty {
+                    Circle()
+                        .stroke(
+                            AngularGradient(
+                                colors: [GitTheme.yellow, GitTheme.orange, GitTheme.yellow],
+                                center: .center),
+                            lineWidth: 3)
+                        .frame(width: 52, height: 52)
+                        .rotationEffect(.degrees(spinStage ? 360 : 0))
+                        .animation(.linear(duration: 2.5).repeatForever(autoreverses: false), value: spinStage)
+                    fileChips(count: repoState.stagedFiles.count)
+                        .offset(y: 34)
+                }
+                Text("···")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(GitTheme.gray.opacity(0.5))
+            }
+        }
+        .position(x: pt.x, y: pt.y)
+        .transition(.scale(scale: 0.5).combined(with: .opacity))
+    }
+
+    // ============================================================
+    // MARK: - Node View
+    // ============================================================
+
+    @ViewBuilder
+    private func nodeView(_ node: VNode) -> some View {
+        let pt     = layout.center(for: node)
+        let r      = layout.nodeRadius
+        let d      = r * 2
+        let isHead = node.id == currentModel.headNodeId
+
+        ZStack {
+            // Ambient glow for new / head commits
+            if node.style == .head || node.style == .staged || node.style == .merge {
+                Circle()
+                    .fill(node.color.opacity(0.25))
+                    .frame(width: d + 24, height: d + 24)
                     .blur(radius: 10)
             }
 
-            // Rotating staging ring
-            if isStaged {
+            // Staging ring (spinning gold)
+            if node.style == .staged {
                 Circle()
                     .stroke(
                         AngularGradient(
                             colors: [GitTheme.yellow, GitTheme.orange, GitTheme.yellow],
                             center: .center),
-                        lineWidth: 3)
+                        lineWidth: 3.5)
+                    .frame(width: d + 16, height: d + 16)
+                    .rotationEffect(.degrees(spinStage ? 360 : 0))
+                    .animation(.linear(duration: 2.5).repeatForever(autoreverses: false), value: spinStage)
+            }
+
+            // Conflict / resolving badge ring
+            if node.style == .conflict {
+                Circle()
+                    .stroke(GitTheme.red.opacity(0.8), lineWidth: 2.5)
                     .frame(width: d + 14, height: d + 14)
-                    .rotationEffect(.degrees(pulseOn ? 360 : 0))
-                    .animation(.linear(duration: 2.8).repeatForever(autoreverses: false), value: pulseOn)
+            }
+            if node.style == .resolving {
+                Circle()
+                    .stroke(GitTheme.yellow.opacity(0.8), lineWidth: 2.5)
+                    .frame(width: d + 14, height: d + 14)
             }
 
             // Selection ring
-            if isSelected {
+            if selectedNodeId == node.id {
                 Circle()
-                    .stroke(.white.opacity(0.6), lineWidth: 2.5)
-                    .frame(width: d + 7, height: d + 7)
+                    .stroke(.white.opacity(0.55), lineWidth: 2.5)
+                    .frame(width: d + 8, height: d + 8)
             }
 
-            // Main commit circle
+            // Main circle — fill style depends on node kind
             Circle()
-                .fill(LinearGradient(
-                    colors: [node.color.opacity(0.95), node.color.opacity(0.6)],
-                    startPoint: .topLeading, endPoint: .bottomTrailing))
+                .fill(mainFill(for: node))
                 .frame(width: d, height: d)
-                .overlay(Circle().stroke(.white.opacity(isNew ? 0.55 : 0.22), lineWidth: 1.5))
-                .shadow(color: node.color.opacity(isNew ? 0.65 : 0.28), radius: isNew ? 10 : 4)
+                .overlay(
+                    Circle().stroke(
+                        mainStroke(for: node),
+                        lineWidth: node.style == .merge ? 2 : 1.5)
+                )
+                .shadow(
+                    color: node.color.opacity(isHead ? 0.65 : 0.25),
+                    radius: isHead ? 10 : 4
+                )
+                .opacity(node.style == .dimmed ? 0.35 : 1.0)
 
             // Short hash
-            Text(String(node.commit.id.prefix(4)))
+            Text(String(node.id.prefix(4)))
                 .font(.system(size: 9, weight: .bold, design: .monospaced))
-                .foregroundStyle(.white.opacity(0.92))
+                .foregroundStyle(.white.opacity(node.style == .dimmed ? 0.4 : 0.92))
 
-            // HEAD badge
-            if isHead {
-                headBadgeView
-                    .offset(y: -(r + 17))
+            // Status badges
+            if node.style == .conflict {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 11))
+                    .foregroundStyle(GitTheme.red)
+                    .offset(x: r - 2, y: -(r - 2))
+            }
+            if node.style == .resolving {
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.system(size: 11))
+                    .foregroundStyle(GitTheme.yellow)
+                    .offset(x: r - 2, y: -(r - 2))
+            }
+            if node.style == .remote {
+                Image(systemName: "arrow.down.circle.fill")
+                    .font(.system(size: 11))
+                    .foregroundStyle(GitTheme.blue)
+                    .offset(x: r - 2, y: -(r - 2))
             }
 
-            // Staged file chips
-            if isStaged {
-                HStack(spacing: 2) {
-                    ForEach(0..<min(repoState.stagedFiles.count, 3), id: \.self) { _ in
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(GitTheme.yellow.opacity(0.9))
-                            .frame(width: 5, height: 7)
-                    }
-                    if repoState.stagedFiles.count > 3 {
-                        Text("+\(repoState.stagedFiles.count - 3)")
-                            .font(.system(size: 7, weight: .bold))
-                            .foregroundStyle(GitTheme.yellow)
-                    }
-                }
-                .offset(y: r + 11)
+            // HEAD badge above node
+            if isHead && !currentModel.floatingHead {
+                headBadge
+                    .offset(y: -(r + 18))
+            }
+
+            // Staged file chips below node
+            if node.style == .staged {
+                fileChips(count: repoState.stagedFiles.count)
+                    .offset(y: r + 14)
             }
 
             // Commit message label
-            Text(node.commit.message)
-                .font(.system(size: isSelected ? 9.5 : 8.5, weight: isSelected ? .medium : .regular))
-                .foregroundStyle(isSelected ? .white.opacity(0.9) : .white.opacity(0.42))
-                .lineLimit(isSelected ? 2 : 1)
-                .multilineTextAlignment(.center)
-                .frame(width: max(d + 48, 80))
-                .background {
-                    if isSelected {
-                        RoundedRectangle(cornerRadius: 5)
-                            .fill(Color.black.opacity(0.6))
-                            .padding(.horizontal, -5).padding(.vertical, -2)
-                    }
-                }
-                .offset(y: r + (isStaged ? 26 : 14))
+            commitLabel(node)
+                .offset(y: r + (node.style == .staged ? 36 : 16))
         }
-        .scaleEffect(isNew ? 1.1 : 1.0)
-        .animation(.spring(response: 0.45, dampingFraction: 0.6), value: isNew)
-        .frame(width: d + 34, height: d + 34)
-        .position(node.center)
+        .frame(width: d + 44, height: d + 44)
+        .position(pt)
+        .scaleEffect(isHead && node.style != .dimmed ? 1.08 : 1.0)
+        .animation(.spring(response: 0.45, dampingFraction: 0.65), value: isHead)
         .onTapGesture {
             withAnimation(.spring(response: 0.3)) {
-                selectedCommit = selectedCommit?.id == node.id ? nil : node.commit
+                selectedNodeId = selectedNodeId == node.id ? nil : node.id
             }
         }
     }
 
-    private var headBadgeView: some View {
+    private func mainFill(for node: VNode) -> AnyShapeStyle {
+        if node.style == .merge {
+            // Dual-color merge commit
+            return AnyShapeStyle(LinearGradient(
+                colors: [node.color, node.color.opacity(0.5), GitTheme.orange],
+                startPoint: .topLeading,
+                endPoint:   .bottomTrailing))
+        }
+        return AnyShapeStyle(LinearGradient(
+            colors: [node.color.opacity(node.style == .dimmed ? 0.5 : 0.95),
+                     node.color.opacity(node.style == .dimmed ? 0.3 : 0.6)],
+            startPoint: .topLeading,
+            endPoint:   .bottomTrailing))
+    }
+
+    private func mainStroke(for node: VNode) -> some ShapeStyle {
+        if node.style == .merge {
+            return AnyShapeStyle(LinearGradient(
+                colors: [.white.opacity(0.6), GitTheme.orange.opacity(0.5)],
+                startPoint: .topLeading,
+                endPoint:   .bottomTrailing))
+        }
+        return AnyShapeStyle(Color.white.opacity(node.style == .dimmed ? 0.1 : 0.3))
+    }
+
+    private var headBadge: some View {
         HStack(spacing: 3) {
             Circle().fill(GitTheme.green).frame(width: 5, height: 5)
             Text("HEAD")
@@ -979,49 +758,91 @@ struct GitVisualizerView: View {
                 .overlay(Capsule().stroke(GitTheme.green.opacity(0.9), lineWidth: 1.2))
         )
         .shadow(color: GitTheme.green.opacity(0.55), radius: 5)
-        .scaleEffect(pulseOn ? 1.06 : 1.0)
-        .animation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true), value: pulseOn)
+        .scaleEffect(pulseHead ? 1.06 : 1.0)
+        .animation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true), value: pulseHead)
     }
 
-    // MARK: – Branch Label View
+    @ViewBuilder
+    private func fileChips(count: Int) -> some View {
+        HStack(spacing: 2) {
+            ForEach(0..<min(count, 3), id: \.self) { _ in
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(GitTheme.yellow.opacity(0.9))
+                    .frame(width: 5, height: 8)
+            }
+            if count > 3 {
+                Text("+\(count - 3)")
+                    .font(.system(size: 7, weight: .bold))
+                    .foregroundStyle(GitTheme.yellow)
+            }
+        }
+    }
 
     @ViewBuilder
-    private func branchLabelView(for branch: GitBranch) -> some View {
-        if let lane   = branchLanes[branch.name],
-           let headId = branch.headCommitId,
-           let head   = byId[headId] {
+    private func commitLabel(_ node: VNode) -> some View {
+        let isSelected = selectedNodeId == node.id
+        Text(node.message)
+            .font(.system(size: isSelected ? 9.5 : 8.5,
+                          weight: isSelected ? .medium : .regular))
+            .foregroundStyle(node.style == .dimmed
+                ? .white.opacity(0.25)
+                : (isSelected ? .white.opacity(0.9) : .white.opacity(0.5)))
+            .lineLimit(isSelected ? 2 : 1)
+            .multilineTextAlignment(.center)
+            .frame(width: layout.nodeRadius * 2 + 60)
+            .background {
+                if isSelected {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.black.opacity(0.65))
+                        .padding(.horizontal, -5).padding(.vertical, -2)
+                }
+            }
+    }
 
-            let isActive = branch.name == repoState.currentBranch
-            let cx = head.center.x + r + 68
-            let cy = tPad + CGFloat(lane) * vSp
+    // ============================================================
+    // MARK: - Branch Labels
+    // ============================================================
+
+    @ViewBuilder
+    private func branchLabel(_ lane: VLane) -> some View {
+        let branchNodes = currentModel.nodes.filter { $0.branch == lane.id }
+        if let tip = branchNodes.last {
+            let pt = layout.center(for: tip)
+            let labelX = pt.x + layout.nodeRadius + 62
 
             HStack(spacing: 4) {
-                if isActive {
+                if lane.isActive {
                     Circle().fill(GitTheme.green).frame(width: 5, height: 5)
                 } else {
-                    Image(systemName: "arrow.triangle.branch")
+                    Image(systemName: lane.isDimmed ? "checkmark" : "arrow.triangle.branch")
                         .font(.system(size: 7, weight: .semibold))
-                        .foregroundStyle(branch.color.opacity(0.7))
+                        .foregroundStyle(lane.color.opacity(lane.isDimmed ? 0.4 : 0.75))
                 }
-                Text(branch.name)
-                    .font(.system(size: 9, weight: isActive ? .bold : .medium))
+                Text(lane.id)
+                    .font(.system(size: 9, weight: lane.isActive ? .bold : .medium))
+                    .foregroundStyle(lane.isActive ? .white : lane.color.opacity(lane.isDimmed ? 0.4 : 0.85))
                     .lineLimit(1)
-                    .foregroundStyle(isActive ? .white : branch.color.opacity(0.85))
             }
             .padding(.horizontal, 7).padding(.vertical, 3.5)
             .background(
                 RoundedRectangle(cornerRadius: 5)
-                    .fill(branch.color.opacity(isActive ? 0.28 : 0.10))
-                    .overlay(RoundedRectangle(cornerRadius: 5)
-                        .stroke(branch.color.opacity(isActive ? 0.65 : 0.28), lineWidth: 1))
+                    .fill(lane.color.opacity(lane.isActive ? 0.28 : (lane.isDimmed ? 0.04 : 0.10)))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 5)
+                            .stroke(lane.color.opacity(lane.isActive ? 0.65 : (lane.isDimmed ? 0.15 : 0.28)), lineWidth: 1)
+                    )
             )
             .fixedSize()
-            .position(x: cx, y: cy)
-            .animation(.spring(response: 0.45), value: isActive)
+            .position(x: labelX, y: layout.topPad + CGFloat(lane.lane) * layout.vSpacing)
+            .opacity(lane.isDimmed ? 0.45 : 1)
+            .animation(.spring(response: 0.45), value: lane.isActive)
+            .animation(.easeInOut, value: lane.isDimmed)
         }
     }
 
-    // MARK: – Header Bar
+    // ============================================================
+    // MARK: - Header Bar
+    // ============================================================
 
     private var headerBar: some View {
         HStack {
@@ -1038,8 +859,8 @@ struct GitVisualizerView: View {
             Spacer()
 
             HStack(spacing: 10) {
-                StatBadge(icon: "circle.fill",           value: "\(repoState.commits.count)",  color: GitTheme.blue)
-                StatBadge(icon: "arrow.triangle.branch", value: "\(repoState.branches.count)", color: GitTheme.purple)
+                statBadge("circle.fill",           "\(repoState.commits.count)",  GitTheme.blue)
+                statBadge("arrow.triangle.branch", "\(repoState.branches.count)", GitTheme.purple)
                 if repoState.hasRemote {
                     Image(systemName: "cloud.fill").font(.system(size: 11)).foregroundStyle(GitTheme.cyan)
                 }
@@ -1052,94 +873,56 @@ struct GitVisualizerView: View {
                 }
                 Button { showGuide = true } label: {
                     Image(systemName: "questionmark.circle.fill")
-                        .font(.system(size: 22)).foregroundStyle(.white.opacity(0.4))
+                        .font(.system(size: 22)).foregroundStyle(.white.opacity(0.38))
                 }
             }
         }
         .padding(.horizontal, 14).padding(.vertical, 10)
         .background(Color(red: 0.10, green: 0.10, blue: 0.12))
-        .fixedSize(horizontal: false, vertical: true)
     }
 
-    // MARK: – Action Strip
-
-    private func actionStrip(_ action: GitAction) -> some View {
-        HStack(spacing: 10) {
-            ZStack {
-                Circle().fill(actionColor(action.type).opacity(0.18)).frame(width: 28, height: 28)
-                Image(systemName: actionIcon(action.type))
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(actionColor(action.type))
-            }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(action.command)
-                    .font(.system(size: 10, weight: .bold, design: .monospaced))
-                    .foregroundStyle(actionColor(action.type))
-                Text(action.explanation)
-                    .font(.system(size: 10))
-                    .foregroundStyle(.white.opacity(0.55))
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Spacer()
+    private func statBadge(_ icon: String, _ value: String, _ color: Color) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon).font(.system(size: 9))
+            Text(value).font(.system(size: 11, weight: .medium))
         }
-        .padding(.horizontal, 14).padding(.vertical, 9)
-        .background(Color.white.opacity(0.04))
-        .animation(.easeInOut, value: action.command)
+        .foregroundStyle(color.opacity(0.9))
     }
 
-    // MARK: – Commit Inspector
+    // ============================================================
+    // MARK: - Action Footer
+    // ============================================================
 
-    private func commitInspector(_ commit: GitCommit) -> some View {
-        HStack(spacing: 10) {
-            Circle()
-                .fill(colorMap[commit.branch] ?? GitTheme.blue)
-                .frame(width: 9, height: 9)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(commit.message)
-                    .font(.system(size: 12, weight: .semibold)).foregroundStyle(.white)
-                HStack(spacing: 8) {
-                    Text(commit.id)
-                        .font(.system(size: 10, design: .monospaced)).foregroundStyle(GitTheme.yellow)
-                    Text(commit.branch)
-                        .font(.system(size: 10)).foregroundStyle(.white.opacity(0.45))
-                    if let p = commit.parentId {
-                        Text("← \(p.prefix(4))")
-                            .font(.system(size: 10, design: .monospaced)).foregroundStyle(.white.opacity(0.3))
-                    }
+    @ViewBuilder
+    private var actionFooter: some View {
+        if let action = repoState.lastAction {
+            Divider().background(Color.white.opacity(0.06))
+            HStack(spacing: 10) {
+                ZStack {
+                    Circle().fill(footerColor(action.type).opacity(0.18)).frame(width: 28, height: 28)
+                    Image(systemName: footerIcon(action.type))
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(footerColor(action.type))
                 }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(action.command)
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .foregroundStyle(footerColor(action.type))
+                    Text(action.explanation)
+                        .font(.system(size: 10))
+                        .foregroundStyle(.white.opacity(0.55))
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer()
             }
-            Spacer()
-            Button { withAnimation { selectedCommit = nil } } label: {
-                Image(systemName: "xmark.circle.fill").foregroundStyle(.white.opacity(0.35))
-            }
+            .padding(.horizontal, 14).padding(.vertical, 9)
+            .background(Color.white.opacity(0.04))
+            .animation(.easeInOut, value: action.command)
         }
-        .padding(.horizontal, 14).padding(.vertical, 10)
-        .background(Color.white.opacity(0.06))
     }
 
-    // MARK: – Empty State
-
-    private var emptyState: some View {
-        VStack(spacing: 14) {
-            ZStack {
-                Circle().fill(GitTheme.gray.opacity(0.1)).frame(width: 64, height: 64)
-                Image(systemName: "folder.badge.questionmark")
-                    .font(.system(size: 28)).foregroundStyle(GitTheme.gray.opacity(0.6))
-            }
-            VStack(spacing: 5) {
-                Text("No Repository")
-                    .font(.system(size: 14, weight: .semibold)).foregroundStyle(.white.opacity(0.7))
-                Text("Run 'git init' to begin")
-                    .font(.system(size: 11, weight: .medium)).foregroundStyle(GitTheme.orange.opacity(0.8))
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    // MARK: – Helpers
-
-    private func actionIcon(_ type: GitAction.ActionType) -> String {
+    private func footerIcon(_ type: GitAction.ActionType) -> String {
         switch type {
         case .initialize: return "folder.badge.plus"
         case .commit:     return "circle.fill"
@@ -1154,7 +937,7 @@ struct GitVisualizerView: View {
         }
     }
 
-    private func actionColor(_ type: GitAction.ActionType) -> Color {
+    private func footerColor(_ type: GitAction.ActionType) -> Color {
         switch type {
         case .initialize: return GitTheme.purple
         case .commit:     return GitTheme.green
@@ -1168,24 +951,32 @@ struct GitVisualizerView: View {
         case .status:     return GitTheme.gray
         }
     }
-}
 
-// MARK: - Stat Badge
+    // ============================================================
+    // MARK: - Empty State (pre-init)
+    // ============================================================
 
-private struct StatBadge: View {
-    let icon: String
-    let value: String
-    let color: Color
-    var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: icon).font(.system(size: 9))
-            Text(value).font(.system(size: 11, weight: .medium))
+    private var emptyState: some View {
+        VStack(spacing: 16) {
+            ZStack {
+                Circle().fill(GitTheme.gray.opacity(0.1)).frame(width: 68, height: 68)
+                Image(systemName: "folder.badge.questionmark")
+                    .font(.system(size: 30)).foregroundStyle(GitTheme.gray.opacity(0.6))
+            }
+            VStack(spacing: 6) {
+                Text("No Repository")
+                    .font(.system(size: 15, weight: .semibold)).foregroundStyle(.white.opacity(0.7))
+                Text("Run 'git init' to begin")
+                    .font(.system(size: 12, weight: .medium)).foregroundStyle(GitTheme.orange.opacity(0.8))
+            }
         }
-        .foregroundStyle(color.opacity(0.9))
+        .frame(maxWidth: .infinity)
     }
 }
 
+// ============================================================
 // MARK: - Visualizer Guide Sheet
+// ============================================================
 
 struct VisualizerGuideSheet: View {
     @Environment(\.dismiss) var dismiss
@@ -1199,37 +990,31 @@ struct VisualizerGuideSheet: View {
                     .padding(.top, 10)
                 ScrollView {
                     VStack(alignment: .leading, spacing: 14) {
-                        guideRow(
-                            icon: AnyView(Circle().fill(GitTheme.blue).frame(width: 12, height: 12)),
-                            title: "Commits  (Circles)",
+                        row(icon: AnyView(Circle().fill(GitTheme.blue).frame(width: 12, height: 12)),
+                            title: "Commits (Circles)",
                             desc: "Each circle is a saved snapshot. The 4-char code is the short hash.")
-                        guideRow(
-                            icon: AnyView(Image(systemName: "arrow.triangle.branch").font(.system(size: 11)).foregroundStyle(GitTheme.purple)),
-                            title: "Branches  (Rows)",
+                        row(icon: AnyView(Image(systemName: "arrow.triangle.branch").font(.system(size: 11)).foregroundStyle(GitTheme.purple)),
+                            title: "Branches (Lanes)",
                             desc: "Each horizontal lane is a parallel timeline. main is always at the top.")
-                        guideRow(
-                            icon: AnyView(Rectangle().fill(GitTheme.purple.opacity(0.5)).frame(width: 18, height: 2.5)),
-                            title: "Connections  (Lines)",
-                            desc: "Solid lines = parent → child on same lane. Curved lines = branch fork.")
-                        guideRow(
-                            icon: AnyView(Rectangle().fill(GitTheme.orange.opacity(0.5)).frame(width: 18, height: 2).overlay(
-                                Path { p in p.move(to: CGPoint(x:0,y:1)); p.addLine(to: CGPoint(x:18,y:1)) }
-                                    .stroke(style: StrokeStyle(dash:[4,3])).foregroundStyle(GitTheme.orange))),
-                            title: "Merge Arcs  (Dashed)",
-                            desc: "Dashed curves + arrowhead show a branch being merged back into another.")
-                        guideRow(
-                            icon: AnyView(Text("HEAD").font(.system(size: 7, weight: .bold)).padding(.horizontal, 5).padding(.vertical, 2)
+                        row(icon: AnyView(Text("HEAD").font(.system(size: 7, weight: .bold)).padding(.horizontal, 5).padding(.vertical, 2)
                                 .background(Capsule().stroke(GitTheme.green, lineWidth: 1)).foregroundStyle(GitTheme.green)),
-                            title: "HEAD Badge",
-                            desc: "Pulsing green badge above the commit you're currently on. Moves on checkout.")
-                        guideRow(
-                            icon: AnyView(Circle().stroke(GitTheme.yellow, lineWidth: 2.5).frame(width: 14, height: 14)),
-                            title: "Staging Ring  (Spinning Gold)",
-                            desc: "Rotating gold ring = files are staged (git add) but not yet committed.")
-                        guideRow(
-                            icon: AnyView(Image(systemName: "cloud.fill").font(.system(size: 13)).foregroundStyle(GitTheme.cyan)),
+                            title: "HEAD Badge (Pulsing Green)",
+                            desc: "Shows where you currently are. Moves on checkout or new commits.")
+                        row(icon: AnyView(Circle().stroke(GitTheme.yellow, lineWidth: 2.5).frame(width: 14, height: 14)),
+                            title: "Staging Ring (Spinning Gold)",
+                            desc: "Rotating gold ring means files are staged (git add) but not committed yet.")
+                        row(icon: AnyView(Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 13)).foregroundStyle(GitTheme.red)),
+                            title: "Conflict Badge",
+                            desc: "Warning badge on HEAD when a merge conflict is detected.")
+                        row(icon: AnyView(Image(systemName: "icloud").font(.system(size: 13)).foregroundStyle(GitTheme.cyan)),
                             title: "Origin Cloud",
-                            desc: "Appears when a remote is configured. Represents your GitHub repository.")
+                            desc: "Appears when a remote is configured. Syncs visually after git push.")
+                        row(icon: AnyView(Rectangle().fill(GitTheme.orange.opacity(0.7)).frame(width: 18, height: 2)),
+                            title: "Merge Arcs (Dashed)",
+                            desc: "Dashed curved line + arrowhead showing a branch merged into another.")
+                        row(icon: AnyView(Circle().fill(GitTheme.purple.opacity(0.3)).frame(width: 12, height: 12)),
+                            title: "Dimmed Branch",
+                            desc: "A branch that has been fully merged is visually de-emphasized.")
                     }
                     .padding(.bottom, 30)
                 }
@@ -1245,7 +1030,7 @@ struct VisualizerGuideSheet: View {
         .presentationDragIndicator(.visible)
     }
 
-    private func guideRow(icon: AnyView, title: String, desc: String) -> some View {
+    private func row(icon: AnyView, title: String, desc: String) -> some View {
         HStack(alignment: .top, spacing: 14) {
             icon.frame(width: 28, alignment: .center)
             VStack(alignment: .leading, spacing: 5) {
@@ -1260,12 +1045,14 @@ struct VisualizerGuideSheet: View {
     }
 }
 
+// ============================================================
 // MARK: - Preview
+// ============================================================
 
 #Preview("Full Workflow") {
     let state = GitRepositoryState()
     return GitVisualizerView(repoState: state)
-        .frame(height: 380)
+        .frame(height: 420)
         .onAppear {
             state.initialize()
             state.stageFiles(["README.md"])
@@ -1276,6 +1063,27 @@ struct VisualizerGuideSheet: View {
             state.commit(message: "Add dark mode")
             state.checkout(branch: "main")
             state.commit(message: "Fix login bug")
+            state.addRemote(name: "origin", url: "https://github.com/example/repo.git")
+            state.push()
             state.merge(branch: "feature/dark-mode")
+        }
+}
+
+#Preview("Level 1 — Init") {
+    let state = GitRepositoryState()
+    return GitVisualizerView(repoState: state)
+        .frame(height: 260)
+        .onAppear {
+            state.initialize()
+        }
+}
+
+#Preview("Level 1 — Staged, no commit") {
+    let state = GitRepositoryState()
+    return GitVisualizerView(repoState: state)
+        .frame(height: 260)
+        .onAppear {
+            state.initialize()
+            state.stageFiles(["README.md", "main.swift"])
         }
 }
