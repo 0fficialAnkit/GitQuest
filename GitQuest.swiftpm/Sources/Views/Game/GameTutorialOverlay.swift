@@ -143,14 +143,27 @@ struct GameTutorialOverlay: ViewModifier {
                             floatAnimate = true
                         }
                     }
+//                    .onChange(of: currentStep) { _, _ in
+//
+//                        tipOpacity = 0
+//                        tipOffset = 20
+//
+//                        withAnimation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.1)) {
+//                            tipOpacity = 1
+//                            tipOffset = 0
+//                        }
+//                    }
                     .onChange(of: currentStep) { _, _ in
-
                         tipOpacity = 0
                         tipOffset = 20
+                        floatAnimate = false  // ← reset so the animation re-triggers
 
                         withAnimation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.1)) {
                             tipOpacity = 1
                             tipOffset = 0
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                            floatAnimate = true  // ← re-trigger the float
                         }
                     }
                 }
