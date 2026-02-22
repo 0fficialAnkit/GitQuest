@@ -1,16 +1,5 @@
-//
-//  WelcomeView.swift
-//  GitQuest
-//
-//  Created by Ankit Kumar on 04/02/26.
-//
-
 import SwiftUI
 
-// MARK: - Welcome View
-
-/// Launch screen presenting the app identity, a "Start" button,
-/// and an optional progress-reset action.
 struct WelcomeView: View {
     @Environment(GameState.self) var gameState
     let onStart: () -> Void
@@ -20,7 +9,6 @@ struct WelcomeView: View {
 
     var body: some View {
         ZStack {
-            // MARK: - Color graded background (adaptive for light/dark)
             LinearGradient(
                 colors: [
                     Theme.Colors.primary.opacity(0.25),
@@ -34,7 +22,6 @@ struct WelcomeView: View {
             VStack(spacing: Theme.Spacing.xl) {
                 Spacer()
 
-                // MARK: - App Icon (static, premium look)
                 ZStack {
                     Image("icon")
                         .resizable()
@@ -42,11 +29,9 @@ struct WelcomeView: View {
                         .frame(width: 150, height: 150)
                 }
 
-
-                // MARK: - Title & Subtitle
                 VStack(spacing: Theme.Spacing.sm) {
                     Text("Git Quest")
-                        
+
                         .font(Theme.Typography.hero)
                         .foregroundStyle(.primary)
 
@@ -59,10 +44,8 @@ struct WelcomeView: View {
 
                 Spacer()
 
-                // MARK: - Primary & Secondary Actions
                 VStack(spacing: Theme.Spacing.md) {
 
-                    // Start Journey Button — Glass Style
                     Button {
                         onStart()
                     } label: {
@@ -70,7 +53,7 @@ struct WelcomeView: View {
                             .font(Theme.Typography.h3)
                             .foregroundStyle(.primary)
                             .frame(maxWidth: .infinity)
-                            .frame(height: Constants.Layout.buttonHeight)
+                            .frame(height: Theme.Layout.buttonHeight)
                             .background(
                                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                                     .fill(.ultraThinMaterial)
@@ -90,7 +73,6 @@ struct WelcomeView: View {
                             .onEnded { _ in isStartPressed = false }
                     )
 
-                    // Reset Progress (only if progress exists)
                     if !gameState.completedLevels.isEmpty {
                         Button {
                             showResetAlert = true
@@ -121,7 +103,8 @@ struct WelcomeView: View {
 
 #Preview("Welcome Screen") {
     WelcomeView {
-        // Preview action
+        
     }
     .environment(GameState())
+    .preferredColorScheme(.dark)
 }

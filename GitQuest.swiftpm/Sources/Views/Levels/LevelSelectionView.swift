@@ -1,21 +1,12 @@
-//
-//  LevelSelectionView.swift
-//  GitQuest
-//
-//  Created by Ankit Kumar on 04/02/26.
-//
-
 import SwiftUI
 
-/// Level selection screen with colorful animated design
 struct LevelSelectionView: View {
     @Environment(GameState.self) var gameState
     @Binding var navigationPath: NavigationPath
     @State private var lockedTapId: Int? = nil
-    
+
     var body: some View {
         ZStack {
-            // Animated gradient background - fills entire screen
             BackgroundView(
                 colors: [
                     Theme.Colors.primary.opacity(0.4),
@@ -23,16 +14,13 @@ struct LevelSelectionView: View {
                 ],
                 animation: true
             )
-            
-            // ScrollView takes full available height
+
             ScrollViewReader { proxy in
                 ScrollView(.vertical) {
                     VStack(spacing: Theme.Spacing.xl) {
-                        // Header
                         headerSection
                             .padding(.top, Theme.Spacing.xl)
-                        
-                        // Level path with staggered layout
+
                         VStack(spacing: Theme.Spacing.xxl) {
                             ForEach(Array(Level.allLevels.enumerated()), id: \.element.id) { index, level in
                                 LevelNode(
@@ -47,7 +35,6 @@ struct LevelSelectionView: View {
                                     if gameState.isLevelUnlocked(level.id) {
                                         navigationPath.append(AppScreen.game(level))
                                     } else {
-                                        // Locked tap → bounce + flash
                                         withAnimation(.easeInOut(duration: 0.06).repeatCount(4, autoreverses: true)) {
                                             lockedTapId = level.id
                                         }
@@ -59,7 +46,6 @@ struct LevelSelectionView: View {
                                         }
                                     }
                                 }
-                                // Locked level visual feedback
                                 .offset(x: lockedTapId == level.id ? 6 : 0)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 60, style: .continuous)
@@ -71,7 +57,7 @@ struct LevelSelectionView: View {
                             }
                         }
                         .padding(.vertical, Theme.Spacing.xl)
-                        .padding(.bottom, 80) // Extra bottom padding for safe area
+                        .padding(.bottom, 80)
                     }
                     .frame(maxWidth: .infinity)
                 }
@@ -87,7 +73,7 @@ struct LevelSelectionView: View {
         .ignoresSafeArea(edges: .bottom)
         .toolbar(.hidden, for: .navigationBar)
     }
-    
+
     private var headerSection: some View {
         VStack(spacing: Theme.Spacing.md) {
             HStack {
@@ -101,33 +87,32 @@ struct LevelSelectionView: View {
                         )
                     )
             }
-            
+
             Text("Master Git one level at a time")
                 .font(Theme.Typography.h3)
                 .foregroundStyle(Theme.Colors.textTertiary)
         }
     }
-    
+
     private func offsetForLevel(_ index: Int) -> CGFloat {
         let positions: [CGFloat] = [0, 100, -100, 80, -80, 100, -100, 0]
         return positions[min(index, positions.count - 1)]
     }
 }
 
-/// Animated level node with colorful design
 struct LevelNode: View {
     let level: Level
     let isUnlocked: Bool
     let isCompleted: Bool
     let isCurrent: Bool
-    
+
     @State private var pulse = false
     @State private var appeared = false
-    
+
     var body: some View {
         VStack(spacing: Theme.Spacing.md) {
             ZStack {
-                // Pulsing glow for current level
+
                 if isCurrent && !isCompleted {
                     Circle()
                         .fill(
@@ -142,8 +127,7 @@ struct LevelNode: View {
                         .scaleEffect(pulse ? 1.2 : 1.0)
                         .opacity(pulse ? 0 : 0.6)
                 }
-                
-                // Main circle with gradient
+
                 Circle()
                     .fill(isUnlocked ? AnyShapeStyle(.regularMaterial) : AnyShapeStyle(.ultraThinMaterial))
                     .frame(width: 120, height: 120)
@@ -156,14 +140,13 @@ struct LevelNode: View {
                             .stroke(Color.white.opacity(0.15), lineWidth: 1)
                     )
                     .shadow(color: Color.black.opacity(0.15), radius: 10, y: 5)
-                
-                // Icon or status
+
                 if isCompleted {
                     VStack(spacing: Theme.Spacing.xs) {
                         Image(systemName: level.concept.icon)
                             .font(.system(size: 50))
                             .foregroundStyle(Color.white)
-                        
+
                         Text("Done")
                             .font(Theme.Typography.small)
                             .fontWeight(.bold)
@@ -178,8 +161,7 @@ struct LevelNode: View {
                         .font(.system(size: 45))
                         .foregroundStyle(Color.white.opacity(0.6))
                 }
-                
-                // Level number badge
+
                 VStack {
                     HStack {
                         Spacer()
@@ -198,8 +180,7 @@ struct LevelNode: View {
                 }
                 .frame(width: 120, height: 120)
             }
-            
-            // Title and info
+
             VStack(spacing: Theme.Spacing.xs) {
                 Text(level.title)
                     .font(Theme.Typography.h3)
@@ -213,15 +194,14 @@ struct LevelNode: View {
         .scaleEffect(appeared ? 1.0 : 0.8)
         .opacity(appeared ? 1.0 : 0)
         .onAppear {
-            // Staggered entrance animation
+
             withAnimation(
                 .spring(response: 0.6, dampingFraction: 0.7)
                 .delay(Double(level.id) * 0.1)
             ) {
                 appeared = true
             }
-            
-            // Pulse animation for current level
+
             if isCurrent && !isCompleted {
                 Task { @MainActor in
                     try? await Task.sleep(for: .seconds(Double(level.id) * 0.1))
@@ -232,17 +212,16 @@ struct LevelNode: View {
             }
         }
     }
-    
+
     private var levelColor: Color {
         Theme.Colors.conceptColor(level.concept)
     }
 }
-// MARK: - Preview Container
 
 struct LevelSelectionPreviewContainer: View {
     @State private var path = NavigationPath()
     @State private var gameState = GameState()
-    
+
     var body: some View {
         NavigationStack(path: $path) {
             LevelSelectionView(navigationPath: $path)
@@ -251,7 +230,7 @@ struct LevelSelectionPreviewContainer: View {
     }
 }
 
-
 #Preview("Level Selection") {
     LevelSelectionPreviewContainer()
+        .preferredColorScheme(.dark)
 }

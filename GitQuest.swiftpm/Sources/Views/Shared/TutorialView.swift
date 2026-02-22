@@ -1,25 +1,12 @@
-//
-//  TutorialView.swift
-//  GitQuest
-//
-//  Created by Ankit Kumar on 04/02/26.
-//
-
 import SwiftUI
 
-// MARK: - Tutorial View
-
-/// Page-based onboarding tutorial introducing GitQuest concepts.
-///
-/// Uses a `TabView` with page-style indicators. The player can
-/// swipe or tap "Next" to advance, and "Skip" to jump ahead.
 struct TutorialView: View {
     let onComplete: () -> Void
-    
+
     @State private var currentPage = 0
     @State private var isSkipPressed = false
     @State private var isStartPressed = false
-    
+
     private let tutorialPages: [(icon: String, title: String, description: String, color: Color)] = [
         ("folder.badge.gearshape", "What is Git?",
          "Git is a version control system that tracks changes in your code. Think of it as a time machine for your projects!",
@@ -31,17 +18,17 @@ struct TutorialView: View {
          "You'll master repositories, commits, branches, merging, and collaboration. These are the building blocks every developer needs.",
          .green)
     ]
-    
+
     var body: some View {
         ZStack {
-            // Animated gradient background
+
             BackgroundView(
                 colors: [tutorialPages[currentPage].color.opacity(0.3), .purple.opacity(0.2)],
                 animation: true
             )
-            
+
             VStack(spacing: 0) {
-                // Skip button — Glass Style (top-right)
+
                 HStack {
                     Spacer()
                     Button("Skip") {
@@ -70,8 +57,7 @@ struct TutorialView: View {
                     )
                     .padding(Theme.Spacing.lg)
                 }
-                
-                // Animated tutorial pages
+
                 TabView(selection: $currentPage) {
                     ForEach(Array(tutorialPages.enumerated()), id: \.offset) { index, page in
                         TutorialPageView(
@@ -85,8 +71,7 @@ struct TutorialView: View {
                 }
                 .tabViewStyle(.page(indexDisplayMode: .always))
                 .animation(.easeInOut(duration: 0.3), value: currentPage)
-                
-                // "Start Learning" button — only on last page
+
                 if currentPage == tutorialPages.count - 1 {
                     Button {
                         onComplete()
@@ -95,7 +80,7 @@ struct TutorialView: View {
                             .font(Theme.Typography.h3)
                             .foregroundStyle(.primary)
                             .frame(maxWidth: .infinity)
-                            .frame(height: Constants.Layout.buttonHeight)
+                            .frame(height: Theme.Layout.buttonHeight)
                             .background(
                                 RoundedRectangle(cornerRadius: 20, style: .continuous)
                                     .fill(.regularMaterial)
@@ -117,7 +102,7 @@ struct TutorialView: View {
                     .padding(.horizontal, Theme.Spacing.lg)
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
                 }
-                
+
                 Spacer()
                     .frame(height: Theme.Spacing.xl)
             }
@@ -127,20 +112,18 @@ struct TutorialView: View {
     }
 }
 
-/// Individual tutorial page with animations
 struct TutorialPageView: View {
     let icon: String
     let title: String
     let description: String
     let accentColor: Color
-    
+
     @State private var appeared = false
-    
+
     var body: some View {
         VStack(spacing: Theme.Spacing.xl) {
             Spacer()
-            
-            // Animated icon
+
             ZStack {
                 Circle()
                     .fill(
@@ -153,7 +136,7 @@ struct TutorialPageView: View {
                     )
                     .frame(width: 160, height: 160)
                     .scaleEffect(appeared ? 1.1 : 0.9)
-                
+
                 Image(systemName: icon)
                     .font(.system(size: 70))
                     .foregroundStyle(
@@ -167,14 +150,14 @@ struct TutorialPageView: View {
             }
             .scaleEffect(appeared ? 1.0 : 0.5)
             .opacity(appeared ? 1.0 : 0)
-            
+
             VStack(spacing: Theme.Spacing.md) {
                 Text(title)
                     .font(Theme.Typography.title)
                     .foregroundStyle(Theme.Colors.textPrimary)
                     .offset(y: appeared ? 0 : 20)
                     .opacity(appeared ? 1 : 0)
-                
+
                 Text(description)
                     .font(Theme.Typography.h3)
                     .foregroundStyle(Theme.Colors.textSecondary)
@@ -184,7 +167,7 @@ struct TutorialPageView: View {
                     .offset(y: appeared ? 0 : 20)
                     .opacity(appeared ? 1 : 0)
             }
-            
+
             Spacer()
         }
         .onAppear {
@@ -199,6 +182,7 @@ struct TutorialPageView: View {
 }
 #Preview("Tutorial Screen") {
     TutorialView {
-        // Preview next action
+        
     }
+    .preferredColorScheme(.dark)
 }

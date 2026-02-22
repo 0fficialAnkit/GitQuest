@@ -1,13 +1,4 @@
-//
-//  GameTutorialOverlay.swift
-//  GitQuest
-//
-//  Custom tutorial overlay with spotlight, borders, and positioned tip boxes.
-//
-
 import SwiftUI
-
-// MARK: - Tutorial Step
 
 struct TutorialStep {
     let id: Int
@@ -15,7 +6,7 @@ struct TutorialStep {
     let title: String
     let message: String
     let tipPosition: TipPosition
-    
+
     enum TipPosition {
         case left, right, top
     }
@@ -24,8 +15,6 @@ struct TutorialStep {
 enum TutorialCardKey: String {
     case chat, concept, console, visualizer, repoState
 }
-
-// MARK: - All Tutorial Steps
 
 extension TutorialStep {
     static let allSteps: [TutorialStep] = [
@@ -67,8 +56,6 @@ extension TutorialStep {
     ]
 }
 
-// MARK: - Anchor Preference
-
 struct TutorialCardFrameKey: PreferenceKey {
     typealias Value = [TutorialCardKey: Anchor<CGRect>]
     nonisolated(unsafe) static var defaultValue: Value = [:]
@@ -85,11 +72,9 @@ extension View {
     }
 }
 
-// MARK: - Tutorial Overlay
-
 struct GameTutorialOverlay: ViewModifier {
     @Binding var isShowing: Bool
-    
+
     @State private var currentStep = 0
     @State private var overlayOpacity: Double = 0
     @State private var tipOpacity: Double = 0
@@ -98,9 +83,9 @@ struct GameTutorialOverlay: ViewModifier {
     @State private var doneHapticTrigger = false
     @State private var floatAnimate = false
     @State private var buttonPressed = false
-    
+
     private let steps = TutorialStep.allSteps
-    
+
     func body(content: Content) -> some View {
         content
             .sensoryFeedback(.impact(flexibility: .soft), trigger: stepHapticTrigger)
@@ -109,19 +94,17 @@ struct GameTutorialOverlay: ViewModifier {
                 if isShowing {
                     GeometryReader { geo in
                         ZStack {
-                            // ── DIM OVERLAY with cut-out for active card ──
+
                             dimOverlay(anchors: anchors, geo: geo)
                                 .opacity(overlayOpacity)
                                 .allowsHitTesting(false)
-                            
-                            // ── HIGHLIGHTED BORDER around active card ──
+
                             if let anchor = anchors[steps[currentStep].cardKey] {
                                 highlightBorder(frame: geo[anchor])
                                     .opacity(overlayOpacity)
                                     .allowsHitTesting(false)
                             }
-                            
-                            // ── TIP BOX ──
+
                             if let anchor = anchors[steps[currentStep].cardKey] {
                                 tipBox(
                                     step: steps[currentStep],
@@ -153,11 +136,10 @@ struct GameTutorialOverlay: ViewModifier {
                         }
                     }
                     .onChange(of: currentStep) { _, _ in
-                        // Instantly reset animation state for the new tip
+
                         tipOpacity = 0
                         tipOffset = 20
-                        
-                        // Spring up exactly like the first appearance
+
                         withAnimation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.1)) {
                             tipOpacity = 1
                             tipOffset = 0
@@ -166,21 +148,18 @@ struct GameTutorialOverlay: ViewModifier {
                 }
             }
     }
-    
-    // MARK: - Dim Overlay
-    
+
     private func dimOverlay(anchors: [TutorialCardKey: Anchor<CGRect>], geo: GeometryProxy) -> some View {
         let activeFrame = anchors[steps[currentStep].cardKey].map { geo[$0] } ?? .zero
         let expandedFrame = activeFrame.insetBy(dx: -8, dy: -8)
-        
+
         return Canvas { ctx, size in
-            // Fill entire screen
+
             ctx.fill(
                 Path(CGRect(origin: .zero, size: size)),
                 with: .color(.black.opacity(0.75))
             )
-            
-            // Cut out the active card area
+
             ctx.blendMode = .destinationOut
             ctx.fill(
                 Path(roundedRect: expandedFrame, cornerRadius: 24),
@@ -190,9 +169,7 @@ struct GameTutorialOverlay: ViewModifier {
         .compositingGroup()
         .animation(.spring(response: 0.5, dampingFraction: 0.82), value: currentStep)
     }
-    
-    // MARK: - Highlight Border
-    
+
     private func highlightBorder(frame: CGRect) -> some View {
         RoundedRectangle(cornerRadius: 24)
             .stroke(
@@ -211,14 +188,11 @@ struct GameTutorialOverlay: ViewModifier {
             .position(x: frame.midX, y: frame.midY)
             .animation(.spring(response: 0.5, dampingFraction: 0.82), value: currentStep)
     }
-    
-    // MARK: - Tip Box
-    
+
     private func tipBox(step: TutorialStep, cardFrame: CGRect, geo: GeometryProxy) -> some View {
         let boxWidth: CGFloat = 280
         let padding: CGFloat = 16
-        
-        // Calculate position based on tip position preference
+
         let position = calculatePosition(
             step: step,
             cardFrame: cardFrame,
@@ -226,23 +200,21 @@ struct GameTutorialOverlay: ViewModifier {
             geo: geo,
             padding: padding
         )
-        
+
         return VStack(alignment: .leading, spacing: 14) {
-            // Title
+
             Text(step.title)
                 .font(.system(size: 20, weight: .bold))
                 .foregroundStyle(.primary)
 
-            // Message
             Text(step.message)
                 .font(.system(size: 15, weight: .regular))
                 .foregroundStyle(.secondary)
                 .lineSpacing(5)
                 .fixedSize(horizontal: false, vertical: true)
 
-            // Progress dots + Next button
             HStack {
-                // Dots
+
                 HStack(spacing: 6) {
                     ForEach(0..<steps.count, id: \.self) { i in
                         Circle()
@@ -257,7 +229,6 @@ struct GameTutorialOverlay: ViewModifier {
 
                 Spacer()
 
-                // Next / Got it button — glass capsule
                 Button {
                     handleNext()
                 } label: {
@@ -310,9 +281,7 @@ struct GameTutorialOverlay: ViewModifier {
         .position(x: position.x, y: position.y)
         .animation(.spring(response: 0.5, dampingFraction: 0.82), value: currentStep)
     }
-    
-    // MARK: - Position Calculator
-    
+
     private func calculatePosition(
         step: TutorialStep,
         cardFrame: CGRect,
@@ -320,75 +289,69 @@ struct GameTutorialOverlay: ViewModifier {
         geo: GeometryProxy,
         padding: CGFloat
     ) -> CGPoint {
-        
-        let boxHeight: CGFloat = 200 // estimated
-        
+
+        let boxHeight: CGFloat = 200
+
         switch step.tipPosition {
         case .right:
-            // Position to the right of the card
+
             let x = min(
                 cardFrame.maxX + padding + boxWidth / 2,
                 geo.size.width - boxWidth / 2 - padding
             )
             let y = cardFrame.midY
             return CGPoint(x: x, y: y)
-            
+
         case .left:
-            // Position to the left of the card
+
             let x = max(
                 cardFrame.minX - padding - boxWidth / 2,
                 boxWidth / 2 + padding
             )
             let y = cardFrame.midY
             return CGPoint(x: x, y: y)
-            
+
         case .top:
-            // Position above the card, centered
+
             let x = cardFrame.midX
             let y = max(
                 cardFrame.minY - padding - boxHeight / 2,
-                boxHeight / 2 + padding + 40 // account for safe area
+                boxHeight / 2 + padding + 40
             )
             return CGPoint(x: x, y: y)
         }
     }
-    
-    // MARK: - Navigation
-    
+
     private func handleNext() {
         if currentStep < steps.count - 1 {
             stepHapticTrigger.toggle()
-            
-            // Fade out tip
+
             withAnimation(.easeIn(duration: 0.15)) {
                 tipOpacity = 0
                 tipOffset = -12
             }
-            
-            // Move to next step
+
             Task { @MainActor in
                 try? await Task.sleep(for: .seconds(0.18))
                 currentStep += 1
                 tipOffset = 20
-                
-                // Fade in new tip
+
                 withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
                     tipOpacity = 1
                     tipOffset = 0
                 }
             }
         } else {
-            // Dismiss tutorial
+
             doneHapticTrigger.toggle()
-            
-            // Mark tutorial as seen permanently
+
             UserDefaults.standard.set(true, forKey: "hasSeenGameTutorial")
-            
+
             withAnimation(.easeOut(duration: 0.3)) {
                 tipOpacity = 0
                 overlayOpacity = 0
             }
-            
+
             Task { @MainActor in
                 try? await Task.sleep(for: .seconds(0.35))
                 isShowing = false

@@ -1,31 +1,25 @@
 import SwiftUI
 
-/// A single chat message bubble styled like Apple Messages
 struct ChatBubble: View {
     let message: ChatMessage
     let showSenderName: Bool
     let isLastInGroup: Bool
-    
+
     private var isCurrentUser: Bool {
         message.sender.isCurrentUser
     }
-    
+
     var body: some View {
         VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 2) {
-            // Sender name — only first message of a teammate group
             if showSenderName && !isCurrentUser {
                 senderHeader
             }
-            
-            // Bubble row
             bubbleRow
         }
         .frame(maxWidth: .infinity, alignment: isCurrentUser ? .trailing : .leading)
         .padding(.bottom, isLastInGroup ? 10 : 2)
     }
-    
-    // MARK: - Sender Header
-    
+
     private var senderHeader: some View {
         Text(message.sender.displayName)
             .font(.system(size: 12, weight: .semibold))
@@ -33,9 +27,7 @@ struct ChatBubble: View {
             .padding(.leading, isLastInGroup ? 40 : 12)
             .padding(.bottom, 2)
     }
-    
-    // MARK: - Bubble Row
-    
+
     private var bubbleRow: some View {
         HStack(alignment: .bottom, spacing: 6) {
             if isCurrentUser {
@@ -48,9 +40,7 @@ struct ChatBubble: View {
             }
         }
     }
-    
-    // MARK: - Avatar
-    
+
     private var avatarOrSpacer: some View {
         Group {
             if isLastInGroup {
@@ -68,9 +58,7 @@ struct ChatBubble: View {
             }
         }
     }
-    
-    // MARK: - Bubble Content
-    
+
     private var bubbleContent: some View {
         VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 3) {
             Text(message.text)
@@ -82,8 +70,6 @@ struct ChatBubble: View {
                     BubbleShape(isCurrentUser: isCurrentUser, isLastInGroup: isLastInGroup)
                         .fill(message.sender.bubbleColor)
                 )
-            
-            // Timestamp on last message of group
             if isLastInGroup {
                 Text(formatTime(message.timestamp))
                     .font(.system(size: 11))
@@ -92,9 +78,7 @@ struct ChatBubble: View {
             }
         }
     }
-    
-    // MARK: - Helpers
-    
+
     private func formatTime(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "h:mm a"
@@ -105,12 +89,12 @@ struct ChatBubble: View {
 #Preview {
     VStack(spacing: 0) {
         ChatBubble(
-            message: ChatMessage(sender: .maya, text: "Hey! Welcome to the team 🎉"),
+            message: ChatMessage(sender: .siddharth, text: "Hey! Welcome to the team 🎉"),
             showSenderName: true,
             isLastInGroup: false
         )
         ChatBubble(
-            message: ChatMessage(sender: .maya, text: "Ready to set up the repo?"),
+            message: ChatMessage(sender: .siddharth, text: "Ready to set up the repo?"),
             showSenderName: false,
             isLastInGroup: true
         )
@@ -121,5 +105,6 @@ struct ChatBubble: View {
         )
     }
     .padding()
-    .background(Color.black)
+    .background(Theme.Colors.background)
+    .preferredColorScheme(.dark)
 }

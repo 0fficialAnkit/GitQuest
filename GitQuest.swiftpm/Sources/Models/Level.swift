@@ -1,20 +1,6 @@
-//
-//  Level.swift
-//  GitQuest
-//
-//  Created by Ankit Kumar on 04/02/26.
-//
-
 import Foundation
 import SwiftUI
 
-// MARK: - Level
-
-/// A playable level combining narrative context, required Git commands,
-/// and post-completion explanations.
-///
-/// Each level is self-contained: it defines its own chat script,
-/// step sequence, difficulty rating, and educational summary.
 struct Level: Identifiable, Hashable {
     let id: Int
     let title: String
@@ -28,24 +14,20 @@ struct Level: Identifiable, Hashable {
     let difficulty: Difficulty
     let estimatedTime: Int
     let commandExplanation: CommandExplanation
-    
-    // MARK: - Hashable (by ID only, since stepChats isn't Hashable)
-    
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
-    
+
     static func == (lhs: Level, rhs: Level) -> Bool {
         lhs.id == rhs.id
     }
-    
-    /// Skill tier displayed on the level node badge.
+
     enum Difficulty: String {
         case beginner = "Beginner"
         case intermediate = "Intermediate"
         case advanced = "Advanced"
-        
-        /// Badge colour mapped to difficulty.
+
         var color: Color {
             switch self {
             case .beginner:     return .green
@@ -56,10 +38,6 @@ struct Level: Identifiable, Hashable {
     }
 }
 
-// MARK: - Git Concept
-
-/// The educational topic a level teaches. Used for colour-coding,
-/// icon selection, and the concept badge on the success overlay.
 enum GitConcept: String, Hashable {
     case repository = "Repository Basics"
     case staging = "Staging & Committing"
@@ -70,8 +48,7 @@ enum GitConcept: String, Hashable {
     case conflicts = "Merge Conflicts"
     case history = "History & Undo"
     case advanced = "Advanced Workflows"
-    
-    /// Gradient pair used for the concept's background treatment.
+
     var themeColors: [Color] {
         switch self {
         case .repository: return [.purple, .blue]
@@ -85,8 +62,7 @@ enum GitConcept: String, Hashable {
         case .advanced: return [.yellow, .orange]
         }
     }
-    
-    /// SF Symbol name representing this concept.
+
     var icon: String {
         switch self {
         case .repository: return "folder.fill.badge.plus"
@@ -102,82 +78,56 @@ enum GitConcept: String, Hashable {
     }
 }
 
-// MARK: - Level Step
-
-/// A single step within a level that the player must complete.
 struct LevelStep: Identifiable, Hashable {
     let id: Int
-    
-    /// Narrative context explaining *why* this command matters right now.
     let contextMessage: String
-    
-    /// The Git command the player is expected to run.
     let expectedCommand: String
-    
-    /// Helpful hint shown when the player selects a wrong command.
     let hint: String
-    
-    /// Congratulatory message displayed after completing this step.
     let successMessage: String
-    
-    /// Optional reaction from a teammate (shown as a chat bubble).
     let teamReaction: String?
 }
 
-// MARK: - Command Explanation
-
-/// Educational content shown after level completion.
 struct CommandExplanation: Hashable {
-    /// Breakdown of each command used in the level.
     let commands: [CommandDetail]
-    
-    /// A practical "pro tip" for real-world usage.
     let proTip: String
-    
-    /// Warning about common mistakes or dangers.
     let risk: String
-    
-    /// A mini-walkthrough of how this skill applies professionally.
     let realWorldUsage: String
 }
 
-/// A single command plus its plain-English description.
 struct CommandDetail: Hashable {
     let command: String
     let description: String
 }
 
-// MARK: - Level Database (Story-Driven)
 extension Level {
     static let allLevels: [Level] = [
-        // LEVEL 1: YOUR FIRST COMMIT
         Level(
             id: 1,
             title: "Your First Commit",
             subtitle: "Day 1 at Pixel Labs",
             initialChat: [
-                ChatMessage(sender: .maya, text: "Morning team! Customer dashboard project kicks off today 🚀"),
-                ChatMessage(sender: .jordan, text: "I've got the React boilerplate ready - just need a repo to push it to"),
-                ChatMessage(sender: .alex, text: "Same here - UI mockups are done but I can't version them without Git"),
-                ChatMessage(sender: .maya, text: "Can you initialize the repo? That'll unblock everyone before standup at 10"),
-                ChatMessage(sender: .jordan, text: "Once the repo exists I'll push the starter template 👍")
+                ChatMessage(sender: .siddharth, text: "Morning team! Customer dashboard project kicks off today 🚀"),
+                ChatMessage(sender: .amrit, text: "I've got the React boilerplate ready - just need a repo to push it to"),
+                ChatMessage(sender: .sumit, text: "Same here - UI mockups are done but I can't version them without Git"),
+                ChatMessage(sender: .siddharth, text: "Can you initialize the repo? That'll unblock everyone before standup at 10"),
+                ChatMessage(sender: .amrit, text: "Once the repo exists I'll push the starter template 👍")
             ],
             stepChats: [
                 0: [
                     ChatMessage(sender: .you, text: "Repository initialized."),
-                    ChatMessage(sender: .jordan, text: "Nice - repo's live. Now we need a README before I push the template"),
-                    ChatMessage(sender: .maya, text: "Stage the README so Git knows to track it")
+                    ChatMessage(sender: .amrit, text: "Nice - repo's live. Now we need a README before I push the template"),
+                    ChatMessage(sender: .siddharth, text: "Stage the README so Git knows to track it")
                 ],
                 1: [
                     ChatMessage(sender: .you, text: "Files staged."),
-                    ChatMessage(sender: .jordan, text: "Good call staging specific files - keeps the commit clean"),
-                    ChatMessage(sender: .maya, text: "Now commit it with a descriptive message. This'll be our first entry in the project history")
+                    ChatMessage(sender: .amrit, text: "Good call staging specific files - keeps the commit clean"),
+                    ChatMessage(sender: .siddharth, text: "Now commit it with a descriptive message. This'll be our first entry in the project history")
                 ],
                 2: [
                     ChatMessage(sender: .you, text: "First commit done! ✅"),
-                    ChatMessage(sender: .maya, text: "Clean commit message - that makes the history way easier to review 👍"),
-                    ChatMessage(sender: .jordan, text: "Pushing the starter template now. We're officially in business 🚀"),
-                    ChatMessage(sender: .alex, text: "Finally! Uploading the Figma exports. This sprint is going to be great")
+                    ChatMessage(sender: .siddharth, text: "Clean commit message - that makes the history way easier to review 👍"),
+                    ChatMessage(sender: .amrit, text: "Pushing the starter template now. We're officially in business 🚀"),
+                    ChatMessage(sender: .sumit, text: "Finally! Uploading the Figma exports. This sprint is going to be great")
                 ]
             ],
             icon: "folder.fill.badge.plus",
@@ -188,13 +138,13 @@ extension Level {
                     id: 1,
                     contextMessage: """
                     📍 YOUR FIRST TASK
-                    
+
                     Maya needs this repo initialized.
-                    
-                    In real dev work, 'git init' creates a hidden .git folder 
-                    that tracks every change you make. It's how your project 
+
+                    In real dev work, 'git init' creates a hidden .git folder
+                    that tracks every change you make. It's how your project
                     remembers its history.
-                    
+
                     Think of it like: Starting a journal.
                     """,
                     expectedCommand: "git init",
@@ -206,36 +156,36 @@ extension Level {
                     id: 2,
                     contextMessage: """
                     📍 STAGE YOUR CHANGES
-                    
+
                     Before committing, you need to tell Git which files to save.
-                    
-                    'git add' stages files — like putting items in a shopping cart 
+
+                    'git add' stages files - like putting items in a shopping cart
                     before checkout.
-                    
+
                     Stage the README file.
                     """,
                     expectedCommand: "git add",
                     hint: "Tap: git add README.md",
                     successMessage: "Files staged and ready to commit",
-                    teamReaction: "Jordan: Good call staging specific files — keeps the commit clean 👍"
+                    teamReaction: "Jordan: Good call staging specific files - keeps the commit clean 👍"
                 ),
                 LevelStep(
                     id: 3,
                     contextMessage: """
                     📍 MAKE IT OFFICIAL
-                    
-                    Now commit the README. This tells Git: "Save this 
-                    moment — I want to remember this state."
-                    
-                    Real developers commit constantly. It's like saving 
+
+                    Now commit the README. This tells Git: "Save this
+                    moment - I want to remember this state."
+
+                    Real developers commit constantly. It's like saving
                     your game. Commit early, commit often.
-                    
+
                     Why teams love this: Everyone can see what changed.
                     """,
                     expectedCommand: "git commit",
                     hint: "Tap: git commit -m \"Initial commit: Add README\"",
                     successMessage: "🎉 You Just Shipped Your First Commit!",
-                    teamReaction: "Maya: Clean commit message — that makes the history way easier to review 👍"
+                    teamReaction: "Maya: Clean commit message - that makes the history way easier to review 👍"
                 )
             ],
             difficulty: .beginner,
@@ -260,30 +210,29 @@ extension Level {
                 realWorldUsage: "Pro developers commit 20+ times per day. Every logical checkpoint gets a commit."
             )
         ),
-        
-        // LEVEL 2: FEATURE BRANCHES
+
         Level(
             id: 2,
             title: "Feature Branches",
             subtitle: "Your First Real Feature",
             initialChat: [
-                ChatMessage(sender: .maya, text: "Update from the design team — dark mode just got bumped to priority 1"),
-                ChatMessage(sender: .alex, text: "YES! Users have been requesting this for weeks 🌙"),
-                ChatMessage(sender: .maya, text: "We deploy from main every Friday at 4pm. Can't have work-in-progress code there"),
-                ChatMessage(sender: .jordan, text: "Create a feature branch — keeps main stable while you build"),
-                ChatMessage(sender: .maya, text: "Call it feature/dark-mode and commit your changes there")
+                ChatMessage(sender: .siddharth, text: "Update from the design team - dark mode just got bumped to priority 1"),
+                ChatMessage(sender: .sumit, text: "YES! Users have been requesting this for weeks 🌙"),
+                ChatMessage(sender: .siddharth, text: "We deploy from main every Friday at 4pm. Can't have work-in-progress code there"),
+                ChatMessage(sender: .amrit, text: "Create a feature branch - keeps main stable while you build"),
+                ChatMessage(sender: .siddharth, text: "Call it feature/dark-mode and commit your changes there")
             ],
             stepChats: [
                 0: [
                     ChatMessage(sender: .you, text: "Branch created!"),
-                    ChatMessage(sender: .jordan, text: "Perfect — now anything you commit stays off main until it's ready"),
-                    ChatMessage(sender: .maya, text: "Exactly. Friday deploy is safe. Build away 👍")
+                    ChatMessage(sender: .amrit, text: "Perfect - now anything you commit stays off main until it's ready"),
+                    ChatMessage(sender: .siddharth, text: "Exactly. Friday deploy is safe. Build away 👍")
                 ],
                 1: [
                     ChatMessage(sender: .you, text: "Dark mode feature committed."),
-                    ChatMessage(sender: .alex, text: "Ooh can't wait to see this in the demo! 🌙"),
-                    ChatMessage(sender: .maya, text: "Feature is safely isolated on its own branch. Nice workflow"),
-                    ChatMessage(sender: .jordan, text: "Solid first feature branch. That's exactly how we do it here")
+                    ChatMessage(sender: .sumit, text: "Ooh can't wait to see this in the demo! 🌙"),
+                    ChatMessage(sender: .siddharth, text: "Feature is safely isolated on its own branch. Nice workflow"),
+                    ChatMessage(sender: .amrit, text: "Solid first feature branch. That's exactly how we do it here")
                 ]
             ],
             icon: "arrow.triangle.branch",
@@ -294,31 +243,31 @@ extension Level {
                     id: 1,
                     contextMessage: """
                     📍 WHY BRANCHES MATTER
-                    
-                    Imagine editing a Google Doc with 5 people at once. 
+
+                    Imagine editing a Google Doc with 5 people at once.
                     Chaos, right?
-                    
-                    Branches let you work in isolation. Your changes 
+
+                    Branches let you work in isolation. Your changes
                     stay separate until you're ready to merge.
-                    
+
                     In real teams:
                     • main = production code (always working)
                     • feature branches = experiments (safe to break)
-                    
+
                     Create a branch called 'feature/dark-mode'
                     """,
                     expectedCommand: "git checkout",
                     hint: "Tap: git checkout -b feature/dark-mode",
                     successMessage: "🌿 Feature Branch Created",
-                    teamReaction: "Jordan: Perfect — now anything you commit stays off main until it's ready"
+                    teamReaction: "Jordan: Perfect - now anything you commit stays off main until it's ready"
                 ),
                 LevelStep(
                     id: 2,
                     contextMessage: """
                     📍 BUILD THE FEATURE
-                    
+
                     Make a commit to simulate adding dark mode.
-                    
+
                     Real developers commit at logical checkpoints:
                     • After adding a function
                     • After fixing a bug
@@ -348,30 +297,29 @@ extension Level {
                 realWorldUsage: "Common patterns: feature/new-ui, bugfix/login-error, experiment/ai-suggestions"
             )
         ),
-        
-        // LEVEL 3: PUSH TO GITHUB
+
         Level(
             id: 3,
             title: "Push to GitHub",
             subtitle: "Share Your Work",
             initialChat: [
-                ChatMessage(sender: .jordan, text: "Hey — I need to pull your auth components for my API integration work"),
-                ChatMessage(sender: .jordan, text: "But I don't see your code on GitHub yet?"),
-                ChatMessage(sender: .maya, text: "Ah right, we haven't connected the remote yet"),
-                ChatMessage(sender: .maya, text: "Add the GitHub remote and push your commits — that'll unblock Jordan"),
-                ChatMessage(sender: .jordan, text: "My code review is at 2pm so I need your stuff before then 😅")
+                ChatMessage(sender: .amrit, text: "Hey - I need to pull your auth components for my API integration work"),
+                ChatMessage(sender: .amrit, text: "But I don't see your code on GitHub yet?"),
+                ChatMessage(sender: .siddharth, text: "Ah right, we haven't connected the remote yet"),
+                ChatMessage(sender: .siddharth, text: "Add the GitHub remote and push your commits - that'll unblock Jordan"),
+                ChatMessage(sender: .amrit, text: "My code review is at 2pm so I need your stuff before then 😅")
             ],
             stepChats: [
                 0: [
                     ChatMessage(sender: .you, text: "Remote added."),
-                    ChatMessage(sender: .jordan, text: "Nice — local repo now knows where GitHub lives"),
-                    ChatMessage(sender: .maya, text: "Now push your commits up so the team can access them")
+                    ChatMessage(sender: .amrit, text: "Nice - local repo now knows where GitHub lives"),
+                    ChatMessage(sender: .siddharth, text: "Now push your commits up so the team can access them")
                 ],
                 1: [
                     ChatMessage(sender: .you, text: "Code pushed! ☁️"),
-                    ChatMessage(sender: .jordan, text: "Got it! Pulling now... auth components look solid 👀"),
-                    ChatMessage(sender: .alex, text: "I can see the commits on GitHub — looks great from here! 🎨"),
-                    ChatMessage(sender: .maya, text: "Code is now backed up and shareable. Good work unblocking the team")
+                    ChatMessage(sender: .amrit, text: "Got it! Pulling now... auth components look solid 👀"),
+                    ChatMessage(sender: .sumit, text: "I can see the commits on GitHub - looks great from here! 🎨"),
+                    ChatMessage(sender: .siddharth, text: "Code is now backed up and shareable. Good work unblocking the team")
                 ]
             ],
             icon: "cloud.fill",
@@ -382,16 +330,16 @@ extension Level {
                     id: 1,
                     contextMessage: """
                     📍 GOING REMOTE
-                    
-                    So far, Git has been local — only on your machine.
-                    
-                    To collaborate, you need a "remote" — a shared version 
+
+                    So far, Git has been local - only on your machine.
+
+                    To collaborate, you need a "remote" - a shared version
                     of the repo on GitHub.
-                    
+
                     Think of it like:
                     • Your laptop = your private notes
                     • GitHub = the team's shared whiteboard
-                    
+
                     Add the remote repository.
                     """,
                     expectedCommand: "git remote",
@@ -403,9 +351,9 @@ extension Level {
                     id: 2,
                     contextMessage: """
                     📍 SEND IT TO THE CLOUD
-                    
+
                     Now push your branch to GitHub so Alex can access it.
-                    
+
                     This uploads your commits to the remote repository.
                     """,
                     expectedCommand: "git push",
@@ -427,40 +375,39 @@ extension Level {
                         description: "Sends your commits to GitHub. -u sets up tracking for future pushes."
                     )
                 ],
-                proTip: "After the first push, you can just use 'git push' — tracking remembers the branch.",
+                proTip: "After the first push, you can just use 'git push' - tracking remembers the branch.",
                 risk: "Force pushing (--force) can delete others' work. Only use if you know why.",
                 realWorldUsage: "Every feature branch gets pushed so teammates can review PRs, CI/CD can run tests, and code is backed up."
             )
         ),
-        
-        // LEVEL 4: THE MERGE CONFLICT CRISIS
+
         Level(
             id: 4,
             title: "The 3 PM Crisis",
             subtitle: "Resolve Merge Conflict",
             initialChat: [
-                ChatMessage(sender: .maya, text: "🚨 Heads up @channel — we have a merge conflict in dashboard.js"),
-                ChatMessage(sender: .jordan, text: "That was me, sorry. I edited the same section Alex was working on"),
-                ChatMessage(sender: .alex, text: "The stakeholder demo is at 3:30 and the build is broken 😰"),
-                ChatMessage(sender: .maya, text: "We need to resolve this before the demo. Can you take a look?"),
-                ChatMessage(sender: .jordan, text: "Check git status first — it'll show you exactly which files are conflicted")
+                ChatMessage(sender: .siddharth, text: "🚨 Heads up @channel - we have a merge conflict in dashboard.js"),
+                ChatMessage(sender: .amrit, text: "That was me, sorry. I edited the same section Alex was working on"),
+                ChatMessage(sender: .sumit, text: "The stakeholder demo is at 3:30 and the build is broken 😰"),
+                ChatMessage(sender: .siddharth, text: "We need to resolve this before the demo. Can you take a look?"),
+                ChatMessage(sender: .amrit, text: "Check git status first - it'll show you exactly which files are conflicted")
             ],
             stepChats: [
                 0: [
                     ChatMessage(sender: .you, text: "Checking status..."),
-                    ChatMessage(sender: .jordan, text: "There it is — dashboard.js has the conflict"),
-                    ChatMessage(sender: .maya, text: "Open it up, pick the right version, and stage the fix")
+                    ChatMessage(sender: .amrit, text: "There it is - dashboard.js has the conflict"),
+                    ChatMessage(sender: .siddharth, text: "Open it up, pick the right version, and stage the fix")
                 ],
                 1: [
                     ChatMessage(sender: .you, text: "Conflict resolved in dashboard.js"),
-                    ChatMessage(sender: .jordan, text: "Nice — you kept Alex's purple theme. Design team approved that one"),
-                    ChatMessage(sender: .maya, text: "Good. Now commit the resolution so the build goes green")
+                    ChatMessage(sender: .amrit, text: "Nice - you kept Alex's purple theme. Design team approved that one"),
+                    ChatMessage(sender: .siddharth, text: "Good. Now commit the resolution so the build goes green")
                 ],
                 2: [
                     ChatMessage(sender: .you, text: "Merge commit done! 🎯"),
-                    ChatMessage(sender: .alex, text: "Build is green again! Demo is saved 🙏"),
-                    ChatMessage(sender: .jordan, text: "Good call on the purple. That's the version design signed off on"),
-                    ChatMessage(sender: .maya, text: "Nice work under pressure. That's real production debugging right there")
+                    ChatMessage(sender: .sumit, text: "Build is green again! Demo is saved 🙏"),
+                    ChatMessage(sender: .amrit, text: "Good call on the purple. That's the version design signed off on"),
+                    ChatMessage(sender: .siddharth, text: "Nice work under pressure. That's real production debugging right there")
                 ]
             ],
             icon: "exclamationmark.triangle.fill",
@@ -471,37 +418,37 @@ extension Level {
                     id: 1,
                     contextMessage: """
                     📍 WHAT JUST HAPPENED
-                    
-                    When two people change the same lines of code, 
+
+                    When two people change the same lines of code,
                     Git can't decide which version to keep.
-                    
+
                     This is called a MERGE CONFLICT.
-                    
+
                     It's not a bug. It's not an error. It's Git asking:
                     "I see two versions. Which one is right?"
-                    
+
                     First, check which files are conflicted.
                     """,
                     expectedCommand: "git status",
                     hint: "Tap: git status",
                     successMessage: "Conflicts identified: dashboard.js",
-                    teamReaction: "Jordan: There it is — dashboard.js has the conflict"
+                    teamReaction: "Jordan: There it is - dashboard.js has the conflict"
                 ),
                 LevelStep(
                     id: 2,
                     contextMessage: """
                     📍 RESOLVE THE CONFLICT
-                    
+
                     You've seen the conflict markers in dashboard.js:
-                    
+
                     <<<<<<< HEAD
                     (Jordan's version - blue color)
                     =======
                     (Alex's version - purple color)
                     >>>>>>> feature/alex-colors
-                    
+
                     Decision: Keep Alex's purple (design team approved it).
-                    
+
                     After fixing the file, stage it to mark as resolved.
                     """,
                     expectedCommand: "git add",
@@ -513,16 +460,16 @@ extension Level {
                     id: 3,
                     contextMessage: """
                     📍 COMMIT THE RESOLUTION
-                    
-                    Now commit the fix. This creates a "merge commit" 
+
+                    Now commit the fix. This creates a "merge commit"
                     that brings both branches together.
                     """,
                     expectedCommand: "git commit",
-                    hint: "Tap: git commit -m \"Resolve dashboard color conflict — use purple\"",
+                    hint: "Tap: git commit -m \"Resolve dashboard color conflict - use purple\"",
                     successMessage: "🎯 Conflict Resolved!",
                     teamReaction: """
                     Maya: Build is green. Nice work under pressure.
-                    Jordan: Good call on the purple — that's the signed-off version.
+                    Jordan: Good call on the purple - that's the signed-off version.
                     Alex: Demo is saved! Thank you 🙏
                     """
                 )
@@ -544,45 +491,44 @@ extension Level {
                         description: "Creates a merge commit after resolving conflicts."
                     )
                 ],
-                proTip: "Never blindly accept one side — read the code. Test after resolving. Ask the other dev if unsure.",
+                proTip: "Never blindly accept one side - read the code. Test after resolving. Ask the other dev if unsure.",
                 risk: "Resolving wrong breaks production. Not testing can introduce bugs. Forgetting 'git add' means Git thinks conflict isn't resolved.",
                 realWorldUsage: """
                 Reading Conflict Markers:
                 <<<<<<< HEAD        → Your current branch
                 =======             → Divider
                 >>>>>>> branch-name → Incoming changes
-                
+
                 Resolution Strategies:
                 • Keep yours: Delete incoming, keep HEAD
                 • Keep theirs: Delete HEAD, keep incoming
                 • Combine both: Merge logic from both versions
                 • Rewrite: Neither version is right, start fresh
-                
+
                 Real Team Communication:
-                "Hey, I'm resolving a conflict in auth.js. I'm keeping your validation 
+                "Hey, I'm resolving a conflict in auth.js. I'm keeping your validation
                 logic and my error handling. Let me know if that breaks anything."
                 """
             )
         ),
-        
-        // LEVEL 5: PULL FROM REMOTE
+
         Level(
             id: 5,
             title: "Stay in Sync",
             subtitle: "Pull Teammate's Changes",
             initialChat: [
-                ChatMessage(sender: .maya, text: "Morning! Pushed the auth service updates at 6am - couldn't sleep 😴"),
-                ChatMessage(sender: .jordan, text: "Legend! Pulling now..."),
-                ChatMessage(sender: .alex, text: "Wait should I pull before I start my CSS work today?"),
-                ChatMessage(sender: .maya, text: "YES - I changed the user model. You'll get conflicts otherwise"),
-                ChatMessage(sender: .jordan, text: "Always pull first thing in the morning. Learned that one the hard way last sprint 😅")
+                ChatMessage(sender: .siddharth, text: "Morning! Pushed the auth service updates at 6am - couldn't sleep 😴"),
+                ChatMessage(sender: .amrit, text: "Legend! Pulling now..."),
+                ChatMessage(sender: .sumit, text: "Wait should I pull before I start my CSS work today?"),
+                ChatMessage(sender: .siddharth, text: "YES - I changed the user model. You'll get conflicts otherwise"),
+                ChatMessage(sender: .amrit, text: "Always pull first thing in the morning. Learned that one the hard way last sprint 😅")
             ],
             stepChats: [
                 0: [
                     ChatMessage(sender: .you, text: "Pulled latest changes! 🔄"),
-                    ChatMessage(sender: .jordan, text: "Nice - now you've got Maya's auth refactor. Way cleaner API 👍"),
-                    ChatMessage(sender: .maya, text: "Good habit. You're in sync for standup"),
-                    ChatMessage(sender: .alex, text: "Same here, just pulled. No conflicts on my end 🎉")
+                    ChatMessage(sender: .amrit, text: "Nice - now you've got Maya's auth refactor. Way cleaner API 👍"),
+                    ChatMessage(sender: .siddharth, text: "Good habit. You're in sync for standup"),
+                    ChatMessage(sender: .sumit, text: "Same here, just pulled. No conflicts on my end 🎉")
                 ]
             ],
             icon: "arrow.left.arrow.right",
@@ -593,19 +539,19 @@ extension Level {
                     id: 1,
                     contextMessage: """
                     📍 GET THE LATEST
-                    
-                    'git pull' fetches changes from GitHub and merges 
+
+                    'git pull' fetches changes from GitHub and merges
                     them into your local branch.
-                    
-                    It's like syncing your Dropbox — you get everyone 
+
+                    It's like syncing your Dropbox - you get everyone
                     else's updates.
-                    
+
                     Pull the latest changes from main.
                     """,
                     expectedCommand: "git pull",
                     hint: "Tap: git pull origin main",
                     successMessage: "🔄 Up to date! You have the latest team changes.",
-                    teamReaction: "Jordan: Nice — now you've got Maya's auth refactor. Way cleaner API 👍"
+                    teamReaction: "Jordan: Nice - now you've got Maya's auth refactor. Way cleaner API 👍"
                 )
             ],
             difficulty: .intermediate,
@@ -622,31 +568,30 @@ extension Level {
                     )
                 ],
                 proTip: "Pull at the start of every work session. Some teams pull every 30 minutes on active projects.",
-                risk: "Pulling can cause merge conflicts if you and a teammate edited the same files. That's normal — just resolve them.",
+                risk: "Pulling can cause merge conflicts if you and a teammate edited the same files. That's normal - just resolve them.",
                 realWorldUsage: "Pro workflow: git pull → review changes → git checkout -b feature/new-work → start coding"
             )
         ),
-        
-        // LEVEL 6: UNDO WITH RESET
+
         Level(
             id: 6,
             title: "Time Travel",
             subtitle: "Undo Your Mistakes",
             initialChat: [
                 ChatMessage(sender: .you, text: "Oh no. I just committed the .env file with all our API keys 😱"),
-                ChatMessage(sender: .jordan, text: "STOP — don't push yet! 🚨"),
-                ChatMessage(sender: .maya, text: "OK this is recoverable. Did you already push to GitHub?"),
+                ChatMessage(sender: .amrit, text: "STOP - don't push yet! 🚨"),
+                ChatMessage(sender: .siddharth, text: "OK this is recoverable. Did you already push to GitHub?"),
                 ChatMessage(sender: .you, text: "No, just committed locally"),
-                ChatMessage(sender: .jordan, text: "Good. Use git reset HEAD~1 — it'll undo the commit but keep your files"),
-                ChatMessage(sender: .maya, text: "The keys will still be in the file, just not committed. Then we'll add .env to .gitignore"),
-                ChatMessage(sender: .alex, text: "This happened to me my first week too, don't stress 😅")
+                ChatMessage(sender: .amrit, text: "Good. Use git reset HEAD~1 - it'll undo the commit but keep your files"),
+                ChatMessage(sender: .siddharth, text: "The keys will still be in the file, just not committed. Then we'll add .env to .gitignore"),
+                ChatMessage(sender: .sumit, text: "This happened to me my first week too, don't stress 😅")
             ],
             stepChats: [
                 0: [
                     ChatMessage(sender: .you, text: "Commit undone! ⏮️"),
-                    ChatMessage(sender: .jordan, text: "Crisis averted 👍 Now remove the keys and add .env to .gitignore before re-committing"),
-                    ChatMessage(sender: .maya, text: "Good catch. If those keys had reached GitHub we'd be rotating every credential tonight"),
-                    ChatMessage(sender: .alex, text: "Git literally just saved us. Adding .env to .gitignore now so this can't happen again")
+                    ChatMessage(sender: .amrit, text: "Crisis averted 👍 Now remove the keys and add .env to .gitignore before re-committing"),
+                    ChatMessage(sender: .siddharth, text: "Good catch. If those keys had reached GitHub we'd be rotating every credential tonight"),
+                    ChatMessage(sender: .sumit, text: "Git literally just saved us. Adding .env to .gitignore now so this can't happen again")
                 ]
             ],
             icon: "clock.arrow.circlepath",
@@ -657,13 +602,13 @@ extension Level {
                     id: 1,
                     contextMessage: """
                     📍 UNDO THE COMMIT
-                    
-                    'git reset HEAD~1' removes the last commit from history 
+
+                    'git reset HEAD~1' removes the last commit from history
                     BUT keeps your changes in the files.
-                    
+
                     This lets you fix the mistake and re-commit correctly.
-                    
-                    Your API keys will still be in the file — just not 
+
+                    Your API keys will still be in the file - just not
                     committed anymore.
                     """,
                     expectedCommand: "git reset",
@@ -696,39 +641,38 @@ extension Level {
                 • Committed to wrong branch → reset, switch branches, re-commit
                 • Committed incomplete work → reset, finish work, commit properly
                 • Committed secrets → reset, remove secrets, commit safely
-                
+
                 Pro tip: Before using reset, create a backup branch:
                 git branch backup-before-reset
                 """
             )
         ),
-        
-        // LEVEL 7: MERGE BRANCHES
+
         Level(
             id: 7,
             title: "Ship Your Feature",
             subtitle: "Merge Into Main",
             initialChat: [
-                ChatMessage(sender: .alex, text: "QA just signed off on dark mode — zero bugs found! 🎉"),
-                ChatMessage(sender: .maya, text: "Perfect timing. We can make the 4pm deploy"),
-                ChatMessage(sender: .jordan, text: "Merge window closes at 3pm — gives ops time to build and stage"),
-                ChatMessage(sender: .maya, text: "Switch to main and merge feature/dark-mode. Let's ship this"),
-                ChatMessage(sender: .alex, text: "10,000 users are about to get dark mode! 🌙")
+                ChatMessage(sender: .sumit, text: "QA just signed off on dark mode - zero bugs found! 🎉"),
+                ChatMessage(sender: .siddharth, text: "Perfect timing. We can make the 4pm deploy"),
+                ChatMessage(sender: .amrit, text: "Merge window closes at 3pm - gives ops time to build and stage"),
+                ChatMessage(sender: .siddharth, text: "Switch to main and merge feature/dark-mode. Let's ship this"),
+                ChatMessage(sender: .sumit, text: "10,000 users are about to get dark mode! 🌙")
             ],
             stepChats: [
                 0: [
                     ChatMessage(sender: .you, text: "Switched to main."),
-                    ChatMessage(sender: .jordan, text: "On main now — ready to merge"),
-                    ChatMessage(sender: .maya, text: "Go for it 🚀")
+                    ChatMessage(sender: .amrit, text: "On main now - ready to merge"),
+                    ChatMessage(sender: .siddharth, text: "Go for it 🚀")
                 ],
                 1: [
                     ChatMessage(sender: .you, text: "Branches merged! 🔀"),
-                    ChatMessage(sender: .maya, text: "Clean merge — no conflicts 🎉"),
-                    ChatMessage(sender: .jordan, text: "Deploying to production..."),
-                    ChatMessage(sender: .jordan, text: "Build passed. Staging verified. Going live..."),
-                    ChatMessage(sender: .alex, text: "IT'S LIVE! First user just tweeted about dark mode! 📱"),
-                    ChatMessage(sender: .maya, text: "Ship of the week goes to you. Welcome to the team 😊"),
-                    ChatMessage(sender: .jordan, text: "From git init to production in one sprint. Seriously great work 🚀")
+                    ChatMessage(sender: .siddharth, text: "Clean merge - no conflicts 🎉"),
+                    ChatMessage(sender: .amrit, text: "Deploying to production..."),
+                    ChatMessage(sender: .amrit, text: "Build passed. Staging verified. Going live..."),
+                    ChatMessage(sender: .sumit, text: "IT'S LIVE! First user just tweeted about dark mode! 📱"),
+                    ChatMessage(sender: .siddharth, text: "Ship of the week goes to you. Welcome to the team 😊"),
+                    ChatMessage(sender: .amrit, text: "From git init to production in one sprint. Seriously great work 🚀")
                 ]
             ],
             icon: "arrow.triangle.merge",
@@ -739,11 +683,11 @@ extension Level {
                     id: 1,
                     contextMessage: """
                     📍 SWITCH TO MAIN
-                    
-                    Before merging, switch to the branch you want to 
+
+                    Before merging, switch to the branch you want to
                     merge INTO (main).
-                    
-                    Think of it like: You can't pour coffee into a mug 
+
+                    Think of it like: You can't pour coffee into a mug
                     if you're not holding the mug.
                     """,
                     expectedCommand: "git checkout",
@@ -755,17 +699,17 @@ extension Level {
                     id: 2,
                     contextMessage: """
                     📍 MERGE THE FEATURE
-                    
+
                     Now merge your feature branch into main.
-                    
-                    This brings all your dark mode commits into the 
+
+                    This brings all your dark mode commits into the
                     main branch.
                     """,
                     expectedCommand: "git merge",
                     hint: "Tap: git merge feature/dark-mode",
                     successMessage: "🔀 Branches merged! Dark mode is now in main.",
                     teamReaction: """
-                    Maya: Clean merge — no conflicts 🎉
+                    Maya: Clean merge - no conflicts 🎉
                     Jordan: Deploying to production...
                     Alex: IT'S LIVE! First user just tweeted about dark mode! 📱
                     Maya: Ship of the week goes to you. Welcome to the team 😊
@@ -795,7 +739,7 @@ extension Level {
                 4. Resolve any conflicts
                 5. git push origin main
                 6. Delete the feature branch
-                
+
                 After successful merge:
                 git branch -d feature/dark-mode (local)
                 git push origin --delete feature/dark-mode (remote)
@@ -803,20 +747,15 @@ extension Level {
             )
         )
     ]
-    
-    // MARK: - Navigation Helpers
-    
-    /// Looks up a level by its numeric ID.
+
     static func level(withId id: Int) -> Level? {
         allLevels.first { $0.id == id }
     }
-    
-    /// Returns the level immediately after this one, or `nil` if this is the last.
+
     func nextLevel() -> Level? {
         Level.allLevels.first { $0.id == self.id + 1 }
     }
-    
-    /// Returns the level immediately before this one, or `nil` if this is the first.
+
     func previousLevel() -> Level? {
         guard id > 1 else { return nil }
         return Level.allLevels.first { $0.id == self.id - 1 }

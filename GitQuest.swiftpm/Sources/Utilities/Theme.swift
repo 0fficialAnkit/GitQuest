@@ -1,129 +1,77 @@
-//
-//  Theme.swift
-//  GitQuest
-//
-//  Created by Ankit Kumar on 04/02/26.
-//
-
 import SwiftUI
 
-/// Centralised design-system tokens for GitQuest.
-///
-/// Every view should reference `Theme.Colors`, `Theme.Typography`, etc.
-/// instead of hard-coding values, keeping the visual language consistent.
 enum Theme {
-    
-    // MARK: - Colors
-    
-    /// Semantic colour palette that adapts automatically to light / dark mode.
     enum Colors {
+        static let background = Color(red: 0.07, green: 0.07, blue: 0.09)
+        static let cardBackground = Color(red: 0.12, green: 0.12, blue: 0.14)
+        static let headerBackground = Color(red: 0.10, green: 0.10, blue: 0.12)
+        static let terminalBackground = Color(red: 0.08, green: 0.08, blue: 0.10)
         
-        // MARK: Surfaces & Backgrounds
-        
-        /// Primary screen background.
-        static let background = Color(uiColor: .systemBackground)
-        
-        // MARK: Brand
-        
-        /// Primary brand colour used for CTAs and key accents.
         static let primary = Color.purple
-        
-        /// Secondary brand colour for gradients and supporting accents.
         static let secondary = Color.blue
-        
-        // MARK: Semantic
-        
-        /// Positive / success state.
         static let success = Color.green
-        
-        /// Warning / caution state.
         static let warning = Color.yellow
-        
-        // MARK: Text
-        
-        /// Highest-contrast body text.
-        static let textPrimary = Color.primary
-        
-        /// Muted secondary text (subtitles, descriptions).
-        static let textSecondary = Color.secondary
-        
-        /// Lowest-contrast tertiary text (timestamps, labels).
-        static let textTertiary = Color(uiColor: .tertiaryLabel)
-        
-        // MARK: Concept Colors
-        
-        /// Returns the accent colour associated with a given `GitConcept`.
+        static let textPrimary = Color.white
+        static let textSecondary = Color.white.opacity(0.6)
+        static let textTertiary = Color.white.opacity(0.3)
+
         static func conceptColor(_ concept: GitConcept) -> Color {
             switch concept {
-            case .repository:    return .purple
-            case .staging:       return .blue
-            case .branching:     return .green
-            case .merging:       return .orange
-            case .remote:        return .cyan
-            case .collaboration: return .pink
-            case .conflicts:     return .red
-            case .history:       return .red
-            case .advanced:      return .yellow
-            @unknown default:    return .gray
+            case .repository: return GitTheme.purple
+            case .staging: return GitTheme.blue
+            case .branching: return GitTheme.green
+            case .merging: return GitTheme.orange
+            case .remote: return GitTheme.cyan
+            case .collaboration: return GitTheme.pink
+            case .conflicts: return GitTheme.red
+            case .history: return GitTheme.red
+            case .advanced: return GitTheme.yellow
+            @unknown default: return GitTheme.gray
             }
         }
     }
-    
-    // MARK: - Typography
-    
-    /// Pre-configured `Font` tokens for consistent type hierarchy.
+
     enum Typography {
-        
-        // MARK: Display
-        
-        /// Extra-large display font (welcome screen title).
         static let hero = Font.system(size: 100, weight: .bold)
-        
-        /// Section title (level selection header).
         static let title = Font.system(size: 50, weight: .bold)
-        
-        // MARK: Headings
-        
-        /// Heading level 1.
         static let h1 = Font.system(size: 32, weight: .bold)
-        
-        /// Heading level 2.
         static let h2 = Font.system(size: 24, weight: .semibold)
-        
-        /// Heading level 3.
         static let h3 = Font.system(size: 20, weight: .semibold)
-        
-        // MARK: Body
-        
-        /// Default body text.
         static let body = Font.system(size: 16, weight: .regular)
-        
-        /// Emphasised body text.
         static let bodyBold = Font.system(size: 16, weight: .semibold)
-        
-        /// Small caption / metadata text.
         static let caption = Font.system(size: 14, weight: .regular)
-        
-        /// Smallest informational text.
         static let small = Font.system(size: 12, weight: .regular)
     }
-    
-    // MARK: - Spacing
-    
-    /// 4-pt grid spacing tokens used throughout the UI.
+
     enum Spacing {
-        static let xs:  CGFloat = 4
-        static let sm:  CGFloat = 8
-        static let md:  CGFloat = 16
-        static let lg:  CGFloat = 24
-        static let xl:  CGFloat = 32
+        static let xs: CGFloat = 4
+        static let sm: CGFloat = 8
+        static let md: CGFloat = 16
+        static let lg: CGFloat = 24
+        static let xl: CGFloat = 32
         static let xxl: CGFloat = 48
     }
-    
-    // MARK: - Shadow
-    /// Pre-defined shadow colours (use with `.shadow(color:radius:x:y:)`).
+
+    enum Layout {
+        static let buttonHeight: CGFloat = 56
+        static let cornerRadius: CGFloat = 16
+    }
+
     enum Shadow {
-        /// Medium shadow for raised surfaces.
         static let medium = Color.black.opacity(0.2)
     }
+}
+
+enum GitTheme {
+    static let orange = Color(red: 0.96, green: 0.58, blue: 0.12)
+    static let green = Color(red: 0.24, green: 0.72, blue: 0.39)
+    static let blue = Color(red: 0.18, green: 0.50, blue: 0.93)
+    static let purple = Color(red: 0.56, green: 0.27, blue: 0.68)
+    static let cyan = Color(red: 0.20, green: 0.67, blue: 0.86)
+    static let yellow = Color(red: 0.90, green: 0.72, blue: 0.15)
+    static let gray = Color(red: 0.55, green: 0.55, blue: 0.57)
+    static let red = Color(red: 0.86, green: 0.24, blue: 0.24)
+    static let pink = Color(red: 0.90, green: 0.30, blue: 0.60)
+    static let darkBackground = Color(red: 0.11, green: 0.12, blue: 0.14)
+    static let headerBackground = Color(red: 0.10, green: 0.10, blue: 0.12)
 }

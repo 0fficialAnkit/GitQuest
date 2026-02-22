@@ -1,61 +1,43 @@
-//
-//  GitVisualizerView.swift
-//  GitQuest
-//
-//  State-driven Git timeline visualizer.
-//  The graph is derived entirely from GitRepositoryState — no UI events
-//  drive structure. Animations are diff-based: previous model → new model.
-//
-
 import SwiftUI
 
-// ============================================================
-// MARK: - Pure Data Graph Model
-// ============================================================
-
-/// Visual representation of a single commit node in the graph.
 struct VNode: Identifiable, Equatable {
-    let id: String           // commit hash
+    let id: String
     let message: String
     let branch: String
-    let lane: Int            // 0 = main, 1+ = feature lanes
-    let column: Int          // chronological x-position
+    let lane: Int
+    let column: Int
     let parentId: String?
     let color: Color
     var style: VNodeStyle
 }
 
-/// Visual style variants for commit nodes.
 enum VNodeStyle: Equatable {
-    case placeholder          // dashed circle — repo inited, no commits yet
-    case normal               // standard commit
-    case head                 // HEAD commit (green glow)
-    case staged               // HEAD + files staged (spinning gold ring)
-    case conflict             // HEAD with warning badge
-    case resolving            // HEAD with resolving indicator
-    case remote               // commit authored by remote (pull)
-    case merge                // merge commit (dual-color)
-    case dimmed               // branch was merged — visually de-emphasized
+    case placeholder
+    case normal
+    case head
+    case staged
+    case conflict
+    case resolving
+    case remote
+    case merge
+    case dimmed
 }
 
-/// Visual representation of a branch lane.
 struct VLane: Identifiable, Equatable {
-    let id: String            // branch name
+    let id: String
     let lane: Int
     let color: Color
     var isActive: Bool
-    var isDimmed: Bool        // post-merge de-emphasis
+    var isDimmed: Bool
 }
 
-/// A dashed arc from a source tip to a merge commit.
 struct VMergeArc: Identifiable, Equatable {
-    let id: String            // "\(fromId)->\(toId)"
+    let id: String
     let fromNodeId: String
     let toNodeId: String
     let color: Color
 }
 
-/// An animated arrow for push/pull operations.
 struct VArrow: Identifiable, Equatable {
     enum Direction: Equatable { case up, down }
     let id: String
@@ -63,38 +45,28 @@ struct VArrow: Identifiable, Equatable {
     let color: Color
 }
 
-/// Remote cloud indicator.
 struct VRemote: Equatable {
     var isVisible: Bool
     var isSynced: Bool
-    var anchorNodeId: String?   // pinned to this node's position
+    var anchorNodeId: String?
 }
 
-/// Complete visual graph model — a pure value type derived from GitRepositoryState.
-/// The renderer diffs consecutive models to produce animations.
 struct VGraphModel: Equatable {
     var lanes: [VLane]      = []
     var nodes: [VNode]      = []
     var arcs:  [VMergeArc] = []
     var headNodeId: String?
-    var floatingHead: Bool  = false   // HEAD badge not attached to any node (post-init, pre-commit)
+    var floatingHead: Bool  = false
     var remote: VRemote     = VRemote(isVisible: false, isSynced: false)
     var arrows: [VArrow]   = []
 }
 
-// ============================================================
-// MARK: - Graph Model Builder
-// ============================================================
-
-/// Derives a VGraphModel from the observable GitRepositoryState.
-/// This is the single source of truth for the visual layout.
 enum VGraphBuilder {
 
     @MainActor static func build(from repo: GitRepositoryState) -> VGraphModel {
         var model = VGraphModel()
         guard repo.isInitialized else { return model }
 
-        // --- Lane assignment ---
         var laneMap: [String: Int] = [:]
         var colorMap: [String: Color] = [:]
         var laneIndex = 0
@@ -110,7 +82,6 @@ enum VGraphBuilder {
             colorMap[branch.name] = branch.color
         }
 
-        // --- VLane objects ---
         let mergedBranches = mergedBranchNames(repo)
         for branch in repo.branches {
             let lane = laneMap[branch.name] ?? 0
@@ -123,17 +94,14 @@ enum VGraphBuilder {
             ))
         }
 
-        // --- HEAD resolution ---
         let currentBranch = repo.branches.first(where: { $0.name == repo.currentBranch })
         let headCommitId  = currentBranch?.headCommitId
 
-        // --- No commits yet: show placeholder + floating HEAD ---
         if repo.commits.isEmpty {
             model.floatingHead = true
             return model
         }
 
-        // --- VNode objects ---
         for (col, commit) in repo.commits.enumerated() {
             let lane  = laneMap[commit.branch] ?? 0
             let color = colorMap[commit.branch] ?? .purple
@@ -163,7 +131,6 @@ enum VGraphBuilder {
         model.headNodeId  = headCommitId
         model.floatingHead = false
 
-        // --- Merge arcs ---
         for node in model.nodes where node.message.hasPrefix("Merge branch '") {
             let rest = node.message.dropFirst("Merge branch '".count)
             if let eq = rest.firstIndex(of: "'") {
@@ -180,7 +147,6 @@ enum VGraphBuilder {
             }
         }
 
-        // --- Remote ---
         if repo.hasRemote {
             let anchor = model.nodes.filter { laneMap[$0.branch] == 0 }.last
             let action = repo.lastAction
@@ -190,7 +156,7 @@ enum VGraphBuilder {
                 isSynced:     isSynced,
                 anchorNodeId: anchor?.id
             )
-            // Arrows
+
             if action?.type == .push {
                 model.arrows = [VArrow(id: "push", direction: .up, color: GitTheme.cyan)]
             } else if action?.type == .pull {
@@ -200,8 +166,6 @@ enum VGraphBuilder {
 
         return model
     }
-
-    // ---- Helpers ----
 
     @MainActor private static func nodeStyle(
         commit: GitCommit,
@@ -218,7 +182,7 @@ enum VGraphBuilder {
         if isRemotePull { return .remote }
         if isStaged   { return .staged }
         if isHead     {
-            // Check for conflict state (last action was status on conflict level)
+
             if let action = repo.lastAction, action.type == .status { return .conflict }
             return .head
         }
@@ -237,17 +201,12 @@ enum VGraphBuilder {
     }
 }
 
-// ============================================================
-// MARK: - Layout Engine
-// ============================================================
-
-/// Computes pixel-space positions for nodes, given a VGraphModel.
 struct VLayout {
     let nodeRadius: CGFloat  = 20
-    let hSpacing:   CGFloat  = 88     // column width
-    let vSpacing:   CGFloat  = 64     // lane height
+    let hSpacing:   CGFloat  = 88
+    let vSpacing:   CGFloat  = 64
     let leftPad:    CGFloat  = 40
-    let topPad:     CGFloat  = 56     // room above node for HEAD badge
+    let topPad:     CGFloat  = 56
 
     func center(for node: VNode) -> CGPoint {
         CGPoint(
@@ -269,19 +228,13 @@ struct VLayout {
     }
 }
 
-// ============================================================
-// MARK: - GitVisualizerView  (SwiftUI entry point)
-// ============================================================
-
 struct GitVisualizerView: View {
 
     var repoState: GitRepositoryState
 
-    // Diff-state: previous and current graph model
     @State private var currentModel:  VGraphModel = VGraphModel()
     @State private var previousModel: VGraphModel = VGraphModel()
 
-    // Animation drivers
     @State private var pulseHead       = false
     @State private var spinStage       = false
     @State private var pushArrowOffset: CGFloat = 0
@@ -313,7 +266,7 @@ struct GitVisualizerView: View {
         )
         .sheet(isPresented: $showGuide) { VisualizerGuideSheet() }
         .onAppear { pulseHead = true; spinStage = true }
-        // React to state changes → rebuild model and animate diff
+
         .onChange(of: repoState.commits.count)        { _,_ in rebuildModel() }
         .onChange(of: repoState.currentBranch)        { _,_ in rebuildModel() }
         .onChange(of: repoState.stagedFiles.count)    { _,_ in rebuildModel() }
@@ -323,14 +276,11 @@ struct GitVisualizerView: View {
         .onAppear { rebuildModel() }
     }
 
-    // ── Rebuild: diff previous → new, then animate ──────────────────
-
     private func rebuildModel() {
         let newModel = VGraphBuilder.build(from: repoState)
         guard newModel != currentModel else { return }
         previousModel = currentModel
 
-        // Trigger arrow animations
         if newModel.arrows.contains(where: { $0.direction == .up }) {
             animatePushArrow()
         }
@@ -365,10 +315,6 @@ struct GitVisualizerView: View {
         }
     }
 
-    // ============================================================
-    // MARK: - Graph Scroller
-    // ============================================================
-
     private var graphScroller: some View {
         let size = layout.canvasSize(model: currentModel)
         return ScrollViewReader { proxy in
@@ -386,35 +332,25 @@ struct GitVisualizerView: View {
         }
     }
 
-    // ============================================================
-    // MARK: - Graph Canvas
-    // ============================================================
-
     @ViewBuilder
     private func graphCanvas(size: CGSize) -> some View {
 
-        // 1. Background lane tracks
         Canvas { ctx, _ in drawLaneTracks(&ctx) }
 
-        // 2. Parent–child connection lines
         Canvas { ctx, _ in drawConnections(&ctx) }
 
-        // 3. Merge arcs (dashed + arrowhead)
         Canvas { ctx, _ in drawMergeArcs(&ctx) }
 
-        // 4. Remote cloud + animated arrows
         if currentModel.remote.isVisible {
             remoteOverlay
         }
 
-        // 5. Placeholder when no commits yet
         if currentModel.nodes.isEmpty && currentModel.floatingHead == false {
             initPlaceholder
         } else if currentModel.floatingHead {
             floatingHeadView
         }
 
-        // 6. Commit nodes (identity-stable for diff animation)
         ForEach(currentModel.nodes) { node in
             nodeView(node)
                 .id(node.id)
@@ -428,15 +364,10 @@ struct GitVisualizerView: View {
                 )
         }
 
-        // 7. Branch labels (right-of-head)
         ForEach(currentModel.lanes) { lane in
             branchLabel(lane)
         }
     }
-
-    // ============================================================
-    // MARK: - Canvas Drawing (pure geometry, no SwiftUI state)
-    // ============================================================
 
     private func nodeCenter(_ nodeId: String) -> CGPoint? {
         currentModel.nodes.first(where: { $0.id == nodeId }).map { layout.center(for: $0) }
@@ -494,7 +425,6 @@ struct GitVisualizerView: View {
                 with: .color(arc.color.opacity(0.72)),
                 style: StrokeStyle(lineWidth: 2.2, dash: [5, 3.5]))
 
-            // Arrowhead
             let angle  = atan2(to.y - from.y, to.x - from.x)
             let len: CGFloat = 9
             var arrow = Path()
@@ -508,17 +438,13 @@ struct GitVisualizerView: View {
         }
     }
 
-    // ============================================================
-    // MARK: - Special Overlays
-    // ============================================================
-
     @ViewBuilder
     private var remoteOverlay: some View {
         if let anchorId = currentModel.remote.anchorNodeId,
            let anchor = currentModel.nodes.first(where: { $0.id == anchorId }) {
             let pt = layout.center(for: anchor)
             ZStack {
-                // Animated push arrow
+
                 if currentModel.arrows.contains(where: { $0.direction == .up }) {
                     Image(systemName: "arrow.up")
                         .font(.system(size: 16, weight: .bold))
@@ -527,7 +453,7 @@ struct GitVisualizerView: View {
                         .opacity(arrowOpacity)
                         .position(x: pt.x, y: pt.y - 30)
                 }
-                // Animated pull arrow
+
                 if currentModel.arrows.contains(where: { $0.direction == .down }) {
                     Image(systemName: "arrow.down")
                         .font(.system(size: 16, weight: .bold))
@@ -536,7 +462,7 @@ struct GitVisualizerView: View {
                         .opacity(arrowOpacity)
                         .position(x: pt.x, y: pt.y - 54)
                 }
-                // Cloud icon
+
                 VStack(spacing: 2) {
                     Image(systemName: currentModel.remote.isSynced ? "checkmark.icloud.fill" : "icloud")
                         .font(.system(size: 24))
@@ -577,7 +503,7 @@ struct GitVisualizerView: View {
                     .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [5, 4]))
                     .foregroundStyle(GitTheme.gray.opacity(0.4))
                     .frame(width: 40, height: 40)
-                // Staging ring on placeholder
+
                 if !repoState.stagedFiles.isEmpty {
                     Circle()
                         .stroke(
@@ -600,10 +526,6 @@ struct GitVisualizerView: View {
         .transition(.scale(scale: 0.5).combined(with: .opacity))
     }
 
-    // ============================================================
-    // MARK: - Node View
-    // ============================================================
-
     @ViewBuilder
     private func nodeView(_ node: VNode) -> some View {
         let pt     = layout.center(for: node)
@@ -612,7 +534,7 @@ struct GitVisualizerView: View {
         let isHead = node.id == currentModel.headNodeId
 
         ZStack {
-            // Ambient glow for new / head commits
+
             if node.style == .head || node.style == .staged || node.style == .merge {
                 Circle()
                     .fill(node.color.opacity(0.25))
@@ -620,7 +542,6 @@ struct GitVisualizerView: View {
                     .blur(radius: 10)
             }
 
-            // Staging ring (spinning gold)
             if node.style == .staged {
                 Circle()
                     .stroke(
@@ -633,7 +554,6 @@ struct GitVisualizerView: View {
                     .animation(.linear(duration: 2.5).repeatForever(autoreverses: false), value: spinStage)
             }
 
-            // Conflict / resolving badge ring
             if node.style == .conflict {
                 Circle()
                     .stroke(GitTheme.red.opacity(0.8), lineWidth: 2.5)
@@ -645,14 +565,12 @@ struct GitVisualizerView: View {
                     .frame(width: d + 14, height: d + 14)
             }
 
-            // Selection ring
             if selectedNodeId == node.id {
                 Circle()
                     .stroke(.white.opacity(0.55), lineWidth: 2.5)
                     .frame(width: d + 8, height: d + 8)
             }
 
-            // Main circle — fill style depends on node kind
             Circle()
                 .fill(mainFill(for: node))
                 .frame(width: d, height: d)
@@ -667,12 +585,10 @@ struct GitVisualizerView: View {
                 )
                 .opacity(node.style == .dimmed ? 0.35 : 1.0)
 
-            // Short hash
             Text(String(node.id.prefix(4)))
                 .font(.system(size: 9, weight: .bold, design: .monospaced))
                 .foregroundStyle(.white.opacity(node.style == .dimmed ? 0.4 : 0.92))
 
-            // Status badges
             if node.style == .conflict {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.system(size: 11))
@@ -692,19 +608,16 @@ struct GitVisualizerView: View {
                     .offset(x: r - 2, y: -(r - 2))
             }
 
-            // HEAD badge above node
             if isHead && !currentModel.floatingHead {
                 headBadge
                     .offset(y: -(r + 18))
             }
 
-            // Staged file chips below node
             if node.style == .staged {
                 fileChips(count: repoState.stagedFiles.count)
                     .offset(y: r + 14)
             }
 
-            // Commit message label
             commitLabel(node)
                 .offset(y: r + (node.style == .staged ? 36 : 16))
         }
@@ -721,7 +634,7 @@ struct GitVisualizerView: View {
 
     private func mainFill(for node: VNode) -> AnyShapeStyle {
         if node.style == .merge {
-            // Dual-color merge commit
+
             return AnyShapeStyle(LinearGradient(
                 colors: [node.color, node.color.opacity(0.5), GitTheme.orange],
                 startPoint: .topLeading,
@@ -799,10 +712,6 @@ struct GitVisualizerView: View {
             }
     }
 
-    // ============================================================
-    // MARK: - Branch Labels
-    // ============================================================
-
     @ViewBuilder
     private func branchLabel(_ lane: VLane) -> some View {
         let branchNodes = currentModel.nodes.filter { $0.branch == lane.id }
@@ -840,10 +749,6 @@ struct GitVisualizerView: View {
         }
     }
 
-    // ============================================================
-    // MARK: - Header Bar
-    // ============================================================
-
     private var headerBar: some View {
         HStack {
             let bColor = repoState.branches.first(where: { $0.name == repoState.currentBranch })?.color ?? GitTheme.purple
@@ -878,7 +783,7 @@ struct GitVisualizerView: View {
             }
         }
         .padding(.horizontal, 14).padding(.vertical, 10)
-        .background(Color(red: 0.10, green: 0.10, blue: 0.12))
+        .background(Theme.Colors.headerBackground)
     }
 
     private func statBadge(_ icon: String, _ value: String, _ color: Color) -> some View {
@@ -888,10 +793,6 @@ struct GitVisualizerView: View {
         }
         .foregroundStyle(color.opacity(0.9))
     }
-
-    // ============================================================
-    // MARK: - Action Footer
-    // ============================================================
 
     @ViewBuilder
     private var actionFooter: some View {
@@ -952,10 +853,6 @@ struct GitVisualizerView: View {
         }
     }
 
-    // ============================================================
-    // MARK: - Empty State (pre-init)
-    // ============================================================
-
     private var emptyState: some View {
         VStack(spacing: 16) {
             ZStack {
@@ -974,16 +871,12 @@ struct GitVisualizerView: View {
     }
 }
 
-// ============================================================
-// MARK: - Visualizer Guide Sheet
-// ============================================================
-
 struct VisualizerGuideSheet: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            Color(red: 0.10, green: 0.10, blue: 0.12).ignoresSafeArea()
+            Theme.Colors.headerBackground.ignoresSafeArea()
             VStack(alignment: .leading, spacing: 22) {
                 Text("Understanding the Git Graph")
                     .font(.system(size: 18, weight: .bold)).foregroundStyle(.white)
@@ -1047,14 +940,11 @@ struct VisualizerGuideSheet: View {
     }
 }
 
-// ============================================================
-// MARK: - Preview
-// ============================================================
-
 #Preview("Full Workflow") {
     let state = GitRepositoryState()
     return GitVisualizerView(repoState: state)
         .frame(height: 420)
+        .preferredColorScheme(.dark)
         .onAppear {
             state.initialize()
             state.stageFiles(["README.md"])
@@ -1071,19 +961,21 @@ struct VisualizerGuideSheet: View {
         }
 }
 
-#Preview("Level 1 — Init") {
+#Preview("Level 1 - Init") {
     let state = GitRepositoryState()
     return GitVisualizerView(repoState: state)
         .frame(height: 260)
+        .preferredColorScheme(.dark)
         .onAppear {
             state.initialize()
         }
 }
 
-#Preview("Level 1 — Staged, no commit") {
+#Preview("Level 1 - Staged, no commit") {
     let state = GitRepositoryState()
     return GitVisualizerView(repoState: state)
         .frame(height: 260)
+        .preferredColorScheme(.dark)
         .onAppear {
             state.initialize()
             state.stageFiles(["README.md", "main.swift"])
