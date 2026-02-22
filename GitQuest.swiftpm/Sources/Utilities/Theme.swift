@@ -73,5 +73,4 @@ enum GitTheme {
     static let red = Color(red: 0.86, green: 0.24, blue: 0.24)
     static let pink = Color(red: 0.90, green: 0.30, blue: 0.60)
     static let darkBackground = Color(red: 0.11, green: 0.12, blue: 0.14)
-    static let headerBackground = Color(red: 0.10, green: 0.10, blue: 0.12)
 }
