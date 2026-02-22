@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Onboarding carousel: “What is Git?”, “How it works”, “Key concepts” with Skip and “Start Learning” on the last page.
 struct TutorialView: View {
     let onComplete: () -> Void
 
@@ -112,6 +113,7 @@ struct TutorialView: View {
     }
 }
 
+/// One page in the tutorial carousel: icon, title, description with appear animation.
 struct TutorialPageView: View {
     let icon: String
     let title: String

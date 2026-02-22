@@ -1,5 +1,8 @@
 import Foundation
 
+// MARK: - Command part explanation
+
+/// One token from a Git command with a human-readable meaning and role for the concept card.
 struct CommandPartExplanation: Identifiable {
     let id = UUID()
     let part: String
@@ -7,6 +10,9 @@ struct CommandPartExplanation: Identifiable {
     let purposeInCommand: String
 }
 
+// MARK: - CommandSyntaxAnalyzer
+
+/// Parses a Git command string into tokens and returns meaning/role text for each part (e.g. "git", "commit", "-m").
 struct CommandSyntaxAnalyzer {
     static func explain(command: String) -> [CommandPartExplanation] {
         let originalTokens = tokenize(command)
@@ -21,7 +27,10 @@ struct CommandSyntaxAnalyzer {
     }
 }
 
+// MARK: - Tokenization
+
 private extension CommandSyntaxAnalyzer {
+    /// Splits command into tokens; keeps quoted strings (e.g. commit messages) as single tokens.
     static func tokenize(_ command: String) -> [String] {
         var tokens: [String] = []
         var current = ""
@@ -45,6 +54,8 @@ private extension CommandSyntaxAnalyzer {
         return tokens
     }
 }
+
+// MARK: - Meaning and role (private)
 
 private extension CommandSyntaxAnalyzer {
     static func meaning(of part: String, index: Int, tokens: [String]) -> String {

@@ -1,15 +1,19 @@
 import SwiftUI
 
+/// Navigation destinations: tutorial, level list, or a specific level game screen.
 enum AppScreen: Hashable {
     case tutorial
     case levels
     case game(Level)
 }
 
+/// Root view: welcome → tutorial or level list → level game. Uses NavigationStack and AppScreen for deep linking.
 struct ContentView: View {
     @Environment(GameState.self) var gameState
     @State private var navigationPath = NavigationPath()
     @State private var showingWelcome = true
+
+    // MARK: - Body
 
     var body: some View {
         if showingWelcome {

@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Single message bubble with optional sender label and avatar; alignment and colors come from Sender.
 struct ChatBubble: View {
     let message: ChatMessage
     let showSenderName: Bool

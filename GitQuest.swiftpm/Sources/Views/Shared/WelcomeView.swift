@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// First screen after launch: app title, short description, “Start” button, and optional “Reset progress” when levels are completed.
 struct WelcomeView: View {
     @Environment(GameState.self) var gameState
     let onStart: () -> Void

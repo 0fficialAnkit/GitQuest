@@ -1,5 +1,8 @@
 import SwiftUI
 
+// MARK: - Theme
+
+/// App-wide colors, typography, spacing, and layout constants. Use for consistent UI across all screens.
 enum Theme {
     enum Colors {
         static let background = Color(red: 0.07, green: 0.07, blue: 0.09)
@@ -34,8 +37,6 @@ enum Theme {
     enum Typography {
         static let hero = Font.system(size: 100, weight: .bold)
         static let title = Font.system(size: 50, weight: .bold)
-        static let h1 = Font.system(size: 32, weight: .bold)
-        static let h2 = Font.system(size: 24, weight: .semibold)
         static let h3 = Font.system(size: 20, weight: .semibold)
         static let body = Font.system(size: 16, weight: .regular)
         static let bodyBold = Font.system(size: 16, weight: .semibold)
@@ -54,14 +55,10 @@ enum Theme {
 
     enum Layout {
         static let buttonHeight: CGFloat = 56
-        static let cornerRadius: CGFloat = 16
-    }
-
-    enum Shadow {
-        static let medium = Color.black.opacity(0.2)
     }
 }
 
+/// Git-specific colors for the graph visualizer and repo card (commits, branches, remote, etc.).
 enum GitTheme {
     static let orange = Color(red: 0.96, green: 0.58, blue: 0.12)
     static let green = Color(red: 0.24, green: 0.72, blue: 0.39)

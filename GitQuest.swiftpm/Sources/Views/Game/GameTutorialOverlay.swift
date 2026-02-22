@@ -1,5 +1,8 @@
 import SwiftUI
 
+// MARK: - Tutorial step and card key types
+
+/// One step in the first-time game tutorial: which UI card to highlight and the tip text.
 struct TutorialStep {
     let id: Int
     let cardKey: TutorialCardKey
@@ -12,6 +15,7 @@ struct TutorialStep {
     }
 }
 
+/// Keys for the UI regions that can be highlighted during the tutorial (chat, concept card, console, etc.).
 enum TutorialCardKey: String {
     case chat, concept, console, visualizer, repoState
 }
@@ -56,6 +60,7 @@ extension TutorialStep {
     ]
 }
 
+/// Preference key collecting frame anchors for each tutorial card so the overlay can highlight and position the tip.
 struct TutorialCardFrameKey: PreferenceKey {
     typealias Value = [TutorialCardKey: Anchor<CGRect>]
     nonisolated(unsafe) static var defaultValue: Value = [:]
@@ -72,6 +77,9 @@ extension View {
     }
 }
 
+// MARK: - GameTutorialOverlay
+
+/// Full-screen overlay that dims content, highlights one panel at a time, and shows a tip card. Used on first level load.
 struct GameTutorialOverlay: ViewModifier {
     @Binding var isShowing: Bool
 

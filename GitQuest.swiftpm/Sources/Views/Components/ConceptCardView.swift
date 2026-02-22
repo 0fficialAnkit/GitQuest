@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Shows a single Git command and its parts with meaning and role (via CommandSyntaxAnalyzer). Used next to chat in the level UI.
 struct ConceptCardView: View {
     let command: String
 

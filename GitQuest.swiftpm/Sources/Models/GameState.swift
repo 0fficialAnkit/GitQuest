@@ -1,9 +1,12 @@
 import Foundation
 import Observation
 
+/// Persists and exposes the player’s progress: which levels are completed and whether the onboarding tutorial was seen.
 @Observable
 @MainActor
 class GameState {
+    // MARK: - Persistence keys
+
     private enum StorageKey {
         static let completedLevels = "completedLevels"
         static let hasCompletedTutorial = "hasCompletedTutorial"
@@ -28,6 +31,8 @@ class GameState {
         hasCompletedTutorial = UserDefaults.standard.bool(forKey: StorageKey.hasCompletedTutorial)
     }
 
+    // MARK: - Public API
+
     func isLevelUnlocked(_ levelId: Int) -> Bool {
         levelId <= currentLevel
     }
@@ -45,6 +50,8 @@ class GameState {
         hasCompletedTutorial = false
         UserDefaults.standard.removeObject(forKey: "hasSeenGameTutorial")
     }
+
+    // MARK: - Private
 
     private func persist() {
         UserDefaults.standard.set(Array(completedLevels), forKey: StorageKey.completedLevels)

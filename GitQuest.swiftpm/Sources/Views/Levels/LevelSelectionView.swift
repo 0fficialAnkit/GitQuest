@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Scrollable list of levels as nodes; unlocked levels are tappable to start, locked ones show a shake. Current level is highlighted.
 struct LevelSelectionView: View {
     @Environment(GameState.self) var gameState
     @Binding var navigationPath: NavigationPath
@@ -100,6 +101,7 @@ struct LevelSelectionView: View {
     }
 }
 
+/// One level in the list: circle with icon or lock, level number badge, title. Pulses when it’s the current level.
 struct LevelNode: View {
     let level: Level
     let isUnlocked: Bool
@@ -218,6 +220,7 @@ struct LevelNode: View {
     }
 }
 
+/// Wraps LevelSelectionView in a NavigationStack for previews.
 struct LevelSelectionPreviewContainer: View {
     @State private var path = NavigationPath()
     @State private var gameState = GameState()

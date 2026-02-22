@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Scrollable team chat panel: shows level messages with sender avatars and optional typing indicator.
 struct ChatStoryView: View {
     let messages: [ChatMessage]
     var resetId: UUID = UUID()

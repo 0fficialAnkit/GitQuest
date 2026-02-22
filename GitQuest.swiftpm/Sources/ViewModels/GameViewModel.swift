@@ -2,16 +2,19 @@ import Foundation
 import SwiftUI
 import Observation
 
+// MARK: - Terminal and command result types
+
+/// Result of validating and “running” a command in the game (success flag + message for terminal).
 struct CommandResult {
     let success: Bool
     let message: String
 }
 
+/// One line in the in-game terminal (command, success, error, info, etc.).
 struct TerminalLine: Identifiable {
     let id = UUID()
     let text: String
     let type: TerminalLineType
-    let timestamp = Date()
 }
 
 enum TerminalLineType {
@@ -21,32 +24,17 @@ enum TerminalLineType {
     case info
     case instruction
     case system
-
-    var color: Color {
-        switch self {
-        case .command: return .blue
-        case .success: return .green
-        case .error: return .red
-        case .info: return .cyan
-        case .instruction: return .yellow
-        case .system: return .gray
-        }
-    }
-
-    var icon: String? {
-        switch self {
-        case .command: return "chevron.right"
-        case .success: return "checkmark.circle.fill"
-        case .error: return "xmark.circle.fill"
-        case .instruction: return "lightbulb.fill"
-        default: return nil
-        }
-    }
 }
 
+// MARK: - GameViewModel
+
+/// Drives a level play session: chat messages, terminal output, step progress, and simulated command results.
 @Observable
 @MainActor
 class GameViewModel {
+
+    // MARK: - State
+
     var gameState: GameState = GameState()
     var currentStep: Int = 0
     var terminalOutput: [TerminalLine] = []
@@ -57,6 +45,8 @@ class GameViewModel {
     var chatMessages: [ChatMessage] = []
     var lastSuccessfulCommand: String = ""
     var currentPlayingLevel: Level?
+
+    // MARK: - Level control
 
     func startLevel(_ level: Level) {
         currentPlayingLevel = level
@@ -72,6 +62,8 @@ class GameViewModel {
             addTerminalOutput("Ready? Tap a command below to begin.", type: .instruction)
         }
     }
+
+    // MARK: - Command execution
 
     func executeCommand() {
         let command = commandInput.trimmingCharacters(in: .whitespaces)
@@ -131,6 +123,9 @@ class GameViewModel {
         return CommandResult(success: false, message: "Hmm, that's not quite right. \(step.hint)")
     }
 
+    // MARK: - Private helpers
+
+    /// Returns simulated terminal output for the current level and step when the command matches.
     private func processCorrectCommand(_ command: String, step: LevelStep, level: Level) -> CommandResult {
         switch level.id {
         case 1:
@@ -259,6 +254,8 @@ class GameViewModel {
             }
         }
     }
+
+    // MARK: - Private
 
     private func addTerminalOutput(_ text: String, type: TerminalLineType) {
         terminalOutput.append(TerminalLine(text: text, type: type))

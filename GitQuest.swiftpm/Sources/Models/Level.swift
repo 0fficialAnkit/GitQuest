@@ -1,6 +1,9 @@
 import Foundation
 import SwiftUI
 
+// MARK: - Level
+
+/// One playable level: story chat, required Git steps, command hints, and post-step explanation content.
 struct Level: Identifiable, Hashable {
     let id: Int
     let title: String
@@ -38,6 +41,9 @@ struct Level: Identifiable, Hashable {
     }
 }
 
+// MARK: - GitConcept
+
+/// Category for a level (e.g. staging, branching); used for icons and theming.
 enum GitConcept: String, Hashable {
     case repository = "Repository Basics"
     case staging = "Staging & Committing"
@@ -48,20 +54,6 @@ enum GitConcept: String, Hashable {
     case conflicts = "Merge Conflicts"
     case history = "History & Undo"
     case advanced = "Advanced Workflows"
-
-    var themeColors: [Color] {
-        switch self {
-        case .repository: return [.purple, .blue]
-        case .staging: return [.blue, .cyan]
-        case .branching: return [.green, .mint]
-        case .merging: return [.orange, .yellow]
-        case .remote: return [.cyan, .blue]
-        case .collaboration: return [.pink, .purple]
-        case .conflicts: return [.red, .orange]
-        case .history: return [.red, .orange]
-        case .advanced: return [.yellow, .orange]
-        }
-    }
 
     var icon: String {
         switch self {
@@ -78,6 +70,9 @@ enum GitConcept: String, Hashable {
     }
 }
 
+// MARK: - Level step and explanation types
+
+/// A single required command in a level: expected command, hint on failure, and success copy.
 struct LevelStep: Identifiable, Hashable {
     let id: Int
     let contextMessage: String
@@ -94,12 +89,16 @@ struct CommandExplanation: Hashable {
     let realWorldUsage: String
 }
 
+/// One command plus description shown in the explanation card after completing a step.
 struct CommandDetail: Hashable {
     let command: String
     let description: String
 }
 
+// MARK: - Level data
+
 extension Level {
+    /// All levels in order; defines chat scripts, steps, and explanations.
     static let allLevels: [Level] = [
         Level(
             id: 1,

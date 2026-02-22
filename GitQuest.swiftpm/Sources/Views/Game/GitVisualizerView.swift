@@ -1,5 +1,8 @@
 import SwiftUI
 
+// MARK: - Graph model types (for GitVisualizerView)
+
+/// A commit node in the visualizer: id, message, branch, position (lane/column), parent, color, and style (head, staged, merge, etc.).
 struct VNode: Identifiable, Equatable {
     let id: String
     let message: String
@@ -228,6 +231,9 @@ struct VLayout {
     }
 }
 
+// MARK: - GitVisualizerView
+
+/// Renders the in-memory Git repo as a graph: commits as circles, branches as lanes, merge arcs, HEAD badge, and remote indicator.
 struct GitVisualizerView: View {
 
     var repoState: GitRepositoryState
@@ -871,6 +877,9 @@ struct GitVisualizerView: View {
     }
 }
 
+// MARK: - VisualizerGuideSheet
+
+/// Sheet explaining the graph: commits, branches, HEAD, staging ring, conflict badge, origin, merge arcs, dimmed branches.
 struct VisualizerGuideSheet: View {
     @Environment(\.dismiss) var dismiss
 

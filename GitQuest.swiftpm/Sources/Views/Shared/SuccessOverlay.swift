@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Full-screen “Level complete” overlay with checkmark, level title, concept badge, and dismiss button.
 struct SuccessOverlay: View {
     let level: Level
     let onDismiss: () -> Void

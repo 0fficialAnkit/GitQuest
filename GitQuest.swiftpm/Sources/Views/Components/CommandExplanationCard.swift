@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Bottom sheet after completing a step: “What you used” with command details, pro tip, risk, real-world usage; Next level / Stay options.
 struct CommandExplanationCard: View {
     let level: Level
     var isLastLevel: Bool = false

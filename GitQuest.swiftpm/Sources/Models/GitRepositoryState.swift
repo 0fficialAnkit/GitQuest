@@ -2,6 +2,9 @@ import Foundation
 import SwiftUI
 import Observation
 
+// MARK: - Repository model types
+
+/// A single commit in the in-memory Git graph: id, message, branch, and parent for history.
 struct GitCommit: Identifiable, Equatable {
     let id: String
     let message: String
@@ -23,6 +26,7 @@ struct GitCommit: Identifiable, Equatable {
     }
 }
 
+/// A branch with an optional head commit; color is used by the visualizer.
 struct GitBranch: Identifiable, Equatable {
     let id: String
     var headCommitId: String?
@@ -31,6 +35,7 @@ struct GitBranch: Identifiable, Equatable {
     var name: String { id }
 }
 
+/// Record of the last Git operation for UI feedback (e.g. visualizer footer, status).
 struct GitAction {
     let command: String
     let explanation: String
@@ -50,6 +55,7 @@ struct GitAction {
     }
 }
 
+/// Full copy of repo state used to save/restore per level when re-entering or practicing.
 struct GitRepositorySnapshot {
     var isInitialized: Bool
     var commits: [GitCommit]
@@ -60,9 +66,14 @@ struct GitRepositorySnapshot {
     var remoteName: String
 }
 
+// MARK: - GitRepositoryState
+
+/// In-memory Git repository used by the game: commits, branches, staging, and remote. Drives the graph visualizer and level logic.
 @Observable
 @MainActor
 class GitRepositoryState {
+
+    // MARK: - State
 
     var isInitialized: Bool = false
     var commits: [GitCommit] = []
@@ -74,6 +85,7 @@ class GitRepositoryState {
     var lastAction: GitAction?
     private var levelSnapshots: [Int: GitRepositorySnapshot] = [:]
 
+    // MARK: - Computed state
 
     var headCommit: GitCommit? {
         guard let branch = branches.first(where: { $0.id == currentBranch }),
@@ -123,6 +135,8 @@ class GitRepositoryState {
     func hasSnapshot(forLevel levelId: Int) -> Bool {
         levelSnapshots[levelId] != nil
     }
+
+    // MARK: - Git operations
 
     func initialize() {
         guard !isInitialized else { return }
@@ -274,6 +288,8 @@ class GitRepositoryState {
         hasRemote = false
         lastAction = nil
     }
+
+    // MARK: - Private helpers
 
     private func clearNewFlags() {
         for i in commits.indices {

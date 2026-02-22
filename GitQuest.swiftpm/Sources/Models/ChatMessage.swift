@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 
+/// A single message in the in-game team chat, shown during levels to set context and react to player actions.
 struct ChatMessage: Identifiable, Hashable {
     let id = UUID()
     let sender: Sender
@@ -13,11 +14,13 @@ struct ChatMessage: Identifiable, Hashable {
         self.timestamp = timestamp
     }
 
+    /// Returns a copy with the current time; used when appending follow-up messages so they sort correctly.
     func withCurrentTimestamp() -> ChatMessage {
         ChatMessage(sender: sender, text: text, timestamp: Date())
     }
 }
 
+/// Team members and the player in the chat UI; drives display name, bubble color, and avatar.
 enum Sender: String, Hashable, CaseIterable {
     case siddharth
     case amrit
@@ -41,6 +44,8 @@ enum Sender: String, Hashable, CaseIterable {
         self == .you
     }
 
+    // MARK: - Chat bubble styling
+
     var bubbleColor: Color {
         switch self {
         case .siddharth, .amrit, .sumit: return Theme.Colors.headerBackground
@@ -52,13 +57,6 @@ enum Sender: String, Hashable, CaseIterable {
         switch self {
         case .siddharth, .amrit, .sumit: return .white.opacity(0.9)
         case .you: return .white
-        }
-    }
-
-    var alignment: HorizontalAlignment {
-        switch self {
-        case .siddharth, .amrit, .sumit: return .leading
-        case .you: return .trailing
         }
     }
 

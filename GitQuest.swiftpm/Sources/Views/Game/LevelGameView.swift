@@ -1,5 +1,6 @@
 import SwiftUI
 
+/// Main level screen: chat, concept card, Git graph, repo card, console, and overlays for success, explanation, errors, and learning sheet.
 struct LevelGameView: View {
     let initialLevel: Level
 
