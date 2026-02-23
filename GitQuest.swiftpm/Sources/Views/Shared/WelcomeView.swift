@@ -34,7 +34,7 @@ struct WelcomeView: View {
                 }
 
                 VStack(spacing: Theme.Spacing.sm) {
-                    Text("Git Quest")
+                    Text("GitQuest")
 
                         .font(Theme.Typography.hero)
                         .foregroundStyle(.primary)
