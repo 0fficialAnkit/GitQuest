@@ -123,7 +123,7 @@ class GameViewModel {
             if currentStep == 0 { return ["git checkout -b feature/dark-mode"] }
             return ["git commit -m \"Add dark mode\""]
         case 3:
-            if currentStep == 0 { return ["git remote add origin https://github.com/pixel-labs/user-profiles.git"] }
+            if currentStep == 0 { return ["git remote add origin https://github.com/gitquest-labs/user-profiles.git"] }
             return ["git push -u origin feature/dark-mode"]
         case 4:
             if currentStep == 0 { return ["git status"] }
@@ -195,7 +195,7 @@ class GameViewModel {
                 Counting objects: 100% (5/5), done.
                 Writing objects: 100% (3/3), 284 bytes | 284.00 KiB/s, done.
                 Total 3 (delta 0), reused 0 (delta 0)
-                To https://github.com/pixel-labs/user-profiles.git
+                To https://github.com/gitquest-labs/user-profiles.git
                  * [new branch]      feature/dark-mode -> feature/dark-mode
                 """)
             }

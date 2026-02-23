@@ -26,7 +26,7 @@ struct ChatMessage: Identifiable, Hashable {
 // MARK: - Sender Model
 
 /// Defines the possible senders in the game's chat interface and their associated styling.
-enum Sender: String, Hashable, CaseIterable {
+enum Sender: String, Hashable {
     case siddharth
     case amrit
     case sumit

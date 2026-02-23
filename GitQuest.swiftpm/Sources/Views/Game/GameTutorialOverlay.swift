@@ -1,8 +1,5 @@
 import SwiftUI
 
-
-
-
 // MARK: - Tutorial Data Models
 
 /// Represents a single instruction step in the game's onboard tutorial.
@@ -17,7 +14,6 @@ struct TutorialStep {
         case left, right, top
     }
 }
-
 
 /// Keys mapping to specific UI regions highlighted during the tutorial.
 enum TutorialCardKey: String {
@@ -83,8 +79,6 @@ extension View {
         }
     }
 }
-
-
 
 
 // MARK: - Tutorial Overlay Modifier
@@ -153,16 +147,6 @@ struct GameTutorialOverlay: ViewModifier {
                             floatAnimate = true
                         }
                     }
-
-
-
-
-
-
-
-
-
-
                     .onChange(of: currentStep) { _, _ in
                         tipOpacity = 0
                         tipOffset = 20
@@ -387,4 +371,70 @@ extension View {
     func gameTutorial(isShowing: Binding<Bool>) -> some View {
         modifier(GameTutorialOverlay(isShowing: isShowing))
     }
+}
+
+#Preview("Game Tutorial Overlay") {
+    ZStack {
+        Theme.Colors.background.ignoresSafeArea()
+
+        VStack(spacing: 12) {
+            HStack(spacing: 16) {
+                // Simulates the Chat card
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(Theme.Colors.cardBackground)
+                    .overlay(
+                        Text("Team Chat")
+                            .foregroundStyle(.white)
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .tutorialAnchor(.chat)
+
+                // Simulates the Concept card
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(Theme.Colors.cardBackground)
+                    .overlay(
+                        Text("Command Breakdown")
+                            .foregroundStyle(.white)
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .tutorialAnchor(.concept)
+            }
+
+            HStack(spacing: 12) {
+                // Simulates the Git Visualizer
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(Theme.Colors.cardBackground)
+                    .overlay(
+                        Text("Git Graph")
+                            .foregroundStyle(.white)
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: 200)
+                    .tutorialAnchor(.visualizer)
+
+                // Simulates the Repo State card
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(Theme.Colors.cardBackground)
+                    .overlay(
+                        Text("Repo State")
+                            .foregroundStyle(.white)
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: 200)
+                    .tutorialAnchor(.repoState)
+            }
+
+            // Simulates the Console
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Theme.Colors.cardBackground)
+                .overlay(
+                    Text("$ git init")
+                        .font(.system(size: 14, design: .monospaced))
+                        .foregroundStyle(Theme.Colors.success)
+                )
+                .frame(maxWidth: .infinity, minHeight: 120)
+                .tutorialAnchor(.console)
+        }
+        .padding(16)
+    }
+    .gameTutorial(isShowing: .constant(true))
+    .preferredColorScheme(.dark)
 }

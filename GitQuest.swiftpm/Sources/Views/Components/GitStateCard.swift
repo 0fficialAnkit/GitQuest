@@ -141,3 +141,19 @@ struct GitStateCard: View {
         return "\(count) file\(count == 1 ? "" : "s")"
     }
 }
+
+#Preview("Git State Card") {
+    let repoState = GitRepositoryState()
+    return GitStateCard(repoState: repoState)
+        .frame(width: 300, height: 280)
+        .padding()
+        .background(Theme.Colors.background)
+        .preferredColorScheme(.dark)
+        .onAppear {
+            repoState.initialize()
+            repoState.stageFiles(["README.md", "main.swift"])
+            repoState.commit(message: "Initial commit")
+            repoState.createBranch(name: "feature/dark-mode")
+            repoState.addRemote(name: "origin", url: "https://github.com/example/repo.git")
+        }
+}

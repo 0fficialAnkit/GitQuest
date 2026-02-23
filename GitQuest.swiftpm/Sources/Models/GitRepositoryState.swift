@@ -103,14 +103,7 @@ class GitRepositoryState {
         return commits.first(where: { $0.id == headId })
     }
 
-    /// Maps branch names to their entire linear commit history.
-    var commitsByBranch: [String: [GitCommit]] {
-        var result: [String: [GitCommit]] = [:]
-        for branch in branches {
-            result[branch.id] = commitsForBranch(branch.id)
-        }
-        return result
-    }
+
 
     // MARK: - Snapshot Management
 

@@ -19,12 +19,10 @@ struct VNode: Identifiable, Equatable {
 
 /// Defines the appearance style of a commit node on the graph.
 enum VNodeStyle: Equatable {
-    case placeholder
     case normal
     case head
     case staged
     case conflict
-    case resolving
     case remote
     case merge
     case dimmed
@@ -552,9 +550,9 @@ struct GitVisualizerView: View {
 
     @ViewBuilder
     private func nodeView(_ node: VNode) -> some View {
-        let pt     = layout.center(for: node)
-        let r      = layout.nodeRadius
-        let d      = r * 2
+        let pt = layout.center(for: node)
+        let r  = layout.nodeRadius
+        let d  = r * 2
         let isHead = node.id == currentModel.headNodeId
 
         ZStack {
@@ -581,11 +579,6 @@ struct GitVisualizerView: View {
             if node.style == .conflict {
                 Circle()
                     .stroke(GitTheme.red.opacity(0.8), lineWidth: 2.5)
-                    .frame(width: d + 14, height: d + 14)
-            }
-            if node.style == .resolving {
-                Circle()
-                    .stroke(GitTheme.yellow.opacity(0.8), lineWidth: 2.5)
                     .frame(width: d + 14, height: d + 14)
             }
 
@@ -617,12 +610,6 @@ struct GitVisualizerView: View {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.system(size: 11))
                     .foregroundStyle(GitTheme.red)
-                    .offset(x: r - 2, y: -(r - 2))
-            }
-            if node.style == .resolving {
-                Image(systemName: "checkmark.seal.fill")
-                    .font(.system(size: 11))
-                    .foregroundStyle(GitTheme.yellow)
                     .offset(x: r - 2, y: -(r - 2))
             }
             if node.style == .remote {

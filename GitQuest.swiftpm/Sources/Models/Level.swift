@@ -7,29 +7,22 @@ import SwiftUI
 struct Level: Identifiable, Hashable {
     let id: Int
     let title: String
-    let subtitle: String
-    
+
     /// Story messages displayed at the beginning of the level.
     let initialChat: [ChatMessage]
-    
+
     /// Messages mapping to specific steps in the level when they are completed.
     let stepChats: [Int: [ChatMessage]]
-    
+
     /// The SF Symbol icon representing the level.
     let icon: String
-    
+
     /// The educational concept covered by this level.
     let concept: GitConcept
-    
-    /// A list of commands introduced in this level.
-    let commands: [String]
-    
+
     /// The sequence of actions the user must perform to pass the level.
     let requiredSteps: [LevelStep]
-    
-    let difficulty: Difficulty
-    let estimatedTime: Int
-    
+
     /// Provides additional educational breakdown of the commands used.
     let commandExplanation: CommandExplanation
 
@@ -39,21 +32,6 @@ struct Level: Identifiable, Hashable {
 
     static func == (lhs: Level, rhs: Level) -> Bool {
         lhs.id == rhs.id
-    }
-
-    /// Dictates the badge color indicating complexity.
-    enum Difficulty: String {
-        case beginner = "Beginner"
-        case intermediate = "Intermediate"
-        case advanced = "Advanced"
-
-        var color: Color {
-            switch self {
-            case .beginner:     return .green
-            case .intermediate: return .orange
-            case .advanced:     return .red
-            }
-        }
     }
 }
 
@@ -89,14 +67,13 @@ enum GitConcept: String, Hashable {
 
 // MARK: - Step and Explanation Models
 
-/// A single step requirements within a level.
+/// A single step requirement within a level.
 struct LevelStep: Identifiable, Hashable {
     let id: Int
     let contextMessage: String
     let expectedCommand: String
     let hint: String
     let successMessage: String
-    let teamReaction: String?
 }
 
 /// A comprehensive explanation of commands taught in a level.
@@ -116,13 +93,12 @@ struct CommandDetail: Hashable {
 // MARK: - Hardcoded Level Data
 
 extension Level {
-    
+
     /// The complete list of available levels in the game.
     static let allLevels: [Level] = [
         Level(
             id: 1,
             title: "Your First Commit",
-            subtitle: "Day 1 at Pixel Labs",
             initialChat: [
                 ChatMessage(sender: .siddharth, text: "Morning team! Customer dashboard project kicks off today 🚀"),
                 ChatMessage(sender: .amrit, text: "I've got the React boilerplate ready - just need a repo to push it to"),
@@ -150,7 +126,6 @@ extension Level {
             ],
             icon: "folder.fill.badge.plus",
             concept: .repository,
-            commands: ["git-init", "git-add", "git-commit"],
             requiredSteps: [
                 LevelStep(
                     id: 1,
@@ -167,8 +142,7 @@ extension Level {
                     """,
                     expectedCommand: "git init",
                     hint: "Tap: git init",
-                    successMessage: "✓ Repository Created",
-                    teamReaction: nil
+                    successMessage: "✓ Repository Created"
                 ),
                 LevelStep(
                     id: 2,
@@ -184,8 +158,7 @@ extension Level {
                     """,
                     expectedCommand: "git add",
                     hint: "Tap: git add README.md",
-                    successMessage: "Files staged and ready to commit",
-                    teamReaction: "Jordan: Good call staging specific files - keeps the commit clean 👍"
+                    successMessage: "Files staged and ready to commit"
                 ),
                 LevelStep(
                     id: 3,
@@ -202,12 +175,9 @@ extension Level {
                     """,
                     expectedCommand: "git commit",
                     hint: "Tap: git commit -m \"Initial commit: Add README\"",
-                    successMessage: "🎉 You Just Shipped Your First Commit!",
-                    teamReaction: "Maya: Clean commit message - that makes the history way easier to review 👍"
+                    successMessage: "🎉 You Just Shipped Your First Commit!"
                 )
             ],
-            difficulty: .beginner,
-            estimatedTime: 3,
             commandExplanation: CommandExplanation(
                 commands: [
                     CommandDetail(
@@ -232,7 +202,6 @@ extension Level {
         Level(
             id: 2,
             title: "Feature Branches",
-            subtitle: "Your First Real Feature",
             initialChat: [
                 ChatMessage(sender: .siddharth, text: "Update from the design team - dark mode just got bumped to priority 1"),
                 ChatMessage(sender: .sumit, text: "YES! Users have been requesting this for weeks 🌙"),
@@ -255,7 +224,6 @@ extension Level {
             ],
             icon: "arrow.triangle.branch",
             concept: .branching,
-            commands: ["git-branch", "git-checkout"],
             requiredSteps: [
                 LevelStep(
                     id: 1,
@@ -276,8 +244,7 @@ extension Level {
                     """,
                     expectedCommand: "git checkout",
                     hint: "Tap: git checkout -b feature/dark-mode",
-                    successMessage: "🌿 Feature Branch Created",
-                    teamReaction: "Jordan: Perfect - now anything you commit stays off main until it's ready"
+                    successMessage: "🌿 Feature Branch Created"
                 ),
                 LevelStep(
                     id: 2,
@@ -293,12 +260,9 @@ extension Level {
                     """,
                     expectedCommand: "git commit",
                     hint: "Tap: git commit -m \"Add dark mode toggle to settings\"",
-                    successMessage: "Feature committed to your branch!",
-                    teamReaction: "Alex: Ooh can't wait to see this in the demo! 🌙"
+                    successMessage: "Feature committed to your branch!"
                 )
             ],
-            difficulty: .beginner,
-            estimatedTime: 4,
             commandExplanation: CommandExplanation(
                 commands: [
                     CommandDetail(
@@ -311,7 +275,7 @@ extension Level {
                     )
                 ],
                 proTip: "Use descriptive names. Your teammates should understand what you're building just from the branch name.",
-                risk: "Leaving old branches around clutters the repo. Delete merged branches with 'git branch -d <name>'",
+                risk: "Leaving old branches around clutters the repo. Delete merged branches with 'git branch -d <n>'",
                 realWorldUsage: "Common patterns: feature/new-ui, bugfix/login-error, experiment/ai-suggestions"
             )
         ),
@@ -319,7 +283,6 @@ extension Level {
         Level(
             id: 3,
             title: "Push to GitHub",
-            subtitle: "Share Your Work",
             initialChat: [
                 ChatMessage(sender: .amrit, text: "Hey - I need to pull your auth components for my API integration work"),
                 ChatMessage(sender: .amrit, text: "But I don't see your code on GitHub yet?"),
@@ -342,7 +305,6 @@ extension Level {
             ],
             icon: "cloud.fill",
             concept: .remote,
-            commands: ["git-remote", "git-push"],
             requiredSteps: [
                 LevelStep(
                     id: 1,
@@ -361,9 +323,8 @@ extension Level {
                     Add the remote repository.
                     """,
                     expectedCommand: "git remote",
-                    hint: "Tap: git remote add origin https://github.com/pixel-labs/user-profiles.git",
-                    successMessage: "Remote added! Your local repo knows about GitHub now.",
-                    teamReaction: nil
+                    hint: "Tap: git remote add origin https://github.com/gitquest-labs/user-profiles.git",
+                    successMessage: "Remote added! Your local repo knows about GitHub now."
                 ),
                 LevelStep(
                     id: 2,
@@ -376,12 +337,9 @@ extension Level {
                     """,
                     expectedCommand: "git push",
                     hint: "Tap: git push -u origin feature/dark-mode",
-                    successMessage: "☁️ Code Pushed to GitHub",
-                    teamReaction: "Jordan: Got it! Pulling now... auth components look solid 👀"
+                    successMessage: "☁️ Code Pushed to GitHub"
                 )
             ],
-            difficulty: .intermediate,
-            estimatedTime: 5,
             commandExplanation: CommandExplanation(
                 commands: [
                     CommandDetail(
@@ -402,7 +360,6 @@ extension Level {
         Level(
             id: 4,
             title: "The 3 PM Crisis",
-            subtitle: "Resolve Merge Conflict",
             initialChat: [
                 ChatMessage(sender: .siddharth, text: "🚨 Heads up @channel - we have a merge conflict in dashboard.js"),
                 ChatMessage(sender: .amrit, text: "That was me, sorry. I edited the same section Alex was working on"),
@@ -430,7 +387,6 @@ extension Level {
             ],
             icon: "exclamationmark.triangle.fill",
             concept: .conflicts,
-            commands: ["git-status", "git-merge"],
             requiredSteps: [
                 LevelStep(
                     id: 1,
@@ -449,8 +405,7 @@ extension Level {
                     """,
                     expectedCommand: "git status",
                     hint: "Tap: git status",
-                    successMessage: "Conflicts identified: dashboard.js",
-                    teamReaction: "Jordan: There it is - dashboard.js has the conflict"
+                    successMessage: "Conflicts identified: dashboard.js"
                 ),
                 LevelStep(
                     id: 2,
@@ -471,8 +426,7 @@ extension Level {
                     """,
                     expectedCommand: "git add",
                     hint: "Tap: git add dashboard.js",
-                    successMessage: "Conflict marked as resolved",
-                    teamReaction: nil
+                    successMessage: "Conflict marked as resolved"
                 ),
                 LevelStep(
                     id: 3,
@@ -484,16 +438,9 @@ extension Level {
                     """,
                     expectedCommand: "git commit",
                     hint: "Tap: git commit -m \"Resolve dashboard color conflict - use purple\"",
-                    successMessage: "🎯 Conflict Resolved!",
-                    teamReaction: """
-                    Maya: Build is green. Nice work under pressure.
-                    Jordan: Good call on the purple - that's the signed-off version.
-                    Alex: Demo is saved! Thank you 🙏
-                    """
+                    successMessage: "🎯 Conflict Resolved!"
                 )
             ],
-            difficulty: .advanced,
-            estimatedTime: 8,
             commandExplanation: CommandExplanation(
                 commands: [
                     CommandDetail(
@@ -533,7 +480,6 @@ extension Level {
         Level(
             id: 5,
             title: "Stay in Sync",
-            subtitle: "Pull Teammate's Changes",
             initialChat: [
                 ChatMessage(sender: .siddharth, text: "Morning! Pushed the auth service updates at 6am - couldn't sleep 😴"),
                 ChatMessage(sender: .amrit, text: "Legend! Pulling now..."),
@@ -551,7 +497,6 @@ extension Level {
             ],
             icon: "arrow.left.arrow.right",
             concept: .collaboration,
-            commands: ["git-pull"],
             requiredSteps: [
                 LevelStep(
                     id: 1,
@@ -568,12 +513,9 @@ extension Level {
                     """,
                     expectedCommand: "git pull",
                     hint: "Tap: git pull origin main",
-                    successMessage: "🔄 Up to date! You have the latest team changes.",
-                    teamReaction: "Jordan: Nice - now you've got Maya's auth refactor. Way cleaner API 👍"
+                    successMessage: "🔄 Up to date! You have the latest team changes."
                 )
             ],
-            difficulty: .intermediate,
-            estimatedTime: 3,
             commandExplanation: CommandExplanation(
                 commands: [
                     CommandDetail(
@@ -594,7 +536,6 @@ extension Level {
         Level(
             id: 6,
             title: "Time Travel",
-            subtitle: "Undo Your Mistakes",
             initialChat: [
                 ChatMessage(sender: .you, text: "Oh no. I just committed the .env file with all our API keys 😱"),
                 ChatMessage(sender: .amrit, text: "STOP - don't push yet! 🚨"),
@@ -614,7 +555,6 @@ extension Level {
             ],
             icon: "clock.arrow.circlepath",
             concept: .history,
-            commands: ["git-reset"],
             requiredSteps: [
                 LevelStep(
                     id: 1,
@@ -631,12 +571,9 @@ extension Level {
                     """,
                     expectedCommand: "git reset",
                     hint: "Tap: git reset HEAD~1",
-                    successMessage: "⏮️ Commit undone! Changes are still in your files.",
-                    teamReaction: "Jordan: Crisis averted 👍 Now remove the keys and add .env to .gitignore"
+                    successMessage: "⏮️ Commit undone! Changes are still in your files."
                 )
             ],
-            difficulty: .intermediate,
-            estimatedTime: 4,
             commandExplanation: CommandExplanation(
                 commands: [
                     CommandDetail(
@@ -669,7 +606,6 @@ extension Level {
         Level(
             id: 7,
             title: "Ship Your Feature",
-            subtitle: "Merge Into Main",
             initialChat: [
                 ChatMessage(sender: .sumit, text: "QA just signed off on dark mode - zero bugs found! 🎉"),
                 ChatMessage(sender: .siddharth, text: "Perfect timing. We can make the 4pm deploy"),
@@ -695,7 +631,6 @@ extension Level {
             ],
             icon: "arrow.triangle.merge",
             concept: .merging,
-            commands: ["git-checkout", "git-merge"],
             requiredSteps: [
                 LevelStep(
                     id: 1,
@@ -710,8 +645,7 @@ extension Level {
                     """,
                     expectedCommand: "git checkout",
                     hint: "Tap: git checkout main",
-                    successMessage: "Switched to branch 'main'",
-                    teamReaction: nil
+                    successMessage: "Switched to branch 'main'"
                 ),
                 LevelStep(
                     id: 2,
@@ -725,17 +659,9 @@ extension Level {
                     """,
                     expectedCommand: "git merge",
                     hint: "Tap: git merge feature/dark-mode",
-                    successMessage: "🔀 Branches merged! Dark mode is now in main.",
-                    teamReaction: """
-                    Maya: Clean merge - no conflicts 🎉
-                    Jordan: Deploying to production...
-                    Alex: IT'S LIVE! First user just tweeted about dark mode! 📱
-                    Maya: Ship of the week goes to you. Welcome to the team 😊
-                    """
+                    successMessage: "🔀 Branches merged! Dark mode is now in main."
                 )
             ],
-            difficulty: .intermediate,
-            estimatedTime: 5,
             commandExplanation: CommandExplanation(
                 commands: [
                     CommandDetail(
@@ -776,11 +702,5 @@ extension Level {
     /// Looks up the immediate next level in sequence after the current one.
     func nextLevel() -> Level? {
         Level.allLevels.first { $0.id == self.id + 1 }
-    }
-
-    /// Looks up the immediate preceding level, returning nil if this is the first level.
-    func previousLevel() -> Level? {
-        guard id > 1 else { return nil }
-        return Level.allLevels.first { $0.id == self.id - 1 }
     }
 }
