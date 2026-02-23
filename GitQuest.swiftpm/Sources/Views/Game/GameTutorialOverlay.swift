@@ -235,21 +235,7 @@ struct GameTutorialOverlay: ViewModifier {
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack {
-
-                HStack(spacing: 6) {
-                    ForEach(0..<steps.count, id: \.self) { i in
-                        Circle()
-                            .fill(i == currentStep ? Color.primary : Color.secondary.opacity(0.35))
-                            .frame(
-                                width: i == currentStep ? 8 : 6,
-                                height: i == currentStep ? 8 : 6
-                            )
-                            .animation(.spring(response: 0.3), value: currentStep)
-                    }
-                }
-
                 Spacer()
-
                 Button {
                     handleNext()
                 } label: {

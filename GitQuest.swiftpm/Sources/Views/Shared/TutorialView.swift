@@ -32,31 +32,33 @@ struct TutorialView: View {
 
                 HStack {
                     Spacer()
-                    Button("Skip") {
-                        onComplete()
+                    if currentPage < tutorialPages.count - 1 {
+                        Button("Skip") {
+                            onComplete()
+                        }
+                        .font(Theme.Typography.bodyBold)
+                        .foregroundStyle(.primary)
+                        .padding(.horizontal, Theme.Spacing.md)
+                        .padding(.vertical, Theme.Spacing.sm)
+                        .background(
+                            Capsule(style: .continuous)
+                                .fill(.ultraThinMaterial)
+                        )
+                        .overlay(
+                            Capsule(style: .continuous)
+                                .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                        )
+                        .clipShape(Capsule(style: .continuous))
+                        .shadow(color: Color.black.opacity(0.15), radius: 8, y: 4)
+                        .scaleEffect(isSkipPressed ? 0.96 : 1)
+                        .animation(.easeInOut(duration: 0.15), value: isSkipPressed)
+                        .simultaneousGesture(
+                            DragGesture(minimumDistance: 0)
+                                .onChanged { _ in isSkipPressed = true }
+                                .onEnded { _ in isSkipPressed = false }
+                        )
+                        .padding(Theme.Spacing.lg)
                     }
-                    .font(Theme.Typography.bodyBold)
-                    .foregroundStyle(.primary)
-                    .padding(.horizontal, Theme.Spacing.md)
-                    .padding(.vertical, Theme.Spacing.sm)
-                    .background(
-                        Capsule(style: .continuous)
-                            .fill(.ultraThinMaterial)
-                    )
-                    .overlay(
-                        Capsule(style: .continuous)
-                            .stroke(Color.white.opacity(0.15), lineWidth: 1)
-                    )
-                    .clipShape(Capsule(style: .continuous))
-                    .shadow(color: Color.black.opacity(0.15), radius: 8, y: 4)
-                    .scaleEffect(isSkipPressed ? 0.96 : 1)
-                    .animation(.easeInOut(duration: 0.15), value: isSkipPressed)
-                    .simultaneousGesture(
-                        DragGesture(minimumDistance: 0)
-                            .onChanged { _ in isSkipPressed = true }
-                            .onEnded { _ in isSkipPressed = false }
-                    )
-                    .padding(Theme.Spacing.lg)
                 }
 
                 TabView(selection: $currentPage) {

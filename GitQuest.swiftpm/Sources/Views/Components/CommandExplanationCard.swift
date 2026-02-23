@@ -67,7 +67,6 @@ struct CommandExplanationCard: View {
                                 .background(
                                     Circle()
                                         .fill(Color.white.opacity(0.1))
-                                        .background(.ultraThinMaterial)
                                 )
                                 .overlay(
                                     Circle().stroke(Color.white.opacity(0.2), lineWidth: 0.5)
