@@ -40,24 +40,7 @@ struct SuccessOverlay: View {
                 }
                 .offset(y: isVisible ? 0 : 25)
                 .opacity(isVisible ? 1.0 : 0)
-
-                HStack(spacing: 8) {
-                    Image(systemName: level.concept.icon)
-                        .font(.system(size: 18))
-                    Text(level.concept.rawValue)
-                        .font(.system(size: 16, weight: .medium))
-                }
-                .foregroundStyle(Theme.Colors.conceptColor(level.concept))
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(
-                    Capsule()
-                        .fill(.ultraThinMaterial)
-                        .overlay(Capsule().stroke(Color.white.opacity(0.18), lineWidth: 1))
-                )
-                .scaleEffect(isVisible ? 1.0 : 0.8)
-                .opacity(isVisible ? 1.0 : 0)
-
+                
                 Text("Tap anywhere to continue")
                     .font(.system(size: 10))
                     .foregroundStyle(Theme.Colors.textSecondary)
