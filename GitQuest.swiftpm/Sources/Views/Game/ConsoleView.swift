@@ -1,6 +1,9 @@
 import SwiftUI
 
-/// In-game terminal: scrollable output, hint buttons, and command input with execute. Used in LevelGameView.
+
+// MARK: - Interactive Console View
+
+/// A simulated terminal interface that allows users to input commands and view output.
 struct ConsoleView: View {
     @Binding var commandInput: String
     let terminalOutput: [TerminalLine]
@@ -51,8 +54,11 @@ struct ConsoleView: View {
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 
-    // MARK: - Subviews
+    
 
+    // MARK: - Subcomponents
+
+    /// The top bar of the terminal, mimicking a standard macOS window header.
     private var terminalHeader: some View {
         HStack(spacing: 8) {
             HStack(spacing: 6) {
@@ -102,6 +108,7 @@ struct ConsoleView: View {
         .background(Theme.Colors.headerBackground)
     }
 
+    /// The input area where users type or tap hints to execute commands.
     private var commandInputArea: some View {
         HStack(spacing: 8) {
             Text("$")
@@ -131,7 +138,10 @@ struct ConsoleView: View {
     }
 }
 
-/// Renders one terminal line with optional “$” prefix for commands and color by type (success, error, info, etc.).
+
+// MARK: - Terminal Line View
+
+/// Renders a single line of text in the console with appropriate color coding based on its type.
 struct GitTerminalLine: View {
     let line: TerminalLine
 

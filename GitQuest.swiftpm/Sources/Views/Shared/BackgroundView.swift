@@ -1,6 +1,9 @@
 import SwiftUI
 
-/// Full-screen gradient background; optional slow animation for onboarding and level selection screens.
+
+// MARK: - Animated Background Gradient
+
+/// A shared, reusable gradient background with optional slow breathing animation.
 struct BackgroundView: View {
     let colors: [Color]
     let animation: Bool

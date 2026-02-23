@@ -1,6 +1,9 @@
 import SwiftUI
 
-/// Single message bubble with optional sender label and avatar; alignment and colors come from Sender.
+
+// MARK: - Chat Bubble View
+
+/// Renders a single message bubble for the simulated team chat.
 struct ChatBubble: View {
     let message: ChatMessage
     let showSenderName: Bool
@@ -20,6 +23,8 @@ struct ChatBubble: View {
         .frame(maxWidth: .infinity, alignment: isCurrentUser ? .trailing : .leading)
         .padding(.bottom, isLastInGroup ? 10 : 2)
     }
+
+    // MARK: - Subcomponents
 
     private var senderHeader: some View {
         Text(message.sender.displayName)
@@ -79,6 +84,8 @@ struct ChatBubble: View {
             }
         }
     }
+
+    // MARK: - Helpers
 
     private func formatTime(_ date: Date) -> String {
         let formatter = DateFormatter()

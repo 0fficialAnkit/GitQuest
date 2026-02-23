@@ -1,8 +1,11 @@
 import SwiftUI
 
-// MARK: - Graph model types (for GitVisualizerView)
 
-/// A commit node in the visualizer: id, message, branch, position (lane/column), parent, color, and style (head, staged, merge, etc.).
+
+
+// MARK: - Internal Visual Models
+
+/// Represents a single commit node in the branching graph visualization.
 struct VNode: Identifiable, Equatable {
     let id: String
     let message: String
@@ -14,6 +17,7 @@ struct VNode: Identifiable, Equatable {
     var style: VNodeStyle
 }
 
+/// Defines the appearance style of a commit node on the graph.
 enum VNodeStyle: Equatable {
     case placeholder
     case normal
@@ -26,6 +30,7 @@ enum VNodeStyle: Equatable {
     case dimmed
 }
 
+/// Represents a horizontal branch lane in the visualization.
 struct VLane: Identifiable, Equatable {
     let id: String
     let lane: Int
@@ -34,6 +39,7 @@ struct VLane: Identifiable, Equatable {
     var isDimmed: Bool
 }
 
+/// Represents the dashed curved arc indicating a branch being merged into another.
 struct VMergeArc: Identifiable, Equatable {
     let id: String
     let fromNodeId: String
@@ -41,6 +47,7 @@ struct VMergeArc: Identifiable, Equatable {
     let color: Color
 }
 
+/// Represents a visual animation arrow for remote network operations (push/pull).
 struct VArrow: Identifiable, Equatable {
     enum Direction: Equatable { case up, down }
     let id: String
@@ -48,12 +55,14 @@ struct VArrow: Identifiable, Equatable {
     let color: Color
 }
 
+/// Represents the visual state of a connected remote (e.g., origin).
 struct VRemote: Equatable {
     var isVisible: Bool
     var isSynced: Bool
     var anchorNodeId: String?
 }
 
+/// The complete aggregated state model of the visualizer graph at any point in time.
 struct VGraphModel: Equatable {
     var lanes: [VLane]      = []
     var nodes: [VNode]      = []
@@ -64,6 +73,9 @@ struct VGraphModel: Equatable {
     var arrows: [VArrow]   = []
 }
 
+// MARK: - Graph Builder Logic
+
+/// A stateless helper that translates the core `GitRepositoryState` into a layout-ready `VGraphModel`.
 enum VGraphBuilder {
 
     @MainActor static func build(from repo: GitRepositoryState) -> VGraphModel {
@@ -204,6 +216,9 @@ enum VGraphBuilder {
     }
 }
 
+// MARK: - Graph Layout Engine
+
+/// Manages the coordinate space, padding, and positioning logic for graph rendering.
 struct VLayout {
     let nodeRadius: CGFloat  = 20
     let hSpacing:   CGFloat  = 88
@@ -231,9 +246,12 @@ struct VLayout {
     }
 }
 
-// MARK: - GitVisualizerView
 
-/// Renders the in-memory Git repo as a graph: commits as circles, branches as lanes, merge arcs, HEAD badge, and remote indicator.
+
+
+// MARK: - Main Visualizer View
+
+/// Renders a dynamic, horizontally scrolling visual graph of the Git repository state.
 struct GitVisualizerView: View {
 
     var repoState: GitRepositoryState
@@ -755,6 +773,9 @@ struct GitVisualizerView: View {
         }
     }
 
+    // MARK: - Headers and Footers
+
+    @ViewBuilder
     private var headerBar: some View {
         HStack {
             let bColor = repoState.branches.first(where: { $0.name == repoState.currentBranch })?.color ?? GitTheme.purple
@@ -877,9 +898,12 @@ struct GitVisualizerView: View {
     }
 }
 
-// MARK: - VisualizerGuideSheet
 
-/// Sheet explaining the graph: commits, branches, HEAD, staging ring, conflict badge, origin, merge arcs, dimmed branches.
+
+
+// MARK: - Help Overlays
+
+/// A modal sheet presenting a legend to help users interpret the visualizer's symbols.
 struct VisualizerGuideSheet: View {
     @Environment(\.dismiss) var dismiss
 

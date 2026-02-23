@@ -1,8 +1,11 @@
 import SwiftUI
 
-// MARK: - Tutorial step and card key types
 
-/// One step in the first-time game tutorial: which UI card to highlight and the tip text.
+
+
+// MARK: - Tutorial Data Models
+
+/// Represents a single instruction step in the game's onboard tutorial.
 struct TutorialStep {
     let id: Int
     let cardKey: TutorialCardKey
@@ -15,7 +18,8 @@ struct TutorialStep {
     }
 }
 
-/// Keys for the UI regions that can be highlighted during the tutorial (chat, concept card, console, etc.).
+
+/// Keys mapping to specific UI regions highlighted during the tutorial.
 enum TutorialCardKey: String {
     case chat, concept, console, visualizer, repoState
 }
@@ -60,7 +64,10 @@ extension TutorialStep {
     ]
 }
 
-/// Preference key collecting frame anchors for each tutorial card so the overlay can highlight and position the tip.
+
+// MARK: - Anchor Preferences
+
+/// A preference key used to collect the layout frames of tutorial targets across the view hierarchy.
 struct TutorialCardFrameKey: PreferenceKey {
     typealias Value = [TutorialCardKey: Anchor<CGRect>]
     nonisolated(unsafe) static var defaultValue: Value = [:]
@@ -77,9 +84,12 @@ extension View {
     }
 }
 
-// MARK: - GameTutorialOverlay
 
-/// Full-screen overlay that dims content, highlights one panel at a time, and shows a tip card. Used on first level load.
+
+
+// MARK: - Tutorial Overlay Modifier
+
+/// A ViewModifier that dims the screen, highlights a specific UI element, and shows a tutorial tooltip.
 struct GameTutorialOverlay: ViewModifier {
     @Binding var isShowing: Bool
 
@@ -143,33 +153,36 @@ struct GameTutorialOverlay: ViewModifier {
                             floatAnimate = true
                         }
                     }
-//                    .onChange(of: currentStep) { _, _ in
-//
-//                        tipOpacity = 0
-//                        tipOffset = 20
-//
-//                        withAnimation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.1)) {
-//                            tipOpacity = 1
-//                            tipOffset = 0
-//                        }
-//                    }
+
+
+
+
+
+
+
+
+
+
                     .onChange(of: currentStep) { _, _ in
                         tipOpacity = 0
                         tipOffset = 20
-                        floatAnimate = false  // ← reset so the animation re-triggers
+                        floatAnimate = false  
 
                         withAnimation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.1)) {
                             tipOpacity = 1
                             tipOffset = 0
                         }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                            floatAnimate = true  // ← re-trigger the float
+                            floatAnimate = true  
                         }
                     }
                 }
             }
     }
 
+    // MARK: - Overlay Core Rendering
+
+    /// Renders a full-screen dark overlay with a "cutout" hole exposing the target component.
     private func dimOverlay(anchors: [TutorialCardKey: Anchor<CGRect>], geo: GeometryProxy) -> some View {
         let activeFrame = anchors[steps[currentStep].cardKey].map { geo[$0] } ?? .zero
         let expandedFrame = activeFrame.insetBy(dx: -8, dy: -8)
@@ -367,7 +380,10 @@ struct GameTutorialOverlay: ViewModifier {
     }
 }
 
+// MARK: - View Extension
+
 extension View {
+    /// Applies the interactive game tutorial overlay to a view.
     func gameTutorial(isShowing: Binding<Bool>) -> some View {
         modifier(GameTutorialOverlay(isShowing: isShowing))
     }

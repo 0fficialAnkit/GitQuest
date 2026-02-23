@@ -1,8 +1,8 @@
 import Foundation
 
-// MARK: - Command part explanation
+// MARK: - Models
 
-/// One token from a Git command with a human-readable meaning and role for the concept card.
+/// Represents the breakdown explanation for a single part (token) of a command.
 struct CommandPartExplanation: Identifiable {
     let id = UUID()
     let part: String
@@ -10,13 +10,16 @@ struct CommandPartExplanation: Identifiable {
     let purposeInCommand: String
 }
 
-// MARK: - CommandSyntaxAnalyzer
+// MARK: - Analyzer
 
-/// Parses a Git command string into tokens and returns meaning/role text for each part (e.g. "git", "commit", "-m").
+/// Analyzes and provides contextual explanations for Git commands entered by the user.
 struct CommandSyntaxAnalyzer {
+    
+    /// Parses a raw command string and returns explanations for each of its parts.
     static func explain(command: String) -> [CommandPartExplanation] {
         let originalTokens = tokenize(command)
         let normalizedTokens = originalTokens.map { $0.lowercased() }
+        
         return originalTokens.enumerated().map { index, token in
             CommandPartExplanation(
                 part: token,
@@ -27,14 +30,16 @@ struct CommandSyntaxAnalyzer {
     }
 }
 
-// MARK: - Tokenization
+// MARK: - Tokenization Helpers
 
 private extension CommandSyntaxAnalyzer {
-    /// Splits command into tokens; keeps quoted strings (e.g. commit messages) as single tokens.
+    
+    /// Splits an input command string into distinct tokens, respecting quoted strings.
     static func tokenize(_ command: String) -> [String] {
         var tokens: [String] = []
         var current = ""
         var inQuotes = false
+        
         for char in command {
             if char == "\"" {
                 inQuotes.toggle()
@@ -55,16 +60,23 @@ private extension CommandSyntaxAnalyzer {
     }
 }
 
-// MARK: - Meaning and role (private)
+// MARK: - Meaning Analysis
 
 private extension CommandSyntaxAnalyzer {
+    
+    /// Maps a token to its general Git meaning based on its position context.
     static func meaning(of part: String, index: Int, tokens: [String]) -> String {
         guard tokens.count >= 2 else { return "Part of the command" }
+        
         let action = tokens[1]
         let token = part.lowercased()
+        
+        // Base command
         if token == "git" {
             return "The Git program - every Git command starts with this"
         }
+        
+        // Primary Actions
         if index == 1 {
             switch token {
             case "init": return "Creates a new Git repository in this folder"
@@ -85,6 +97,8 @@ private extension CommandSyntaxAnalyzer {
             default: return "A Git sub-command"
             }
         }
+        
+        // Flags
         if token == "-m" { return "Flag: the next argument is the commit message" }
         if token == "-b" { return "Flag: create a new branch and switch to it immediately" }
         if token == "-a" { return "Flag: automatically stage all tracked modified files" }
@@ -92,33 +106,47 @@ private extension CommandSyntaxAnalyzer {
         if token == "--hard" { return "Flag: discard staged AND working-directory changes (destructive)" }
         if token == "--soft" { return "Flag: undo the commit but keep all changes staged" }
         if token == "--mixed" { return "Flag: undo the commit and unstage changes (default reset mode)" }
+        
+        // References
         if token.hasPrefix("head~") {
             let n = token.dropFirst(5)
             return "Refers to \(n) commit\(n == "1" ? "" : "s") before the current HEAD"
         }
         if token == "head" { return "Pointer to the latest commit on the current branch" }
+        
+        // Common arguments
         if token == "." && action == "add" { return "Shorthand for all files in the current directory and sub-folders" }
         if token == ".." { return "Refers to the parent directory" }
         if isCommitMessage(index: index, tokens: tokens) { return "The message stored in history — describes what changed and why" }
         if token.hasPrefix("https://") || token.hasPrefix("git@") { return "The remote repository URL on GitHub (or another Git host)" }
         if token == "origin" { return "The conventional alias for the primary remote repository" }
+        
+        // Contextual analysis
         if action == "remote" && index == 2 && token == "add" { return "Sub-command: register a new remote under a given name" }
         if action == "remote" && index == 3 { return "The alias (short name) you assign to the remote repository" }
         if token.contains(".") && action == "add" { return "The specific file being staged for the next commit" }
         if isBranchName(index: index, tokens: tokens) { return "The branch name - identifies this line of development" }
+        
         if action == "push" || action == "pull" {
             if index == 2 { return "The remote alias to sync with (usually 'origin')" }
             if index == 3 { return "The branch being uploaded to / downloaded from the remote" }
         }
+        
         return "An argument that customises or targets the command"
     }
 }
 
+// MARK: - Role Analysis
+
 private extension CommandSyntaxAnalyzer {
+    
+    /// Maps a token to its role or purpose within the specific sentence structure of the command.
     static func role(of token: String, index: Int, tokens: [String]) -> String {
         let lower = token.lowercased()
+        
         if lower == "git" { return "Invokes the Git program — every Git command begins here" }
         if index == 1 { return "The main action Git will perform" }
+        
         if lower == "-m" { return "Tells Git the next argument is the commit description" }
         if lower == "-b" { return "Makes Git create the branch before switching to it" }
         if lower == "-u" || lower == "--set-upstream" { return "Sets up tracking so future 'git push' needs no arguments" }
@@ -126,31 +154,43 @@ private extension CommandSyntaxAnalyzer {
         if lower == "--soft" { return "Keeps your changes staged after undoing the commit" }
         if lower == "--mixed" { return "Unstages changes after undoing the commit (Git default)" }
         if lower.hasPrefix("-") { return "Modifies how the command behaves" }
+        
         if lower.hasPrefix("head~") { return "Tells Git how far back in history to move" }
         if lower == "head" { return "References the latest commit on the current branch" }
+        
         if isCommitMessage(index: index, tokens: tokens) { return "Saved permanently in the commit log - describes the change" }
         if lower == "." { return "Applies the command to every file in this folder" }
         if lower.hasPrefix("https://") || lower.hasPrefix("git@") { return "The address Git uses to communicate with the remote server" }
         if lower == "origin" { return "The default remote alias - points to your GitHub repo" }
+        
         let action = tokens.count > 1 ? tokens[1].lowercased() : ""
+        
         if action == "remote" && index == 2 && lower == "add" { return "Sub-command that registers a new remote entry" }
         if action == "remote" && index == 3 { return "The short name used to refer to this remote from now on" }
         if lower.contains(".") { return "The specific file targeted by this command" }
+        
         if isBranchName(index: index, tokens: tokens) { return "The branch this operation is applied to" }
+        
         if action == "push" || action == "pull" {
             if index == 2 { return "The remote server to sync with" }
             if index == 3 { return "The branch being pushed or pulled" }
         }
+        
         return "A required parameter that completes the command"
     }
 }
 
+// MARK: - Detection Utilities
+
 private extension CommandSyntaxAnalyzer {
+    
+    /// Heuristically determines if the token at this index represents the commit message string.
     static func isCommitMessage(index: Int, tokens: [String]) -> Bool {
         guard let mIndex = tokens.firstIndex(of: "-m") else { return false }
         return index == mIndex + 1
     }
 
+    /// Determines if the given index likely points to a branch name argument.
     static func isBranchName(index: Int, tokens: [String]) -> Bool {
         if tokens.count >= 3 && tokens[1] == "checkout" && index == 2 { return true }
         if tokens.count >= 3 && tokens[1] == "branch" && index == 2 { return true }

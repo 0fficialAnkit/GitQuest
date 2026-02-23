@@ -1,21 +1,36 @@
 import Foundation
 import SwiftUI
 
-// MARK: - Level
+// MARK: - Core Level Model
 
-/// One playable level: story chat, required Git steps, command hints, and post-step explanation content.
+/// Represents a single educational level or scenario in the Git game.
 struct Level: Identifiable, Hashable {
     let id: Int
     let title: String
     let subtitle: String
+    
+    /// Story messages displayed at the beginning of the level.
     let initialChat: [ChatMessage]
+    
+    /// Messages mapping to specific steps in the level when they are completed.
     let stepChats: [Int: [ChatMessage]]
+    
+    /// The SF Symbol icon representing the level.
     let icon: String
+    
+    /// The educational concept covered by this level.
     let concept: GitConcept
+    
+    /// A list of commands introduced in this level.
     let commands: [String]
+    
+    /// The sequence of actions the user must perform to pass the level.
     let requiredSteps: [LevelStep]
+    
     let difficulty: Difficulty
     let estimatedTime: Int
+    
+    /// Provides additional educational breakdown of the commands used.
     let commandExplanation: CommandExplanation
 
     func hash(into hasher: inout Hasher) {
@@ -26,6 +41,7 @@ struct Level: Identifiable, Hashable {
         lhs.id == rhs.id
     }
 
+    /// Dictates the badge color indicating complexity.
     enum Difficulty: String {
         case beginner = "Beginner"
         case intermediate = "Intermediate"
@@ -41,9 +57,9 @@ struct Level: Identifiable, Hashable {
     }
 }
 
-// MARK: - GitConcept
+// MARK: - Educational Concepts
 
-/// Category for a level (e.g. staging, branching); used for icons and theming.
+/// Categorizes the primary Git skill being taught.
 enum GitConcept: String, Hashable {
     case repository = "Repository Basics"
     case staging = "Staging & Committing"
@@ -55,6 +71,7 @@ enum GitConcept: String, Hashable {
     case history = "History & Undo"
     case advanced = "Advanced Workflows"
 
+    /// Provides an associated SF Symbol for UI representation.
     var icon: String {
         switch self {
         case .repository: return "folder.fill.badge.plus"
@@ -70,9 +87,9 @@ enum GitConcept: String, Hashable {
     }
 }
 
-// MARK: - Level step and explanation types
+// MARK: - Step and Explanation Models
 
-/// A single required command in a level: expected command, hint on failure, and success copy.
+/// A single step requirements within a level.
 struct LevelStep: Identifiable, Hashable {
     let id: Int
     let contextMessage: String
@@ -82,6 +99,7 @@ struct LevelStep: Identifiable, Hashable {
     let teamReaction: String?
 }
 
+/// A comprehensive explanation of commands taught in a level.
 struct CommandExplanation: Hashable {
     let commands: [CommandDetail]
     let proTip: String
@@ -89,16 +107,17 @@ struct CommandExplanation: Hashable {
     let realWorldUsage: String
 }
 
-/// One command plus description shown in the explanation card after completing a step.
+/// A breakdown of a specific command string.
 struct CommandDetail: Hashable {
     let command: String
     let description: String
 }
 
-// MARK: - Level data
+// MARK: - Hardcoded Level Data
 
 extension Level {
-    /// All levels in order; defines chat scripts, steps, and explanations.
+    
+    /// The complete list of available levels in the game.
     static let allLevels: [Level] = [
         Level(
             id: 1,
@@ -747,14 +766,19 @@ extension Level {
         )
     ]
 
+    // MARK: - Helper Methods
+
+    /// Looks up a level by its ID.
     static func level(withId id: Int) -> Level? {
         allLevels.first { $0.id == id }
     }
 
+    /// Looks up the immediate next level in sequence after the current one.
     func nextLevel() -> Level? {
         Level.allLevels.first { $0.id == self.id + 1 }
     }
 
+    /// Looks up the immediate preceding level, returning nil if this is the first level.
     func previousLevel() -> Level? {
         guard id > 1 else { return nil }
         return Level.allLevels.first { $0.id == self.id - 1 }

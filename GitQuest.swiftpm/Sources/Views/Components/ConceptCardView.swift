@@ -1,6 +1,9 @@
 import SwiftUI
 
-/// Shows a single Git command and its parts with meaning and role (via CommandSyntaxAnalyzer). Used next to chat in the level UI.
+
+// MARK: - Concept Details Card
+
+/// Displays the meaning and purpose of each part of a Git command.
 struct ConceptCardView: View {
     let command: String
 
@@ -69,6 +72,8 @@ struct ConceptCardView: View {
         .background(cardBg)
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
+
+    // MARK: - Helper Views
 
     private func headerLabel(_ text: String, icon: String? = nil, color: Color) -> some View {
         HStack(spacing: 4) {

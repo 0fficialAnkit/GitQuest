@@ -7,7 +7,7 @@ enum AppScreen: Hashable {
     case game(Level)
 }
 
-/// Root view: welcome → tutorial or level list → level game. Uses NavigationStack and AppScreen for deep linking.
+/// Root view: welcome ->  tutorial or level list -> level game. Uses NavigationStack and AppScreen for deep linking.
 struct ContentView: View {
     @Environment(GameState.self) var gameState
     @State private var navigationPath = NavigationPath()

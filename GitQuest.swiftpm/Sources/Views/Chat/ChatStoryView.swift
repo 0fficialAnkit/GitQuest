@@ -1,6 +1,9 @@
 import SwiftUI
 
-/// Scrollable team chat panel: shows level messages with sender avatars and optional typing indicator.
+
+// MARK: - Chat Story View
+
+/// A scrolling chat interface that displays story messages to set the context for each level.
 struct ChatStoryView: View {
     let messages: [ChatMessage]
     var resetId: UUID = UUID()
@@ -91,6 +94,9 @@ struct ChatStoryView: View {
         .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 
+    // MARK: - Subcomponents
+
+    /// The top header indicating the "Team Chat" status.
     private var statusHeader: some View {
         HStack(spacing: 8) {
             Image(systemName: "bubble.left.and.bubble.right.fill")
@@ -113,6 +119,8 @@ struct ChatStoryView: View {
         .padding(.vertical, 12)
         .background(Theme.Colors.headerBackground)
     }
+
+    // MARK: - Message Helpers
 
     private func messageIndex(for message: ChatMessage) -> Int {
         messages.firstIndex(where: { $0.id == message.id }) ?? 0
@@ -145,6 +153,9 @@ struct ChatStoryView: View {
     }
 }
 
+// MARK: - Typing Indicator
+
+/// A subtle typing animation ("...") mimicking a real chat application.
 private struct TypingDotsView: View {
     let senderName: String
     @State private var activeDot: Int = 0

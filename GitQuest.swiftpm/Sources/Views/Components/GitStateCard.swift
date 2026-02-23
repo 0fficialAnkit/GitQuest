@@ -1,10 +1,13 @@
 import SwiftUI
 
-/// Compact panel showing repo status: init, branch, commit count, staged files, and remote. Highlights rows when values change.
+
+// MARK: - Repository State Card
+
+/// Summarizes the current state of the simulated Git repository (branch, commits, staged files).
 struct GitStateCard: View {
     var repoState: GitRepositoryState
 
-    // MARK: - State (for change detection / flash animation)
+    
 
     @State private var prevCommitCount: Int = 0
     @State private var prevBranch: String = ""
@@ -52,7 +55,9 @@ struct GitStateCard: View {
         .onChange(of: repoState.hasRemote) { _, _ in flashRow("remote") }
     }
 
-    // MARK: - Subviews
+    
+
+    // MARK: - Subcomponents
 
     private var statusHeader: some View {
         HStack(spacing: 8) {
@@ -75,6 +80,8 @@ struct GitStateCard: View {
         .padding(.vertical, 14)
         .background(headerBg)
     }
+
+    // MARK: - Helpers
 
     private func compactStateRow(id: String, icon: String, label: String, value: String, statusColor: Color) -> some View {
         let isHighlighted = highlightedRow == id

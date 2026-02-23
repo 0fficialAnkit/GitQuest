@@ -1,8 +1,11 @@
 import SwiftUI
 
-// MARK: - Theme
 
-/// App-wide colors, typography, spacing, and layout constants. Use for consistent UI across all screens.
+
+
+// MARK: - Global Design System
+
+/// Centralized UI design tokens (colors, typography, spacing) for consistent styling across the app.
 enum Theme {
     enum Colors {
         static let background = Color(red: 0.07, green: 0.07, blue: 0.09)
@@ -58,7 +61,10 @@ enum Theme {
     }
 }
 
-/// Git-specific colors for the graph visualizer and repo card (commits, branches, remote, etc.).
+
+// MARK: - Domain Specific Colors
+
+/// Color palette specifically tied to Git concepts, aligning with standard terminal and editor themes.
 enum GitTheme {
     static let orange = Color(red: 0.96, green: 0.58, blue: 0.12)
     static let green = Color(red: 0.24, green: 0.72, blue: 0.39)

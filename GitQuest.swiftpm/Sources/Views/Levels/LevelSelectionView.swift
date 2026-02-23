@@ -1,6 +1,9 @@
 import SwiftUI
 
-/// Scrollable list of levels as nodes; unlocked levels are tappable to start, locked ones show a shake. Current level is highlighted.
+
+// MARK: - Main Level Selection screen
+
+/// The primary menu screen where users select which Git level to play.
 struct LevelSelectionView: View {
     @Environment(GameState.self) var gameState
     @Binding var navigationPath: NavigationPath
@@ -75,6 +78,8 @@ struct LevelSelectionView: View {
         .toolbar(.hidden, for: .navigationBar)
     }
 
+    // MARK: - Subcomponents
+
     private var headerSection: some View {
         VStack(spacing: Theme.Spacing.md) {
             HStack {
@@ -101,7 +106,10 @@ struct LevelSelectionView: View {
     }
 }
 
-/// One level in the list: circle with icon or lock, level number badge, title. Pulses when it’s the current level.
+
+// MARK: - Individual Level Node
+
+/// A visual representation of a single level on the journey map.
 struct LevelNode: View {
     let level: Level
     let isUnlocked: Bool
@@ -220,7 +228,7 @@ struct LevelNode: View {
     }
 }
 
-/// Wraps LevelSelectionView in a NavigationStack for previews.
+
 struct LevelSelectionPreviewContainer: View {
     @State private var path = NavigationPath()
     @State private var gameState = GameState()

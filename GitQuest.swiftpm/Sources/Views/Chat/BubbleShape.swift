@@ -1,6 +1,9 @@
 import SwiftUI
 
-/// Chat bubble shape with asymmetric corners (rounded tail on one side for current user vs team).
+
+// MARK: - Custom Bubble Shape
+
+/// A customizable shape used for chat bubbles, adapting corner radii to create a visual "tail".
 struct BubbleShape: Shape {
     let isCurrentUser: Bool
     let isLastInGroup: Bool

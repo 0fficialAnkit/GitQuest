@@ -2,21 +2,22 @@ import Foundation
 import SwiftUI
 import Observation
 
-// MARK: - Terminal and command result types
+// MARK: - Helper Models
 
-/// Result of validating and “running” a command in the game (success flag + message for terminal).
+/// Represents the result of a git command execution, including its success state and output message.
 struct CommandResult {
     let success: Bool
     let message: String
 }
 
-/// One line in the in-game terminal (command, success, error, info, etc.).
+/// A single line of output in the terminal console.
 struct TerminalLine: Identifiable {
     let id = UUID()
     let text: String
     let type: TerminalLineType
 }
 
+/// Defines the visual styling and semantic meaning of a terminal line.
 enum TerminalLineType {
     case command
     case success
@@ -26,52 +27,80 @@ enum TerminalLineType {
     case system
 }
 
-// MARK: - GameViewModel
+// MARK: - Main View Model
 
-/// Drives a level play session: chat messages, terminal output, step progress, and simulated command results.
+/// Manages the core game state, including terminal interactions, command processing, and level progression.
 @Observable
 @MainActor
 class GameViewModel {
 
-    // MARK: - State
+    // MARK: - Published Properties
 
+    /// The overall progress state across different levels.
     var gameState: GameState = GameState()
+    
+    /// The current step index within the active level.
     var currentStep: Int = 0
+    
+    /// History of all terminal lines currently displayed.
     var terminalOutput: [TerminalLine] = []
+    
+    /// The ongoing user input for the terminal block.
     var commandInput: String = ""
+    
+    /// UI state flags for showing success overlays and error feedback.
     var showSuccess: Bool = false
     var showError: Bool = false
     var errorMessage: String = ""
+    
+    /// Chat messages displayed in the current level's story progression.
     var chatMessages: [ChatMessage] = []
+    
+    /// Keeps track of the last successfully ran command.
     var lastSuccessfulCommand: String = ""
+    
+    /// The level currently being played.
     var currentPlayingLevel: Level?
 
-    // MARK: - Level control
+    // MARK: - Level Management
 
+    /// Initializes and starts a new level, resetting necessary states and displaying initial output.
     func startLevel(_ level: Level) {
         currentPlayingLevel = level
         currentStep = 0
         terminalOutput = []
+        
+        // Initialize chat messages with slightly staggered timestamps
         chatMessages = level.initialChat.enumerated().map { index, msg in
             ChatMessage(sender: msg.sender, text: msg.text, timestamp: Date().addingTimeInterval(Double(index)))
         }
+        
+        // Display initial terminal greetings
         addTerminalOutput("", type: .system)
         addTerminalOutput("→ \(level.title)", type: .info)
         addTerminalOutput("", type: .system)
+        
         if level.requiredSteps.first != nil {
             addTerminalOutput("Ready? Tap a command below to begin.", type: .instruction)
         }
     }
 
-    // MARK: - Command execution
+    // MARK: - User Intents
 
+    /// Triggered when the user submits a command to the terminal.
     func executeCommand() {
         let command = commandInput.trimmingCharacters(in: .whitespaces)
         guard !command.isEmpty else { return }
+        
+        // Echo the command to the terminal
         addTerminalOutput("$ \(command)", type: .command)
         commandInput = ""
+        
+        // Process the command and get the result
         let result = processCommand(command)
         addTerminalOutput(result.message, type: result.success ? .success : .error)
+        
+        // Update game flow based on success
         if result.success {
             checkStepCompletion(command)
         } else {
@@ -79,9 +108,12 @@ class GameViewModel {
         }
     }
 
+    /// Provides context-aware command suggestions based on the current level and step.
     func getSuggestedCommands() -> [String] {
         guard let level = currentPlayingLevel else { return [] }
         guard currentStep < level.requiredSteps.count else { return [] }
+        
+        // Hardcoded suggestions matching specific level identifiers and steps
         switch level.id {
         case 1:
             if currentStep == 0 { return ["git init"] }
@@ -109,6 +141,9 @@ class GameViewModel {
         }
     }
 
+    // MARK: - Command Processing Logic
+
+    /// Validates a command against the expected input for the current step.
     private func processCommand(_ command: String) -> CommandResult {
         guard let level = currentPlayingLevel else {
             return CommandResult(success: false, message: "No level is active")
@@ -116,16 +151,18 @@ class GameViewModel {
         guard currentStep < level.requiredSteps.count else {
             return CommandResult(success: false, message: "Level already completed!")
         }
+        
         let step = level.requiredSteps[currentStep]
+        
+        // Flexible validation: Check if user input contains the expected command text
         if command.lowercased().contains(step.expectedCommand.lowercased()) {
             return processCorrectCommand(command, step: step, level: level)
         }
+        
         return CommandResult(success: false, message: "Hmm, that's not quite right. \(step.hint)")
     }
 
-    // MARK: - Private helpers
-
-    /// Returns simulated terminal output for the current level and step when the command matches.
+    /// Handles successful command execution and returns simulated git output based on the level.
     private func processCorrectCommand(_ command: String, step: LevelStep, level: Level) -> CommandResult {
         switch level.id {
         case 1:
@@ -169,7 +206,7 @@ class GameViewModel {
                 You have unmerged paths.
                   (fix conflicts and run "git commit")
                 Unmerged paths:
-                  (use "git add <file>...\" to mark resolution)
+                  (use "git add <file>..." to mark resolution)
                     both modified:   dashboard.js
                 no changes added to commit
                 """)
@@ -213,16 +250,25 @@ class GameViewModel {
         return CommandResult(success: true, message: "Command executed successfully")
     }
 
+    // MARK: - Game Flow Control
+
+    /// Verifies if a valid command advances the step, appending new chat messages and checking for level completion.
     private func checkStepCompletion(_ command: String) {
         guard let level = currentPlayingLevel else { return }
         guard currentStep < level.requiredSteps.count else { return }
+        
         lastSuccessfulCommand = command
         let step = level.requiredSteps[currentStep]
+        
+        // Print success text
         addTerminalOutput("", type: .system)
         addTerminalOutput("✓ " + step.successMessage, type: .success)
         addTerminalOutput("", type: .system)
+        
         let completedStepIndex = currentStep
         currentStep += 1
+        
+        // Append story chat messages with a staggered animation delay
         if let stepMessages = level.stepChats[completedStepIndex] {
             for (index, message) in stepMessages.enumerated() {
                 let delay = Double(index) * 0.5
@@ -234,6 +280,8 @@ class GameViewModel {
                 }
             }
         }
+        
+        // Check if level is finished
         if currentStep >= level.requiredSteps.count {
             completeLevel()
         } else {
@@ -242,11 +290,15 @@ class GameViewModel {
         }
     }
 
+    /// Executed when the user successfully finishes all steps in a level.
     private func completeLevel() {
         guard let level = currentPlayingLevel else { return }
         gameState.completeLevel(level.id)
+        
         addTerminalOutput("", type: .system)
         addTerminalOutput("🎉 Level Complete!", type: .success)
+        
+        // Brief delay before presenting the success overlay
         Task { @MainActor in
             try? await Task.sleep(for: .seconds(0.3))
             withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
@@ -255,21 +307,25 @@ class GameViewModel {
         }
     }
 
-    // MARK: - Private
+    // MARK: - View Helpers
 
+    /// Appends a new line to the terminal.
     private func addTerminalOutput(_ text: String, type: TerminalLineType) {
         terminalOutput.append(TerminalLine(text: text, type: type))
     }
 
+    /// Triggers the error feedback overlay temporarily.
     private func showErrorFeedback(_ message: String) {
         errorMessage = message
         withAnimation { showError = true }
+        
         Task { @MainActor in
             try? await Task.sleep(for: .seconds(2.5))
             withAnimation { self.showError = false }
         }
     }
 
+    /// A helper method to parse the branch name from a checkout command.
     private func extractBranchName(from command: String) -> String {
         let parts = command.split(separator: " ").map(String.init)
         if let bIndex = parts.firstIndex(of: "-b"), bIndex + 1 < parts.count {

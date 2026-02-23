@@ -1,6 +1,9 @@
 import SwiftUI
 
-/// Onboarding carousel: “What is Git?”, “How it works”, “Key concepts” with Skip and “Start Learning” on the last page.
+
+// MARK: - Global App Tutorial
+
+/// A swipeable carousel introducing core Git concepts to new players before they start.
 struct TutorialView: View {
     let onComplete: () -> Void
 
@@ -115,7 +118,10 @@ struct TutorialView: View {
     }
 }
 
-/// One page in the tutorial carousel: icon, title, description with appear animation.
+
+// MARK: - Single Tutorial Page
+
+/// Renders an individual page in the game's onboarding carousel.
 struct TutorialPageView: View {
     let icon: String
     let title: String

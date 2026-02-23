@@ -1,6 +1,9 @@
 import SwiftUI
 
-/// Bottom sheet after completing a step: “What you used” with command details, pro tip, risk, real-world usage; Next level / Stay options.
+
+// MARK: - Command Explanation Overlay
+
+/// A modal card displaying detailed educational summaries of commands learned in a level.
 struct CommandExplanationCard: View {
     let level: Level
     var isLastLevel: Bool = false
@@ -204,6 +207,8 @@ struct CommandExplanationCard: View {
         }
     }
 
+    // MARK: - Subcomponents
+
     @ViewBuilder
     private var commandDetailsView: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -225,6 +230,9 @@ struct CommandExplanationCard: View {
     }
 }
 
+// MARK: - Helper Views
+
+/// Renders a single Git command and its description.
 struct CommandBlock: View {
     let command: String
     let description: String
@@ -255,6 +263,7 @@ struct CommandBlock: View {
     }
 }
 
+/// Renders a highlighted insight block (e.g., Pro Tip, Risk) with an icon and custom color.
 struct InsightBlock: View {
     let icon: String
     let color: Color

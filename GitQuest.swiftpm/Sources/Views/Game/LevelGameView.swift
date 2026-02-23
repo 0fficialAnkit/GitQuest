@@ -1,6 +1,10 @@
 import SwiftUI
 
-/// Main level screen: chat, concept card, Git graph, repo card, console, and overlays for success, explanation, errors, and learning sheet.
+
+// MARK: - Main Game View
+
+/// The primary view coordinating the layout and interaction for a single GitQuest level.
+/// Contains the chat story, visualizer, repository state, and interactive terminal.
 struct LevelGameView: View {
     let initialLevel: Level
 
@@ -31,6 +35,8 @@ struct LevelGameView: View {
         self.initialLevel = level
         self._currentLevel = State(initialValue: level)
     }
+
+    // MARK: - View Body
 
     var body: some View {
         ZStack {
@@ -323,6 +329,9 @@ struct LevelGameView: View {
         }
     }
 
+    // MARK: - UI Components
+
+    /// The interactive terminal panel where the user enters Git commands.
     private var consolePanel: some View {
         ZStack(alignment: .topTrailing) {
             ConsoleView(
@@ -402,6 +411,9 @@ struct LevelGameView: View {
         .tutorialAnchor(.console)
     }
 
+    // MARK: - Overlays
+
+    /// Shows a congratulatory overlay when the user successfully finishes all steps.
     @ViewBuilder
     private var successOverlay: some View {
         if viewModel.showSuccess {
@@ -477,6 +489,9 @@ struct LevelGameView: View {
         .padding(16)
     }
 
+    // MARK: - Game State Initialization
+
+    /// Automatically sets up the starting state of the Git visualizer based on the current level.
     private func setupVisualizerState() {
         if !isInPracticeMode, let savedSnapshot = repoState.snapshot(forLevel: currentLevel.id) {
             repoState.restore(from: savedSnapshot)
@@ -538,6 +553,9 @@ struct LevelGameView: View {
         }
     }
 
+    // MARK: - Command Execution Handlers
+
+    /// Parses textual commands and translates them into simulated Git operations on the repository state.
     private func executeOnVisualizer(command: String) {
         guard !command.isEmpty else { return }
 
@@ -662,6 +680,8 @@ struct LevelGameView: View {
         }
     }
 
+    // MARK: - Completion Summary Overlay
+
     @ViewBuilder
     private var completedInfoOverlay: some View {
         if showCompletedInfoOverlay {
@@ -684,6 +704,9 @@ struct LevelGameView: View {
     }
 }
 
+// MARK: - Supporting Views
+
+/// A summary card displayed when a user revisits a completed level, showing what they learned.
 private struct CompletedInfoCard: View {
     let level: Level
     let content: LearningContent
@@ -902,6 +925,9 @@ private struct CompletedInfoCard: View {
     }
 }
 
+// MARK: - Learning Data
+
+/// Structured educational content mapped to specific level IDs.
 private struct LearningContent {
     let concept: String
     let whyItExists: String
@@ -1109,6 +1135,9 @@ private struct LearningContent {
     }
 }
 
+// MARK: - Detailed Concept Explanation
+
+/// A modal sheet presenting in-depth educational material for the concepts taught in a level.
 private struct LearningDetailSheet: View {
     let level: Level
     let content: LearningContent

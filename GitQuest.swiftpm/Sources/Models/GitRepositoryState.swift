@@ -2,9 +2,9 @@ import Foundation
 import SwiftUI
 import Observation
 
-// MARK: - Repository model types
+// MARK: - Core Data Models
 
-/// A single commit in the in-memory Git graph: id, message, branch, and parent for history.
+/// Represents a single commit in the repository's history.
 struct GitCommit: Identifiable, Equatable {
     let id: String
     let message: String
@@ -26,7 +26,7 @@ struct GitCommit: Identifiable, Equatable {
     }
 }
 
-/// A branch with an optional head commit; color is used by the visualizer.
+/// Represents a branch pointing to a specific commit.
 struct GitBranch: Identifiable, Equatable {
     let id: String
     var headCommitId: String?
@@ -35,7 +35,7 @@ struct GitBranch: Identifiable, Equatable {
     var name: String { id }
 }
 
-/// Record of the last Git operation for UI feedback (e.g. visualizer footer, status).
+/// Represents an action taking place on the repository for educational breakdown.
 struct GitAction {
     let command: String
     let explanation: String
@@ -55,7 +55,7 @@ struct GitAction {
     }
 }
 
-/// Full copy of repo state used to save/restore per level when re-entering or practicing.
+/// A snapshot capturing the exact repository state for undo/redo or level resets.
 struct GitRepositorySnapshot {
     var isInitialized: Bool
     var commits: [GitCommit]
@@ -66,33 +66,44 @@ struct GitRepositorySnapshot {
     var remoteName: String
 }
 
-// MARK: - GitRepositoryState
+// MARK: - Repository State Manager
 
-/// In-memory Git repository used by the game: commits, branches, staging, and remote. Drives the graph visualizer and level logic.
+/// Manages the in-memory state of the simulated Git repository.
 @Observable
 @MainActor
 class GitRepositoryState {
 
-    // MARK: - State
+    // MARK: - Published Properties
 
     var isInitialized: Bool = false
     var commits: [GitCommit] = []
     var branches: [GitBranch] = []
+    
+    /// The name of the branch currently checked out.
     var currentBranch: String = "main"
+    
+    /// Files currently added to the staging area.
     var stagedFiles: [String] = []
+    
     var hasRemote: Bool = false
     var remoteName: String = "origin"
+    
+    /// The last action performed, used for visual feedback.
     var lastAction: GitAction?
+    
+    /// Stores states for levels to allow resetting to specific milestones.
     private var levelSnapshots: [Int: GitRepositorySnapshot] = [:]
 
-    // MARK: - Computed state
+    // MARK: - Computed Properties
 
+    /// Retrieves the commit currently pointed to by HEAD (current branch).
     var headCommit: GitCommit? {
         guard let branch = branches.first(where: { $0.id == currentBranch }),
               let headId = branch.headCommitId else { return nil }
         return commits.first(where: { $0.id == headId })
     }
 
+    /// Maps branch names to their entire linear commit history.
     var commitsByBranch: [String: [GitCommit]] {
         var result: [String: [GitCommit]] = [:]
         for branch in branches {
@@ -101,6 +112,9 @@ class GitRepositoryState {
         return result
     }
 
+    // MARK: - Snapshot Management
+
+    /// Generates a snapshot of the current state.
     func makeSnapshot() -> GitRepositorySnapshot {
         GitRepositorySnapshot(
             isInitialized: isInitialized,
@@ -113,6 +127,7 @@ class GitRepositoryState {
         )
     }
 
+    /// Overwrites state with a previously saved snapshot.
     func restore(from snapshot: GitRepositorySnapshot) {
         isInitialized = snapshot.isInitialized
         commits = snapshot.commits
@@ -136,8 +151,9 @@ class GitRepositoryState {
         levelSnapshots[levelId] != nil
     }
 
-    // MARK: - Git operations
+    // MARK: - Simulated Git Operations
 
+    /// Simulates `git init`.
     func initialize() {
         guard !isInitialized else { return }
         isInitialized = true
@@ -151,6 +167,7 @@ class GitRepositoryState {
         clearNewFlags()
     }
 
+    /// Simulates `git add`.
     func stageFiles(_ files: [String] = ["."]) {
         stagedFiles = files
         lastAction = GitAction(
@@ -160,15 +177,20 @@ class GitRepositoryState {
         )
     }
 
+    /// Simulates `git commit -m`.
     func commit(message: String) {
         clearNewFlags()
         let parentId = headCommit?.id
         let newCommit = GitCommit(message: message, branch: currentBranch, parentId: parentId)
         commits.append(newCommit)
+        
+        // Update the current branch pointer
         if let index = branches.firstIndex(where: { $0.id == currentBranch }) {
             branches[index].headCommitId = newCommit.id
         }
-        stagedFiles.removeAll()
+        
+        stagedFiles.removeAll() // Clear staging area after committing
+        
         lastAction = GitAction(
             command: "git commit -m \"\(message)\"",
             explanation: "Created commit '\(newCommit.id)'. Your changes are now saved in Git's history.",
@@ -176,6 +198,7 @@ class GitRepositoryState {
         )
     }
 
+    /// Simulates `git checkout -b <branch>`.
     func createBranch(name: String) {
         clearNewFlags()
         let color = colorForBranch(name)
@@ -189,6 +212,7 @@ class GitRepositoryState {
         )
     }
 
+    /// Simulates `git checkout <branch>`.
     func checkout(branch: String) {
         clearNewFlags()
         guard branches.contains(where: { $0.id == branch }) else { return }
@@ -200,19 +224,23 @@ class GitRepositoryState {
         )
     }
 
+    /// Simulates `git merge <branch>`.
     func merge(branch: String) {
         clearNewFlags()
         guard let sourceBranch = branches.first(where: { $0.id == branch }),
               sourceBranch.headCommitId != nil else { return }
+              
         let mergeCommit = GitCommit(
             message: "Merge branch '\(branch)' into \(currentBranch)",
             branch: currentBranch,
             parentId: headCommit?.id
         )
         commits.append(mergeCommit)
+        
         if let index = branches.firstIndex(where: { $0.id == currentBranch }) {
             branches[index].headCommitId = mergeCommit.id
         }
+        
         lastAction = GitAction(
             command: "git merge \(branch)",
             explanation: "Merged '\(branch)' into '\(currentBranch)'. Both branches' changes are now combined.",
@@ -220,6 +248,7 @@ class GitRepositoryState {
         )
     }
 
+    /// Simulates `git remote add <name> <url>`.
     func addRemote(name: String, url: String) {
         hasRemote = true
         remoteName = name
@@ -230,6 +259,7 @@ class GitRepositoryState {
         )
     }
 
+    /// Simulates `git push`.
     func push() {
         lastAction = GitAction(
             command: "git push -u \(remoteName) \(currentBranch)",
@@ -238,6 +268,7 @@ class GitRepositoryState {
         )
     }
 
+    /// Simulates `git pull`.
     func pull() {
         clearNewFlags()
         let pullCommit = GitCommit(
@@ -246,9 +277,11 @@ class GitRepositoryState {
             parentId: headCommit?.id
         )
         commits.append(pullCommit)
+        
         if let index = branches.firstIndex(where: { $0.id == currentBranch }) {
             branches[index].headCommitId = pullCommit.id
         }
+        
         lastAction = GitAction(
             command: "git pull \(remoteName) \(currentBranch)",
             explanation: "Pulled latest changes from remote. Your local branch is now up to date.",
@@ -256,13 +289,16 @@ class GitRepositoryState {
         )
     }
 
+    /// Simulates `git reset HEAD~1`.
     func resetHead() {
         clearNewFlags()
         guard commits.count > 1 else { return }
+        
         commits.removeLast()
         if let index = branches.firstIndex(where: { $0.id == currentBranch }) {
             branches[index].headCommitId = commits.last?.id
         }
+        
         lastAction = GitAction(
             command: "git reset HEAD~1",
             explanation: "Undid the last commit. Your changes are still in files but not committed.",
@@ -270,6 +306,7 @@ class GitRepositoryState {
         )
     }
 
+    /// Simulates `git status`.
     func status() {
         let staged = stagedFiles.isEmpty ? "nothing staged" : stagedFiles.joined(separator: ", ")
         lastAction = GitAction(
@@ -279,6 +316,7 @@ class GitRepositoryState {
         )
     }
 
+    /// Wipes out all repository data.
     func resetAll() {
         isInitialized = false
         commits.removeAll()
@@ -289,8 +327,9 @@ class GitRepositoryState {
         lastAction = nil
     }
 
-    // MARK: - Private helpers
+    // MARK: - Private Utilities
 
+    /// Resets animation highlighting flags.
     private func clearNewFlags() {
         for i in commits.indices {
             commits[i].isNew = false
@@ -300,18 +339,22 @@ class GitRepositoryState {
         }
     }
 
+    /// Traverses commit history backwards via parent IDs.
     private func commitsForBranch(_ branchName: String) -> [GitCommit] {
         guard let branch = branches.first(where: { $0.id == branchName }),
               let headId = branch.headCommitId else { return [] }
+              
         var result: [GitCommit] = []
         var currentId: String? = headId
+        
         while let id = currentId, let commit = commits.first(where: { $0.id == id }) {
-            result.insert(commit, at: 0)
+            result.insert(commit, at: 0) // Prepend to preserve chronological order
             currentId = commit.parentId
         }
         return result
     }
 
+    /// Assigns consistent visually distinct colors to branches.
     private func colorForBranch(_ name: String) -> Color {
         let colors: [Color] = [.green, .blue, .orange, .pink, .cyan, .mint, .indigo]
         let hash = abs(name.hashValue)
