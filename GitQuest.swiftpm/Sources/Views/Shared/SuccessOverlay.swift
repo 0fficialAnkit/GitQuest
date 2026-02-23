@@ -40,7 +40,7 @@ struct SuccessOverlay: View {
                 }
                 .offset(y: isVisible ? 0 : 25)
                 .opacity(isVisible ? 1.0 : 0)
-                
+
                 Text("Tap anywhere to continue")
                     .font(.system(size: 10))
                     .foregroundStyle(Theme.Colors.textSecondary)
