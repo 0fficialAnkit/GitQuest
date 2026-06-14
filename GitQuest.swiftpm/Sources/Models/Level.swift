@@ -93,6 +93,19 @@ struct CommandDetail: Hashable {
     let description: String
 }
 
+// MARK: - Challenge Mode Helpers
+
+extension LevelStep {
+    /// A full, realistic example of the command expected for this step, used to
+    /// show a meaningful answer in Challenge mode (where `expectedCommand` alone,
+    /// e.g. "git add", would be too vague to display as "the answer").
+    var exampleCommand: String {
+        let prefix = "Tap: "
+        guard hint.hasPrefix(prefix) else { return expectedCommand }
+        return String(hint.dropFirst(prefix.count))
+    }
+}
+
 // MARK: - Hardcoded Level Data
 
 extension Level {

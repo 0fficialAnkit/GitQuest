@@ -97,7 +97,44 @@ struct LevelSelectionView: View {
             Text("Master Git one level at a time")
                 .font(Theme.Typography.h3)
                 .foregroundStyle(Theme.Colors.textTertiary)
+
+            HStack(spacing: Theme.Spacing.md) {
+                quickLinkButton(title: "Cheat Sheet", icon: "book.closed.fill", color: GitTheme.green) {
+                    navigationPath.append(AppScreen.cheatSheet)
+                }
+                quickLinkButton(title: "Badges", icon: "trophy.fill", color: GitTheme.yellow) {
+                    navigationPath.append(AppScreen.badges)
+                }
+                quickLinkButton(title: "Challenge", icon: "bolt.fill", color: GitTheme.cyan) {
+                    navigationPath.append(AppScreen.challenge)
+                }
+            }
+            .padding(.top, Theme.Spacing.sm)
         }
+    }
+
+    private func quickLinkButton(title: String, icon: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: Theme.Spacing.xs) {
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(color)
+                Text(title)
+                    .font(Theme.Typography.small)
+                    .foregroundStyle(Theme.Colors.textSecondary)
+            }
+            .padding(.horizontal, Theme.Spacing.md)
+            .padding(.vertical, Theme.Spacing.sm)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    )
+            )
+        }
+        .buttonStyle(TapScaleButtonStyle())
     }
 
     private func offsetForLevel(_ index: Int) -> CGFloat {

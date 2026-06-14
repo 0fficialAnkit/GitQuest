@@ -6,6 +6,7 @@ import SwiftUI
 /// A full-screen overlay presented when a user successfully completes all steps in a level.
 struct SuccessOverlay: View {
     let level: Level
+    var isGameComplete: Bool = false
     let onDismiss: () -> Void
 
     @State private var isVisible = false
@@ -17,7 +18,26 @@ struct SuccessOverlay: View {
                 .ignoresSafeArea()
                 .onTapGesture { dismissOverlay() }
 
+            if isVisible {
+                ConfettiView(pieceCount: isGameComplete ? 120 : 60)
+                    .ignoresSafeArea()
+            }
+
             VStack(spacing: 25) {
+                if isGameComplete {
+                    Text("🏆 GIT MASTER 🏆")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(GitTheme.yellow)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 6)
+                        .background(
+                            Capsule().fill(GitTheme.yellow.opacity(0.15))
+                        )
+                        .overlay(Capsule().stroke(GitTheme.yellow.opacity(0.4), lineWidth: 1))
+                        .scaleEffect(isVisible ? 1.0 : 0.5)
+                        .opacity(isVisible ? 1.0 : 0)
+                }
+
                 ZStack {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 95, weight: .bold))

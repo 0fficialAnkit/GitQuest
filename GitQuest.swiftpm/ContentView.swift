@@ -5,6 +5,9 @@ enum AppScreen: Hashable {
     case tutorial
     case levels
     case game(Level)
+    case cheatSheet
+    case badges
+    case challenge
 }
 
 /// Root view: welcome ->  tutorial or level list -> level game. Uses NavigationStack and AppScreen for deep linking.
@@ -43,6 +46,12 @@ struct ContentView: View {
                         LevelSelectionView(navigationPath: $navigationPath)
                     case .game(let level):
                         LevelGameView(level: level)
+                    case .cheatSheet:
+                        CheatSheetView()
+                    case .badges:
+                        BadgesView()
+                    case .challenge:
+                        ChallengeView()
                     }
                 }
             }

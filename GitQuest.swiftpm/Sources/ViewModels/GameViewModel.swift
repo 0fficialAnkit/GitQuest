@@ -62,6 +62,9 @@ class GameViewModel {
     /// The level currently being played.
     var currentPlayingLevel: Level?
 
+    /// Tracks whether the current level has been played without any failed command attempts.
+    var levelHasErrors: Bool = false
+
     // MARK: - Level Management
 
     /// Initializes and starts a new level, resetting necessary states and displaying initial output.
@@ -69,6 +72,7 @@ class GameViewModel {
         currentPlayingLevel = level
         currentStep = 0
         terminalOutput = []
+        levelHasErrors = false
         
         // Initialize chat messages with slightly staggered timestamps
         chatMessages = level.initialChat.enumerated().map { index, msg in
@@ -386,7 +390,7 @@ class GameViewModel {
     /// Executed when the user successfully finishes all steps in a level.
     private func completeLevel() {
         guard let level = currentPlayingLevel else { return }
-        gameState.completeLevel(level.id)
+        gameState.completeLevel(level.id, perfect: !levelHasErrors)
         
         addTerminalOutput("", type: .system)
         addTerminalOutput("🎉 Level Complete!", type: .success)
@@ -409,6 +413,7 @@ class GameViewModel {
 
     /// Triggers the error feedback overlay temporarily.
     private func showErrorFeedback(_ message: String) {
+        levelHasErrors = true
         errorMessage = message
         withAnimation { showError = true }
         

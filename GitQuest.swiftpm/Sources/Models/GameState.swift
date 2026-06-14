@@ -14,11 +14,13 @@ class GameState {
     private enum StorageKey {
         static let completedLevels = "completedLevels"
         static let hasCompletedTutorial = "hasCompletedTutorial"
+        static let earnedBadges = "earnedBadges"
+        static let hasPerfectRun = "hasPerfectRun"
     }
 
     // MARK: - Published Properties
 
-    /// A set of all level IDs that have been successfully completed. 
+    /// A set of all level IDs that have been successfully completed.
     /// Automatically persists to UserDefaults upon modification.
     var completedLevels: Set<Int> {
         didSet { persist() }
@@ -29,6 +31,21 @@ class GameState {
     var hasCompletedTutorial: Bool {
         didSet { persist() }
     }
+
+    /// Identifiers of badges the player has unlocked so far.
+    /// Automatically persists to UserDefaults upon modification.
+    var earnedBadges: Set<String> {
+        didSet { persist() }
+    }
+
+    /// Whether the player has ever completed a level without making a mistake.
+    /// Automatically persists to UserDefaults upon modification.
+    var hasPerfectRun: Bool {
+        didSet { persist() }
+    }
+
+    /// Badges unlocked during the most recent level completion, used to surface "new badge" highlights.
+    var newlyEarnedBadges: [Badge] = []
 
     /// Computed property returning the ID of the highest unlocked level.
     var currentLevel: Int {
@@ -43,6 +60,9 @@ class GameState {
         let saved = UserDefaults.standard.array(forKey: StorageKey.completedLevels) as? [Int] ?? []
         completedLevels = Set(saved)
         hasCompletedTutorial = UserDefaults.standard.bool(forKey: StorageKey.hasCompletedTutorial)
+        let savedBadges = UserDefaults.standard.array(forKey: StorageKey.earnedBadges) as? [String] ?? []
+        earnedBadges = Set(savedBadges)
+        hasPerfectRun = UserDefaults.standard.bool(forKey: StorageKey.hasPerfectRun)
     }
 
     // MARK: - State Management
@@ -52,9 +72,14 @@ class GameState {
         levelId <= currentLevel
     }
 
-    /// Marks a specific level as completed.
-    func completeLevel(_ levelId: Int) {
+    /// Marks a specific level as completed and evaluates any newly unlocked badges.
+    /// - Parameter perfect: Whether the level was completed without any failed command attempts.
+    func completeLevel(_ levelId: Int, perfect: Bool = false) {
         completedLevels.insert(levelId)
+        if perfect {
+            hasPerfectRun = true
+        }
+        evaluateBadges()
     }
 
     /// Marks the tutorial as finished.
@@ -66,8 +91,25 @@ class GameState {
     func resetAllProgress() {
         completedLevels.removeAll()
         hasCompletedTutorial = false
+        earnedBadges.removeAll()
+        hasPerfectRun = false
+        newlyEarnedBadges = []
         // Clear specific legacy tutorial flag as well
         UserDefaults.standard.removeObject(forKey: "hasSeenGameTutorial")
+    }
+
+    // MARK: - Badges
+
+    /// Checks all badge criteria and unlocks any newly earned badges.
+    private func evaluateBadges() {
+        var newlyEarned: [Badge] = []
+        for badge in Badge.allBadges where !earnedBadges.contains(badge.id) {
+            if badge.criteria(self) {
+                earnedBadges.insert(badge.id)
+                newlyEarned.append(badge)
+            }
+        }
+        newlyEarnedBadges = newlyEarned
     }
 
     // MARK: - Persistence Helper
@@ -76,5 +118,7 @@ class GameState {
     private func persist() {
         UserDefaults.standard.set(Array(completedLevels), forKey: StorageKey.completedLevels)
         UserDefaults.standard.set(hasCompletedTutorial, forKey: StorageKey.hasCompletedTutorial)
+        UserDefaults.standard.set(Array(earnedBadges), forKey: StorageKey.earnedBadges)
+        UserDefaults.standard.set(hasPerfectRun, forKey: StorageKey.hasPerfectRun)
     }
 }

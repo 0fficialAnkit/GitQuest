@@ -287,7 +287,10 @@ struct LevelGameView: View {
                 .ignoresSafeArea()
                 .transition(.opacity)
 
-            SuccessOverlay(level: currentLevel) {
+            SuccessOverlay(
+                level: currentLevel,
+                isGameComplete: !isInPracticeMode && gameState.completedLevels.count == Level.allLevels.count
+            ) {
                 viewModel.showSuccess = false
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                     showExplanationCard = true
