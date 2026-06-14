@@ -63,6 +63,23 @@ struct LearningDetailSheet: View {
                         .lineSpacing(3)
                         .italic()
                 }
+
+                sectionCard(title: "Learn More", icon: "book.fill", color: GitTheme.green, tint: GitTheme.green.opacity(0.08)) {
+                    Link(destination: level.referenceURL) {
+                        HStack {
+                            Text("Read the official docs on git-scm.com")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(GitTheme.green)
+                                .multilineTextAlignment(.leading)
+
+                            Spacer()
+
+                            Image(systemName: "arrow.up.right")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(GitTheme.green)
+                        }
+                    }
+                }
             }
             .padding(20)
             .padding(.bottom, 30)

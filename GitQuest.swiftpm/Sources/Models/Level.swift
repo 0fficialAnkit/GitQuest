@@ -26,6 +26,9 @@ struct Level: Identifiable, Hashable {
     /// Provides additional educational breakdown of the commands used.
     let commandExplanation: CommandExplanation
 
+    /// Link to the official Git documentation page most relevant to this level's concept.
+    let referenceURL: URL
+
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)
     }
@@ -196,7 +199,8 @@ extension Level {
                 proTip: "Write commit messages that explain WHY, not WHAT. \"Fix login bug\" is better than \"Update auth.js\"",
                 risk: "Committing too much at once makes bugs hard to track. Commit small, atomic changes.",
                 realWorldUsage: "Pro developers commit 20+ times per day. Every logical checkpoint gets a commit."
-            )
+            ),
+            referenceURL: URL(string: "https://git-scm.com/docs/git-init")!
         ),
 
         Level(
@@ -277,7 +281,8 @@ extension Level {
                 proTip: "Use descriptive names. Your teammates should understand what you're building just from the branch name.",
                 risk: "Leaving old branches around clutters the repo. Delete merged branches with 'git branch -d <n>'",
                 realWorldUsage: "Common patterns: feature/new-ui, bugfix/login-error, experiment/ai-suggestions"
-            )
+            ),
+            referenceURL: URL(string: "https://git-scm.com/docs/git-branch")!
         ),
 
         Level(
@@ -354,7 +359,8 @@ extension Level {
                 proTip: "After the first push, you can just use 'git push' - tracking remembers the branch.",
                 risk: "Force pushing (--force) can delete others' work. Only use if you know why.",
                 realWorldUsage: "Every feature branch gets pushed so teammates can review PRs, CI/CD can run tests, and code is backed up."
-            )
+            ),
+            referenceURL: URL(string: "https://git-scm.com/docs/git-push")!
         ),
 
         Level(
@@ -474,7 +480,8 @@ extension Level {
                 "Hey, I'm resolving a conflict in auth.js. I'm keeping your validation
                 logic and my error handling. Let me know if that breaks anything."
                 """
-            )
+            ),
+            referenceURL: URL(string: "https://git-scm.com/docs/git-merge")!
         ),
 
         Level(
@@ -530,7 +537,8 @@ extension Level {
                 proTip: "Pull at the start of every work session. Some teams pull every 30 minutes on active projects.",
                 risk: "Pulling can cause merge conflicts if you and a teammate edited the same files. That's normal - just resolve them.",
                 realWorldUsage: "Pro workflow: git pull → review changes → git checkout -b feature/new-work → start coding"
-            )
+            ),
+            referenceURL: URL(string: "https://git-scm.com/docs/git-pull")!
         ),
 
         Level(
@@ -600,7 +608,8 @@ extension Level {
                 Pro tip: Before using reset, create a backup branch:
                 git branch backup-before-reset
                 """
-            )
+            ),
+            referenceURL: URL(string: "https://git-scm.com/docs/git-reset")!
         ),
 
         Level(
@@ -688,7 +697,8 @@ extension Level {
                 git branch -d feature/dark-mode (local)
                 git push origin --delete feature/dark-mode (remote)
                 """
-            )
+            ),
+            referenceURL: URL(string: "https://git-scm.com/docs/git-merge")!
         ),
 
         Level(
@@ -770,7 +780,8 @@ extension Level {
                 proTip: "Use 'git stash list' to see all your stashes, and 'git stash save \"message\"' to label them so you remember what's in each one.",
                 risk: "Stashes can pile up and get forgotten. Run 'git stash list' occasionally - an old stash is easy to lose track of.",
                 realWorldUsage: "Developers stash dozens of times a week when interrupted by urgent bugs, code reviews, or 'can you jump on a call?' messages."
-            )
+            ),
+            referenceURL: URL(string: "https://git-scm.com/docs/git-stash")!
         ),
 
         Level(
@@ -845,7 +856,8 @@ extension Level {
                 proTip: "Cherry-pick is great for backporting urgent fixes. For whole features, prefer a full merge so you don't end up with duplicate-looking commits.",
                 risk: "Cherry-picking the same commit onto multiple branches can create confusing, duplicate-looking history. Use it sparingly and intentionally.",
                 realWorldUsage: "Classic hotfix flow: fix on a feature/hotfix branch, then cherry-pick that single commit onto main AND any active release branches."
-            )
+            ),
+            referenceURL: URL(string: "https://git-scm.com/docs/git-cherry-pick")!
         ),
 
         Level(
@@ -923,7 +935,8 @@ extension Level {
                 proTip: "For real releases, prefer annotated tags: 'git tag -a v1.0 -m \"First stable release\"' - they store the author, date, and a message.",
                 risk: "Tags aren't pushed automatically with 'git push'. You must push them explicitly by name, or use 'git push --tags' for all of them.",
                 realWorldUsage: "Every versioned release (v1.0, v2.3.1) is a Git tag. CI/CD pipelines often trigger production builds the moment a tag matching v*.*.* is pushed."
-            )
+            ),
+            referenceURL: URL(string: "https://git-scm.com/docs/git-tag")!
         ),
 
         Level(
@@ -1019,7 +1032,8 @@ extension Level {
                 proTip: "Set up .gitignore BEFORE your first commit, using a template for your language or framework (github.com/github/gitignore).",
                 risk: "'git rm --cached' only stops FUTURE tracking - the file is still in OLD commits. For secrets, you may need to rewrite history entirely.",
                 realWorldUsage: "Nearly every repo has a .gitignore from day one. Forgetting it is the #1 cause of bloated repos and accidentally committed secrets."
-            )
+            ),
+            referenceURL: URL(string: "https://git-scm.com/docs/gitignore")!
         ),
 
         Level(
@@ -1084,7 +1098,8 @@ extension Level {
                 Reverting is how teams safely undo bad deploys without
                 rewriting history that others have already pulled.
                 """
-            )
+            ),
+            referenceURL: URL(string: "https://git-scm.com/docs/git-revert")!
         ),
 
         Level(
@@ -1160,7 +1175,8 @@ extension Level {
                 proTip: "Combine them: 'git log --oneline -- checkout.js' shows only the commits that touched that specific file.",
                 risk: "git blame shows who LAST touched a line - not necessarily who introduced the bug. The real cause might be several commits earlier.",
                 realWorldUsage: "Every developer reaches for log and blame multiple times a week. Xcode and VS Code even show inline blame annotations right next to your code."
-            )
+            ),
+            referenceURL: URL(string: "https://git-scm.com/docs/git-log")!
         )
     ]
 
