@@ -101,7 +101,7 @@ struct LevelSelectionView: View {
     }
 
     private func offsetForLevel(_ index: Int) -> CGFloat {
-        let positions: [CGFloat] = [0, 100, -100, 80, -80, 100, -100, 0]
+        let positions: [CGFloat] = [0, 100, -100, 80, -80, 100, -100, 0, 100, -100, 80, -80, 100]
         return positions[min(index, positions.count - 1)]
     }
 }

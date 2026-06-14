@@ -52,6 +52,12 @@ struct GitAction {
         case reset
         case add
         case status
+        case stash
+        case cherryPick
+        case tag
+        case cleanup
+        case revert
+        case inspect
     }
 }
 
@@ -87,7 +93,13 @@ class GitRepositoryState {
     
     var hasRemote: Bool = false
     var remoteName: String = "origin"
-    
+
+    /// Files set aside by `git stash` until restored with `git stash pop`.
+    var stashedFiles: [String] = []
+
+    /// Tags created via `git tag`.
+    var tags: [String] = []
+
     /// The last action performed, used for visual feedback.
     var lastAction: GitAction?
     
@@ -299,6 +311,99 @@ class GitRepositoryState {
         )
     }
 
+    /// Simulates `git stash`.
+    func stash() {
+        guard !stagedFiles.isEmpty else { return }
+        stashedFiles = stagedFiles
+        stagedFiles.removeAll()
+        lastAction = GitAction(
+            command: "git stash",
+            explanation: "Saved your uncommitted changes and restored a clean working directory. Your work is safely tucked away until you need it.",
+            type: .stash
+        )
+    }
+
+    /// Simulates `git stash pop`.
+    func stashPop() {
+        guard !stashedFiles.isEmpty else { return }
+        stagedFiles = stashedFiles
+        stashedFiles.removeAll()
+        lastAction = GitAction(
+            command: "git stash pop",
+            explanation: "Restored your stashed changes back into the working directory, right where you left off.",
+            type: .stash
+        )
+    }
+
+    /// Simulates `git cherry-pick <commit>`.
+    func cherryPick(message: String) {
+        clearNewFlags()
+        let newCommit = GitCommit(message: message, branch: currentBranch, parentId: headCommit?.id)
+        commits.append(newCommit)
+        if let index = branches.firstIndex(where: { $0.id == currentBranch }) {
+            branches[index].headCommitId = newCommit.id
+        }
+        lastAction = GitAction(
+            command: "git cherry-pick \(newCommit.id)",
+            explanation: "Copied the changes from that commit onto '\(currentBranch)' as a brand-new commit '\(newCommit.id)'.",
+            type: .cherryPick
+        )
+    }
+
+    /// Simulates `git tag <name>`.
+    func addTag(name: String) {
+        guard !tags.contains(name) else { return }
+        tags.append(name)
+        lastAction = GitAction(
+            command: "git tag \(name)",
+            explanation: "Created tag '\(name)' pointing at the current commit - a permanent marker for this release.",
+            type: .tag
+        )
+    }
+
+    /// Simulates `git push <remote> <tag>`.
+    func pushTag(name: String) {
+        lastAction = GitAction(
+            command: "git push \(remoteName) \(name)",
+            explanation: "Pushed tag '\(name)' to the remote. CI/CD pipelines and teammates can now build from this exact release.",
+            type: .push
+        )
+    }
+
+    /// Simulates `git rm -r --cached <files>`.
+    func untrack(files: [String]) {
+        lastAction = GitAction(
+            command: "git rm -r --cached \(files.joined(separator: " "))",
+            explanation: "Stopped tracking these files in Git. They remain on disk but won't be included in future commits.",
+            type: .cleanup
+        )
+    }
+
+    /// Simulates `git revert HEAD`.
+    func revert() {
+        clearNewFlags()
+        guard let head = headCommit else { return }
+        let revertCommit = GitCommit(
+            message: "Revert \"\(head.message)\"",
+            branch: currentBranch,
+            parentId: head.id
+        )
+        commits.append(revertCommit)
+        if let index = branches.firstIndex(where: { $0.id == currentBranch }) {
+            branches[index].headCommitId = revertCommit.id
+        }
+        lastAction = GitAction(
+            command: "git revert HEAD",
+            explanation: "Created a new commit '\(revertCommit.id)' that undoes '\(head.id)' without deleting it from history. Safe for branches others have already pulled.",
+            type: .revert
+        )
+    }
+
+    /// Simulates read-only history inspection commands like `git log` and `git blame`.
+    func inspectHistory(command: String, explanation: String) {
+        lastAction = GitAction(command: command, explanation: explanation, type: .inspect)
+    }
+
     /// Simulates `git status`.
     func status() {
         let staged = stagedFiles.isEmpty ? "nothing staged" : stagedFiles.joined(separator: ", ")
@@ -317,6 +422,8 @@ class GitRepositoryState {
         currentBranch = "main"
         stagedFiles.removeAll()
         hasRemote = false
+        stashedFiles.removeAll()
+        tags.removeAll()
         lastAction = nil
     }
 

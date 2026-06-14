@@ -136,6 +136,24 @@ class GameViewModel {
         case 7:
             if currentStep == 0 { return ["git checkout main"] }
             return ["git merge feature/dark-mode"]
+        case 8:
+            if currentStep == 0 { return ["git stash"] }
+            return ["git stash pop"]
+        case 9:
+            if currentStep == 0 { return ["git checkout main"] }
+            return ["git cherry-pick a1b2c3d"]
+        case 10:
+            if currentStep == 0 { return ["git tag v1.0"] }
+            return ["git push origin v1.0"]
+        case 11:
+            if currentStep == 0 { return ["git rm -r --cached node_modules"] }
+            if currentStep == 1 { return ["git add .gitignore"] }
+            return ["git commit -m \"Remove node_modules from tracking\""]
+        case 12:
+            return ["git revert HEAD"]
+        case 13:
+            if currentStep == 0 { return ["git log --oneline"] }
+            return ["git blame checkout.js"]
         default:
             return []
         }
@@ -242,6 +260,81 @@ class GameViewModel {
                 Fast-forward
                  settings.js | 15 +++++++++++++++
                  1 file changed, 15 insertions(+)
+                """)
+            }
+        case 8:
+            if command.contains("pop") {
+                return CommandResult(success: true, message: """
+                Dropped refs/stash@{0}
+                On branch main
+                Changes not staged for commit:
+                  modified: settings.js
+                  modified: theme.js
+                """)
+            }
+            if command.contains("stash") {
+                return CommandResult(success: true, message: "Saved working directory and index state WIP on main: a1b2c3d Add settings page")
+            }
+        case 9:
+            if command.contains("checkout") {
+                return CommandResult(success: true, message: "Switched to branch 'main'")
+            }
+            if command.contains("cherry-pick") {
+                let hash = String(format: "%07x", Int.random(in: 0...0xFFFFFFF))
+                return CommandResult(success: true, message: """
+                [main \(hash)] Fix null pointer in auth check
+                 1 file changed, 3 insertions(+), 1 deletion(-)
+                """)
+            }
+        case 10:
+            if command.contains("push") {
+                return CommandResult(success: true, message: """
+                To https://github.com/gitquest-labs/user-profiles.git
+                 * [new tag]         v1.0 -> v1.0
+                """)
+            }
+            if command.contains("tag") {
+                return CommandResult(success: true, message: "Created tag 'v1.0' pointing at the current commit")
+            }
+        case 11:
+            if command.contains("rm") {
+                return CommandResult(success: true, message: """
+                rm 'node_modules/react/index.js'
+                rm 'node_modules/react/package.json'
+                rm 'node_modules/...' (1,204 files)
+                """)
+            }
+            if command.contains("add") {
+                return CommandResult(success: true, message: "Changes staged for commit")
+            }
+            if command.contains("commit") {
+                return CommandResult(success: true, message: """
+                [main b3f8a21] Remove node_modules from tracking
+                 1,205 files changed, 0 insertions(+), 58213 deletions(-)
+                """)
+            }
+        case 12:
+            if command.contains("revert") {
+                let hash = String(format: "%07x", Int.random(in: 0...0xFFFFFFF))
+                return CommandResult(success: true, message: """
+                [main \(hash)] Revert "Refactor API client (breaks build)"
+                 1 file changed, 12 insertions(+), 4 deletions(-)
+                 This reverts commit a1b2c3d.
+                """)
+            }
+        case 13:
+            if command.contains("blame") {
+                return CommandResult(success: true, message: """
+                a1b2c3d (Maya Chen  2 days ago) 40) function validateCart(items) {
+                c4f9a2e (Maya Chen  yesterday)  41)   if (!items.length) return false
+                c4f9a2e (Maya Chen  yesterday)  42)   return items.every(i => i.qty > 0 && i.price >= 0)
+                """)
+            }
+            if command.contains("log") {
+                return CommandResult(success: true, message: """
+                c4f9a2e Refactor checkout validation
+                e29b3d1 Add checkout flow
+                a1b2c3d Initial commit
                 """)
             }
         default:

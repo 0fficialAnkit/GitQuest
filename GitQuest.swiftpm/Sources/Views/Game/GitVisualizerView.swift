@@ -849,6 +849,12 @@ struct GitVisualizerView: View {
         case .reset:      return "clock.arrow.circlepath"
         case .add:        return "plus.square.fill"
         case .status:     return "magnifyingglass"
+        case .stash:      return "archivebox.fill"
+        case .cherryPick: return "doc.on.doc.fill"
+        case .tag:        return "tag.fill"
+        case .cleanup:    return "trash.fill"
+        case .revert:     return "arrow.uturn.backward.circle.fill"
+        case .inspect:    return "magnifyingglass"
         }
     }
 
@@ -864,6 +870,12 @@ struct GitVisualizerView: View {
         case .reset:      return GitTheme.red
         case .add:        return GitTheme.yellow
         case .status:     return GitTheme.gray
+        case .stash:      return GitTheme.yellow
+        case .cherryPick: return GitTheme.pink
+        case .tag:        return GitTheme.green
+        case .cleanup:    return GitTheme.orange
+        case .revert:     return GitTheme.red
+        case .inspect:    return GitTheme.gray
         }
     }
 

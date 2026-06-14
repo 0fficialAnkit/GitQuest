@@ -423,6 +423,44 @@ struct LevelGameView: View {
             repoState.stageFiles(["settings.js"])
             repoState.commit(message: "Add dark mode")
             repoState.checkout(branch: "main")
+        case 8:
+            repoState.initialize()
+            repoState.stageFiles(["README.md"])
+            repoState.commit(message: "Initial commit")
+            repoState.commit(message: "Add settings page")
+            repoState.stageFiles(["settings.js", "theme.js"])
+        case 9:
+            repoState.initialize()
+            repoState.stageFiles(["README.md"])
+            repoState.commit(message: "Initial commit")
+            repoState.createBranch(name: "hotfix/null-check")
+            repoState.stageFiles(["auth.js"])
+            repoState.commit(message: "Fix null pointer in auth check")
+        case 10:
+            repoState.initialize()
+            repoState.stageFiles(["README.md"])
+            repoState.commit(message: "Initial commit")
+            repoState.commit(message: "Add dark mode")
+            repoState.addRemote(name: "origin", url: "https://github.com/gitquest-labs/user-profiles.git")
+        case 11:
+            repoState.initialize()
+            repoState.stageFiles(["README.md", "node_modules/"])
+            repoState.commit(message: "Initial commit (includes node_modules)")
+        case 12:
+            repoState.initialize()
+            repoState.stageFiles(["README.md"])
+            repoState.commit(message: "Initial commit")
+            repoState.commit(message: "Add settings")
+            repoState.stageFiles(["api.js"])
+            repoState.commit(message: "Refactor API client (breaks build)")
+            repoState.addRemote(name: "origin", url: "https://github.com/gitquest-labs/user-profiles.git")
+            repoState.push()
+        case 13:
+            repoState.initialize()
+            repoState.stageFiles(["README.md"])
+            repoState.commit(message: "Initial commit")
+            repoState.commit(message: "Add checkout flow")
+            repoState.commit(message: "Refactor checkout validation")
         default:
             break
         }
@@ -435,6 +473,30 @@ struct LevelGameView: View {
         let cmd = command.lowercased()
         if cmd.contains("git init") {
             repoState.initialize()
+        } else if cmd.contains("git stash") {
+            if cmd.contains("pop") {
+                repoState.stashPop()
+            } else {
+                repoState.stash()
+            }
+        } else if cmd.contains("git cherry-pick") {
+            repoState.cherryPick(message: "Fix null pointer in auth check")
+        } else if cmd.contains("git tag") {
+            repoState.addTag(name: extractBranchName(from: command, afterFlag: nil))
+        } else if cmd.contains("git rm") {
+            repoState.untrack(files: [extractBranchName(from: command, afterFlag: nil)])
+        } else if cmd.contains("git revert") {
+            repoState.revert()
+        } else if cmd.contains("git log") {
+            repoState.inspectHistory(
+                command: "git log --oneline",
+                explanation: "Displayed the commit history - a quick way to see what changed and when."
+            )
+        } else if cmd.contains("git blame") {
+            repoState.inspectHistory(
+                command: "git blame checkout.js",
+                explanation: "Showed which commit last modified each line of the file - perfect for tracking down regressions."
+            )
         } else if cmd.contains("git add") {
             repoState.stageFiles(extractFiles(from: command))
         } else if cmd.contains("git commit") {
@@ -450,7 +512,11 @@ struct LevelGameView: View {
                 url:  parts.count > 4 ? parts[4] : "https://github.com/..."
             )
         } else if cmd.contains("git push") {
-            repoState.push()
+            if currentLevel.id == 10 {
+                repoState.pushTag(name: extractBranchName(from: command, afterFlag: nil))
+            } else {
+                repoState.push()
+            }
         } else if cmd.contains("git pull") {
             repoState.pull()
         } else if cmd.contains("git merge") {

@@ -195,6 +195,150 @@ struct LearningContent {
                 ],
                 scenario: "You and a colleague both updated the app's theme configuration. Git marks the conflict and shows both versions. You see that your colleague changed the primary color while you updated the font. You keep both changes, remove the markers, run the tests - all green. What felt scary the first time is now a 60-second routine."
             )
+        case 8:
+            return LearningContent(
+                concept: "git stash temporarily shelves your uncommitted changes so your working directory looks clean, then lets you bring them back exactly as they were whenever you're ready.",
+                whyItExists: "Real work rarely lines up perfectly with interruptions. Stash lets you context-switch - to fix an urgent bug, pull updates, or switch branches - without committing unfinished, broken, or messy code.",
+                whenUsed: "Whenever you need a clean working directory but aren't ready to commit: urgent bug reports, switching branches mid-task, or testing something on a different branch.",
+                realWorldUsage: [
+                    "Pausing a half-finished feature to fix a production incident on main, then resuming afterwards",
+                    "Stashing local experiments before pulling teammates' changes to avoid conflicts",
+                    "Quickly checking out another branch to review a PR without losing your current edits",
+                    "git stash --include-untracked covers new files too, not just modified ones"
+                ],
+                tips: [
+                    "Run 'git stash list' to see everything you've stashed - it's easy to forget",
+                    "Use 'git stash save \"message\"' to label stashes so future-you knows what's inside",
+                    "git stash pop applies AND removes the stash; git stash apply keeps it for reuse",
+                    "Stash is local only - it never gets pushed, so don't rely on it as backup"
+                ],
+                risks: [
+                    "Stashes can silently pile up and be forgotten, hiding work you meant to finish",
+                    "Popping a stash can create conflicts if the files changed since you stashed",
+                    "Stash is not a substitute for committing - it's a short-term shelf, not permanent storage"
+                ],
+                scenario: "You're three files deep into a settings redesign when a critical Safari bug gets reported. You stash your half-finished work, switch to main, fix the bug, push the hotfix, switch back, and pop your stash. Everything is exactly where you left it - the interruption cost you two minutes instead of losing an hour of context."
+            )
+        case 9:
+            return LearningContent(
+                concept: "git cherry-pick copies the changes from one specific commit on another branch and applies them as a new commit on your current branch - without merging everything else from that branch.",
+                whyItExists: "Sometimes you need just ONE fix from a branch, not the whole branch's history. Cherry-pick lets you grab exactly that commit, so urgent fixes can ship to other branches independently.",
+                whenUsed: "Backporting a hotfix from a feature or release branch onto main (or another release branch) without waiting for a full merge.",
+                realWorldUsage: [
+                    "Applying a critical security fix to main, a release branch, AND an older supported version - all via cherry-pick",
+                    "Pulling a single bugfix commit out of a large in-progress feature branch",
+                    "Release managers cherry-pick approved fixes into a release-candidate branch",
+                    "Recovering a useful commit that was accidentally made on the wrong branch"
+                ],
+                tips: [
+                    "Cherry-pick creates a NEW commit with a new hash - it's a copy, not a move",
+                    "Use 'git log' to find the exact commit hash you want to cherry-pick",
+                    "For merge commits, you'll need the -m flag to specify which parent line to follow",
+                    "After cherry-picking, the original branch can still merge normally later"
+                ],
+                risks: [
+                    "Cherry-picking the same change onto multiple branches can cause duplicate-looking history",
+                    "If the surrounding code differs between branches, cherry-pick can produce conflicts",
+                    "Overusing cherry-pick instead of merging can make history hard to follow"
+                ],
+                scenario: "A teammate fixed a null-pointer crash on their hotfix branch, but main needs that exact fix right now - the rest of their branch isn't ready. You check out main and cherry-pick just that one commit. main is patched and deployed in minutes, while the rest of the hotfix branch continues through normal review."
+            )
+        case 10:
+            return LearningContent(
+                concept: "git tag creates a permanent, human-readable name (like v1.0) pointing at a specific commit. Unlike branches, tags don't move - they mark a fixed point in history forever.",
+                whyItExists: "Commit hashes like a1b2c3d are impossible to remember. Tags give meaningful names to important milestones - especially releases - so anyone can find and check out that exact version instantly.",
+                whenUsed: "Whenever you ship a release: v1.0, v2.3.1, etc. Also used to mark internal milestones like 'before-migration' or 'demo-ready'.",
+                realWorldUsage: [
+                    "Semantic versioning (v1.2.3) tags mark every published release of a library or app",
+                    "CI/CD pipelines watch for new tags matching v*.*.* and automatically build/deploy them",
+                    "App Store and Play Store releases are often tagged so the exact shipped code can be found later",
+                    "git checkout v1.0 lets anyone inspect the project exactly as it was at that release"
+                ],
+                tips: [
+                    "Use annotated tags (git tag -a v1.0 -m \"message\") for releases - they store author, date, and notes",
+                    "Tags must be pushed explicitly: git push origin v1.0, or git push --tags for all of them",
+                    "Follow semantic versioning: MAJOR.MINOR.PATCH (e.g. v2.1.0) so version bumps communicate impact",
+                    "List existing tags with git tag, or see details with git show v1.0"
+                ],
+                risks: [
+                    "Forgetting to push a tag means your CI/CD release pipeline never triggers",
+                    "Reusing or moving an existing tag confuses anyone who already checked it out",
+                    "Tagging the wrong commit ships the wrong code as a 'release' - double-check HEAD first"
+                ],
+                scenario: "QA signs off on the build. You tag the current commit v1.0 and push the tag to GitHub. Within minutes, the CI/CD pipeline detects the new tag, builds the release artifact, and the release notes go live. Six months later, a support ticket references 'v1.0' - and you can check out that exact tag to reproduce the issue precisely."
+            )
+        case 11:
+            return LearningContent(
+                concept: "git rm --cached removes files from Git's tracking without deleting them from disk, and .gitignore prevents specific files and folders from ever being tracked again.",
+                whyItExists: "Build artifacts, dependencies (node_modules), and secrets (.env) don't belong in version control - they're huge, machine-specific, or sensitive. Untracking them plus .gitignore keeps repos small, fast, and safe.",
+                whenUsed: "Right after noticing a mistake like a committed node_modules folder, build directory, or credentials file - and ideally, .gitignore is set up before the very first commit.",
+                realWorldUsage: [
+                    "Every framework's starter template ships with a tailored .gitignore (Node, Swift, Python, etc.)",
+                    "github.com/github/gitignore provides ready-made templates for almost any language or tool",
+                    "Teams add .env, *.log, build/, and DerivedData/ to .gitignore to keep repos lean",
+                    "git rm --cached is the standard fix when something slips through before .gitignore existed"
+                ],
+                tips: [
+                    "Set up .gitignore BEFORE your first commit using a template for your stack",
+                    "git rm -r --cached <folder> untracks a whole folder while keeping it on disk",
+                    "Run git status after editing .gitignore to confirm the files disappear from 'untracked'",
+                    "Commit .gitignore changes together with the untracking for a clean, reviewable cleanup"
+                ],
+                risks: [
+                    "git rm --cached doesn't remove the file from OLD commits - history still contains it",
+                    "If secrets were committed, untracking isn't enough - you may need to rewrite history and rotate credentials",
+                    "Forgetting --cached (just 'git rm') deletes the file from disk too - be careful"
+                ],
+                scenario: "Your repo ballooned to 200MB because node_modules got committed on day one. You run git rm -r --cached node_modules to untrack it, add node_modules/ to .gitignore, and commit the cleanup. The next clone is 4MB instead of 200MB - and node_modules can never accidentally sneak back in."
+            )
+        case 12:
+            return LearningContent(
+                concept: "git revert creates a brand-new commit that undoes the changes from a previous commit - without deleting or rewriting any existing history.",
+                whyItExists: "Once a commit is pushed and others have pulled it, rewriting history (like reset) would cause major problems for everyone else. Revert undoes the effect of a bad commit while keeping history intact and shareable.",
+                whenUsed: "Whenever a problematic commit has already been pushed to a shared branch - a broken build, a bad config change, or a feature that needs to be pulled back.",
+                realWorldUsage: [
+                    "Rolling back a bad production deploy by reverting the offending commit, then redeploying",
+                    "Undoing a merged pull request that introduced a regression, without disrupting other branches",
+                    "git revert -m 1 <hash> reverts a merge commit by specifying which parent to follow",
+                    "Reverting is often automated by 'rollback' buttons in CI/CD dashboards"
+                ],
+                tips: [
+                    "git revert HEAD undoes the most recent commit on your current branch",
+                    "Revert opens an editor for a commit message - Git auto-fills 'Revert \"original message\"'",
+                    "You can revert a revert later if you decide the original change was actually fine",
+                    "Combine with git log to find the exact commit hash if it's not the most recent one"
+                ],
+                risks: [
+                    "Reverting a merge commit without -m can fail or produce unexpected results",
+                    "If later commits depend on the reverted change, reverting can introduce new conflicts",
+                    "Revert doesn't 'erase' the mistake from history - it adds a new commit on top, which is the point"
+                ],
+                scenario: "An hour after pushing, you realize your last commit broke the build - and two teammates already pulled it. Resetting would rewrite history they now share. Instead, you run git revert HEAD. A new commit undoes your change, the build goes green, and everyone's next 'git pull' just works - no special instructions needed."
+            )
+        case 13:
+            return LearningContent(
+                concept: "git log shows the project's commit history, and git blame shows who last changed each line of a specific file and in which commit - together they're your debugging compass.",
+                whyItExists: "When something breaks, you need to know WHAT changed and WHEN. Log and blame turn 'something is broken' into 'this exact commit, by this person, on this date, changed this exact line.'",
+                whenUsed: "Investigating regressions, understanding unfamiliar code, preparing code review context, or figuring out who to ask about a confusing piece of logic.",
+                realWorldUsage: [
+                    "git log --oneline -- <file> shows only the commits that touched a specific file",
+                    "git blame is built into Xcode, VS Code, and GitHub's web UI as inline annotations",
+                    "git bisect uses log history to binary-search for the exact commit that introduced a bug",
+                    "Engineers often message a teammate directly after blame points to their commit"
+                ],
+                tips: [
+                    "git log --oneline keeps output compact - one line per commit",
+                    "git log -p shows the actual code changes (diffs) for each commit",
+                    "git blame -L 40,45 file.js limits blame output to a specific line range",
+                    "Pair log and blame: find the suspicious commit in log, then confirm with blame on the exact line"
+                ],
+                risks: [
+                    "git blame shows who LAST touched a line - the real root cause might be several commits earlier",
+                    "Long-running, unfocused commits make blame less useful since one commit touches everything",
+                    "Don't treat blame as finger-pointing - it's a debugging tool, not a performance review"
+                ],
+                scenario: "Checkout is broken on Safari and nobody knows why. You run git log --oneline and spot 'Refactor checkout validation' from yesterday - right when reports started. git blame checkout.js confirms line 42 was changed in that exact commit. Two minutes after the bug report, you already know exactly what to revert or fix."
+            )
         default:
             return LearningContent(
                 concept: "This concept builds on your growing Git expertise.",

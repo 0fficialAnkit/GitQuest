@@ -689,6 +689,478 @@ extension Level {
                 git push origin --delete feature/dark-mode (remote)
                 """
             )
+        ),
+
+        Level(
+            id: 8,
+            title: "Don't Lose That Work",
+            initialChat: [
+                ChatMessage(sender: .siddharth, text: "🚨 Production bug just got reported - login button is broken on Safari"),
+                ChatMessage(sender: .amrit, text: "That's bad, we need a hotfix on main ASAP"),
+                ChatMessage(sender: .sumit, text: "I'm mid-way through the settings redesign - half my files are a mess right now"),
+                ChatMessage(sender: .siddharth, text: "No worries - stash your changes, fix the bug on main, then come right back to it"),
+                ChatMessage(sender: .amrit, text: "git stash is perfect for this. It saves your work-in-progress without committing half-finished code")
+            ],
+            stepChats: [
+                0: [
+                    ChatMessage(sender: .you, text: "Changes stashed! 📦"),
+                    ChatMessage(sender: .amrit, text: "Nice - your working directory is clean now. Go fix that login bug"),
+                    ChatMessage(sender: .siddharth, text: "Thanks for the quick turnaround 🙏 Bug's patched, you're all clear")
+                ],
+                1: [
+                    ChatMessage(sender: .you, text: "Stash restored! 📦"),
+                    ChatMessage(sender: .sumit, text: "Phew, exactly where I left off. Continuing the settings redesign now"),
+                    ChatMessage(sender: .amrit, text: "That's the power of stash - context-switch without losing anything"),
+                    ChatMessage(sender: .siddharth, text: "Clean workflow. This is exactly how pros handle interruptions")
+                ]
+            ],
+            icon: "archivebox.fill",
+            concept: .advanced,
+            requiredSteps: [
+                LevelStep(
+                    id: 1,
+                    contextMessage: """
+                    📍 SAVE YOUR WORK-IN-PROGRESS
+
+                    You're mid-way through the settings redesign, but
+                    a production bug needs fixing on main RIGHT NOW.
+
+                    Your changes aren't ready to commit - they're not
+                    even finished. But you can't just lose them either.
+
+                    'git stash' temporarily shelves your uncommitted
+                    changes and gives you back a clean working directory.
+
+                    Think of it like: Putting your half-finished sketch
+                    in a drawer so you can borrow the desk.
+                    """,
+                    expectedCommand: "git stash",
+                    hint: "Tap: git stash",
+                    successMessage: "📦 Changes Stashed - Working Directory Clean"
+                ),
+                LevelStep(
+                    id: 2,
+                    contextMessage: """
+                    📍 GET YOUR WORK BACK
+
+                    The hotfix is shipped and main is stable again.
+
+                    Now bring back your settings redesign exactly as
+                    you left it.
+
+                    'git stash pop' re-applies your most recent stash
+                    and removes it from the stash list.
+                    """,
+                    expectedCommand: "git stash pop",
+                    hint: "Tap: git stash pop",
+                    successMessage: "📦 Stash Restored - Back to Work"
+                )
+            ],
+            commandExplanation: CommandExplanation(
+                commands: [
+                    CommandDetail(
+                        command: "git stash",
+                        description: "Temporarily saves your uncommitted changes and restores a clean working directory."
+                    ),
+                    CommandDetail(
+                        command: "git stash pop",
+                        description: "Re-applies your most recently stashed changes and removes them from the stash list."
+                    )
+                ],
+                proTip: "Use 'git stash list' to see all your stashes, and 'git stash save \"message\"' to label them so you remember what's in each one.",
+                risk: "Stashes can pile up and get forgotten. Run 'git stash list' occasionally - an old stash is easy to lose track of.",
+                realWorldUsage: "Developers stash dozens of times a week when interrupted by urgent bugs, code reviews, or 'can you jump on a call?' messages."
+            )
+        ),
+
+        Level(
+            id: 9,
+            title: "The Hotfix Cherry-Pick",
+            initialChat: [
+                ChatMessage(sender: .amrit, text: "Fixed that critical null-pointer bug on hotfix/null-check - tests all pass ✅"),
+                ChatMessage(sender: .siddharth, text: "Great, but main needs that fix immediately too - we can't wait for the full branch to merge"),
+                ChatMessage(sender: .sumit, text: "Can we just grab that one commit without merging everything else from that branch?"),
+                ChatMessage(sender: .amrit, text: "Yep - cherry-pick! It copies a single commit's changes onto another branch"),
+                ChatMessage(sender: .siddharth, text: "Switch to main and cherry-pick that fix commit")
+            ],
+            stepChats: [
+                0: [
+                    ChatMessage(sender: .you, text: "Switched to main."),
+                    ChatMessage(sender: .amrit, text: "Good - now grab that commit and bring it over")
+                ],
+                1: [
+                    ChatMessage(sender: .you, text: "Fix cherry-picked! 🍒"),
+                    ChatMessage(sender: .siddharth, text: "main is patched. Deploying the hotfix now"),
+                    ChatMessage(sender: .sumit, text: "hotfix/null-check can still go through normal review later"),
+                    ChatMessage(sender: .amrit, text: "Exactly - cherry-pick gets urgent fixes out without skipping process")
+                ]
+            ],
+            icon: "doc.on.doc.fill",
+            concept: .advanced,
+            requiredSteps: [
+                LevelStep(
+                    id: 1,
+                    contextMessage: """
+                    📍 GET TO THE RIGHT BRANCH
+
+                    Before you can bring the fix to main, you need
+                    to be standing on main.
+
+                    Switch to the main branch first.
+                    """,
+                    expectedCommand: "git checkout",
+                    hint: "Tap: git checkout main",
+                    successMessage: "Switched to branch 'main'"
+                ),
+                LevelStep(
+                    id: 2,
+                    contextMessage: """
+                    📍 COPY JUST THAT ONE COMMIT
+
+                    The fix lives in a single commit on hotfix/null-check.
+
+                    'git cherry-pick <commit-hash>' applies the changes
+                    from that ONE commit onto your current branch as a
+                    brand-new commit - without bringing along anything
+                    else from that branch.
+
+                    Cherry-pick the fix commit onto main.
+                    """,
+                    expectedCommand: "git cherry-pick",
+                    hint: "Tap: git cherry-pick a1b2c3d",
+                    successMessage: "🍒 Commit Cherry-Picked onto main"
+                )
+            ],
+            commandExplanation: CommandExplanation(
+                commands: [
+                    CommandDetail(
+                        command: "git checkout <branch>",
+                        description: "Switches your working directory to the target branch."
+                    ),
+                    CommandDetail(
+                        command: "git cherry-pick <commit-hash>",
+                        description: "Applies the changes from a specific commit onto your current branch as a new commit."
+                    )
+                ],
+                proTip: "Cherry-pick is great for backporting urgent fixes. For whole features, prefer a full merge so you don't end up with duplicate-looking commits.",
+                risk: "Cherry-picking the same commit onto multiple branches can create confusing, duplicate-looking history. Use it sparingly and intentionally.",
+                realWorldUsage: "Classic hotfix flow: fix on a feature/hotfix branch, then cherry-pick that single commit onto main AND any active release branches."
+            )
+        ),
+
+        Level(
+            id: 10,
+            title: "Tag the Release",
+            initialChat: [
+                ChatMessage(sender: .sumit, text: "QA just finished testing - dark mode and the hotfix are both stable 🎉"),
+                ChatMessage(sender: .siddharth, text: "Perfect timing for our v1.0 release"),
+                ChatMessage(sender: .amrit, text: "We should tag this commit so we can always find this exact version later"),
+                ChatMessage(sender: .siddharth, text: "Tag it v1.0 and push the tag to GitHub so the release pipeline picks it up"),
+                ChatMessage(sender: .sumit, text: "Release notes are ready to go the second that tag lands")
+            ],
+            stepChats: [
+                0: [
+                    ChatMessage(sender: .you, text: "Tag v1.0 created! 🏷️"),
+                    ChatMessage(sender: .amrit, text: "Now push it up so CI can build the release artifact")
+                ],
+                1: [
+                    ChatMessage(sender: .you, text: "Tag pushed to GitHub! ☁️"),
+                    ChatMessage(sender: .siddharth, text: "Release pipeline triggered - v1.0 is building now"),
+                    ChatMessage(sender: .sumit, text: "Publishing release notes for v1.0 🎉"),
+                    ChatMessage(sender: .amrit, text: "And just like that, anyone can check out v1.0 forever. Nice work")
+                ]
+            ],
+            icon: "tag.fill",
+            concept: .advanced,
+            requiredSteps: [
+                LevelStep(
+                    id: 1,
+                    contextMessage: """
+                    📍 MARK THIS MOMENT
+
+                    Right now this commit represents your v1.0 release -
+                    but commits only have cryptic hashes.
+
+                    'git tag' creates a permanent, human-friendly name
+                    pointing at this exact commit.
+
+                    Think of it like: Bookmarking the exact page in a
+                    book you might need to find again.
+
+                    Create a tag called v1.0.
+                    """,
+                    expectedCommand: "git tag",
+                    hint: "Tap: git tag v1.0",
+                    successMessage: "🏷️ Tag v1.0 Created"
+                ),
+                LevelStep(
+                    id: 2,
+                    contextMessage: """
+                    📍 SHARE THE RELEASE MARKER
+
+                    Tags live only on your machine until you push them -
+                    they're NOT included in a normal 'git push'.
+
+                    Push the v1.0 tag to origin so the team and your
+                    CI/CD pipeline can see it.
+                    """,
+                    expectedCommand: "git push",
+                    hint: "Tap: git push origin v1.0",
+                    successMessage: "☁️ Tag Pushed - Release Triggered"
+                )
+            ],
+            commandExplanation: CommandExplanation(
+                commands: [
+                    CommandDetail(
+                        command: "git tag v1.0",
+                        description: "Creates a lightweight tag pointing at the current commit - a permanent named marker."
+                    ),
+                    CommandDetail(
+                        command: "git push origin v1.0",
+                        description: "Uploads the tag to the remote so it's visible to the whole team and CI/CD."
+                    )
+                ],
+                proTip: "For real releases, prefer annotated tags: 'git tag -a v1.0 -m \"First stable release\"' - they store the author, date, and a message.",
+                risk: "Tags aren't pushed automatically with 'git push'. You must push them explicitly by name, or use 'git push --tags' for all of them.",
+                realWorldUsage: "Every versioned release (v1.0, v2.3.1) is a Git tag. CI/CD pipelines often trigger production builds the moment a tag matching v*.*.* is pushed."
+            )
+        ),
+
+        Level(
+            id: 11,
+            title: "Clean Up the Mess",
+            initialChat: [
+                ChatMessage(sender: .sumit, text: "Hey, why is our repo 200MB now?? Cloning takes forever 😩"),
+                ChatMessage(sender: .amrit, text: "Let me check... oh no, someone committed the entire node_modules folder"),
+                ChatMessage(sender: .siddharth, text: "Happens to literally everyone once. Let's fix it - untrack it and add it to .gitignore"),
+                ChatMessage(sender: .amrit, text: "'git rm --cached' keeps the files on your disk but stops Git from tracking them"),
+                ChatMessage(sender: .siddharth, text: "Then add node_modules/ to .gitignore so this can never happen again")
+            ],
+            stepChats: [
+                0: [
+                    ChatMessage(sender: .you, text: "node_modules untracked! 🧹"),
+                    ChatMessage(sender: .amrit, text: "Good - Git will ignore it going forward. But we still need the .gitignore rule so it isn't re-added by accident")
+                ],
+                1: [
+                    ChatMessage(sender: .you, text: ".gitignore staged."),
+                    ChatMessage(sender: .siddharth, text: "Now commit this cleanup - future clones will be tiny again")
+                ],
+                2: [
+                    ChatMessage(sender: .you, text: "Cleanup committed! ✨"),
+                    ChatMessage(sender: .sumit, text: "Re-cloning now... whoa, 4MB instead of 200MB. Huge difference"),
+                    ChatMessage(sender: .amrit, text: "Lesson learned: always set up .gitignore before your very first commit"),
+                    ChatMessage(sender: .siddharth, text: "Exactly why we're adding this to the onboarding checklist")
+                ]
+            ],
+            icon: "folder.badge.minus",
+            concept: .repository,
+            requiredSteps: [
+                LevelStep(
+                    id: 1,
+                    contextMessage: """
+                    📍 STOP TRACKING THE FOLDER
+
+                    node_modules got committed by accident and it's
+                    bloating the whole repo for everyone.
+
+                    'git rm -r --cached <folder>' removes a folder from
+                    Git's tracking (the index) WITHOUT deleting it from
+                    your disk - your files are safe.
+
+                    Untrack node_modules.
+                    """,
+                    expectedCommand: "git rm",
+                    hint: "Tap: git rm -r --cached node_modules",
+                    successMessage: "🧹 node_modules Untracked"
+                ),
+                LevelStep(
+                    id: 2,
+                    contextMessage: """
+                    📍 PREVENT IT FROM HAPPENING AGAIN
+
+                    A .gitignore file lists patterns of files and
+                    folders Git should never track - things like
+                    node_modules/, .env, and build/.
+
+                    Stage the new .gitignore file.
+                    """,
+                    expectedCommand: "git add",
+                    hint: "Tap: git add .gitignore",
+                    successMessage: ".gitignore Staged"
+                ),
+                LevelStep(
+                    id: 3,
+                    contextMessage: """
+                    📍 SAVE THE CLEANUP
+
+                    Commit the untracking and the new .gitignore
+                    together as one tidy cleanup commit.
+                    """,
+                    expectedCommand: "git commit",
+                    hint: "Tap: git commit -m \"Remove node_modules from tracking\"",
+                    successMessage: "✨ Repo Cleaned Up"
+                )
+            ],
+            commandExplanation: CommandExplanation(
+                commands: [
+                    CommandDetail(
+                        command: "git rm -r --cached <folder>",
+                        description: "Removes files from Git's tracking (the index) while leaving them safely on your disk."
+                    ),
+                    CommandDetail(
+                        command: ".gitignore",
+                        description: "A text file listing patterns of files/folders Git should never track - like node_modules/, .env, build/."
+                    ),
+                    CommandDetail(
+                        command: "git commit -m \"message\"",
+                        description: "Saves the cleanup as a permanent step in history."
+                    )
+                ],
+                proTip: "Set up .gitignore BEFORE your first commit, using a template for your language or framework (github.com/github/gitignore).",
+                risk: "'git rm --cached' only stops FUTURE tracking - the file is still in OLD commits. For secrets, you may need to rewrite history entirely.",
+                realWorldUsage: "Nearly every repo has a .gitignore from day one. Forgetting it is the #1 cause of bloated repos and accidentally committed secrets."
+            )
+        ),
+
+        Level(
+            id: 12,
+            title: "Safe Undo in Public",
+            initialChat: [
+                ChatMessage(sender: .siddharth, text: "🚨 The commit I pushed an hour ago broke the build - sorry team"),
+                ChatMessage(sender: .amrit, text: "It's already on main and two people have pulled it. We can't reset - that would rewrite shared history"),
+                ChatMessage(sender: .sumit, text: "Isn't there a way to undo it without messing up everyone else's branches?"),
+                ChatMessage(sender: .amrit, text: "git revert! It creates a NEW commit that undoes the changes - history stays intact"),
+                ChatMessage(sender: .siddharth, text: "Do it - revert my last commit so the build goes green again")
+            ],
+            stepChats: [
+                0: [
+                    ChatMessage(sender: .you, text: "Commit reverted! ↩️"),
+                    ChatMessage(sender: .amrit, text: "Build's green again 🎉 And nobody needs to do anything special - just pull like normal"),
+                    ChatMessage(sender: .siddharth, text: "Reverting is so much safer than reset once something's pushed. Lesson learned"),
+                    ChatMessage(sender: .sumit, text: "Pulling now... no conflicts, smooth as ever")
+                ]
+            ],
+            icon: "arrow.uturn.backward.circle.fill",
+            concept: .history,
+            requiredSteps: [
+                LevelStep(
+                    id: 1,
+                    contextMessage: """
+                    📍 UNDO SOMETHING THAT'S ALREADY SHARED
+
+                    Back in Level 6, 'git reset' undid a LOCAL,
+                    unpushed commit. That worked because nobody else
+                    had seen it yet.
+
+                    This commit is different - it's already on main
+                    and teammates have pulled it. Resetting now would
+                    rewrite history they already have, causing chaos.
+
+                    'git revert HEAD' creates a brand-new commit that
+                    applies the EXACT OPPOSITE of the last commit -
+                    undoing its changes without deleting it from history.
+
+                    Revert the last commit.
+                    """,
+                    expectedCommand: "git revert",
+                    hint: "Tap: git revert HEAD",
+                    successMessage: "↩️ Commit Safely Reverted"
+                )
+            ],
+            commandExplanation: CommandExplanation(
+                commands: [
+                    CommandDetail(
+                        command: "git revert HEAD",
+                        description: "Creates a brand-new commit that applies the exact opposite of the targeted commit, undoing its changes without removing it from history."
+                    )
+                ],
+                proTip: "Revert is the safe choice for anything already pushed and shared. Reset (Level 6) is only for local, unpushed mistakes.",
+                risk: "Reverting a merge commit needs the -m flag to specify which parent to revert to - get it wrong and you can undo the wrong side of history.",
+                realWorldUsage: """
+                Reset vs Revert - the golden rule:
+                • Not pushed yet? → git reset is fine, nobody else has seen it
+                • Already pushed / shared? → git revert, never reset shared history
+
+                Reverting is how teams safely undo bad deploys without
+                rewriting history that others have already pulled.
+                """
+            )
+        ),
+
+        Level(
+            id: 13,
+            title: "Investigate the Bug",
+            initialChat: [
+                ChatMessage(sender: .sumit, text: "Users are reporting the checkout button doesn't work on Safari 😬"),
+                ChatMessage(sender: .siddharth, text: "Let's figure out when this broke and who last touched checkout.js"),
+                ChatMessage(sender: .amrit, text: "git log will give us the recent commit history for context"),
+                ChatMessage(sender: .siddharth, text: "And git blame will show exactly which commit changed each line of checkout.js"),
+                ChatMessage(sender: .amrit, text: "Once we know the commit, we can revert it or ping whoever wrote it")
+            ],
+            stepChats: [
+                0: [
+                    ChatMessage(sender: .you, text: "History displayed 📜"),
+                    ChatMessage(sender: .siddharth, text: "There it is - 'Refactor checkout validation' from yesterday, right when reports started")
+                ],
+                1: [
+                    ChatMessage(sender: .you, text: "Blame results shown 🔍"),
+                    ChatMessage(sender: .amrit, text: "Line 42 - that's the validation check. That commit touched it yesterday"),
+                    ChatMessage(sender: .siddharth, text: "Got it. Pinging the author now - this is exactly the kind of thing git blame is built for"),
+                    ChatMessage(sender: .sumit, text: "Mystery solved in under 2 minutes. Love it")
+                ]
+            ],
+            icon: "magnifyingglass",
+            concept: .history,
+            requiredSteps: [
+                LevelStep(
+                    id: 1,
+                    contextMessage: """
+                    📍 SEE WHAT CHANGED RECENTLY
+
+                    Before you can fix a regression, you need to know
+                    what changed and when.
+
+                    'git log --oneline' shows a condensed history -
+                    one line per commit, with its hash and message.
+
+                    Show the recent commit history.
+                    """,
+                    expectedCommand: "git log",
+                    hint: "Tap: git log --oneline",
+                    successMessage: "📜 Commit History Displayed"
+                ),
+                LevelStep(
+                    id: 2,
+                    contextMessage: """
+                    📍 FIND WHO TOUCHED THIS LINE
+
+                    'git log' tells you WHAT changed across the
+                    project. 'git blame <file>' tells you WHO last
+                    changed each individual LINE of a specific file,
+                    and in which commit.
+
+                    Run blame on checkout.js to find the culprit commit.
+                    """,
+                    expectedCommand: "git blame",
+                    hint: "Tap: git blame checkout.js",
+                    successMessage: "🔍 Blame Results Shown"
+                )
+            ],
+            commandExplanation: CommandExplanation(
+                commands: [
+                    CommandDetail(
+                        command: "git log --oneline",
+                        description: "Shows a condensed, one-line-per-commit view of project history - hash plus message."
+                    ),
+                    CommandDetail(
+                        command: "git blame <file>",
+                        description: "Shows who last modified each line of a file, and in which commit - perfect for tracking down regressions."
+                    )
+                ],
+                proTip: "Combine them: 'git log --oneline -- checkout.js' shows only the commits that touched that specific file.",
+                risk: "git blame shows who LAST touched a line - not necessarily who introduced the bug. The real cause might be several commits earlier.",
+                realWorldUsage: "Every developer reaches for log and blame multiple times a week. Xcode and VS Code even show inline blame annotations right next to your code."
+            )
         )
     ]
 

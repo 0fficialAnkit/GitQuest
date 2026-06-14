@@ -94,6 +94,12 @@ private extension CommandSyntaxAnalyzer {
             case "reset": return "Moves HEAD back to a previous commit, optionally unstaging changes"
             case "fetch": return "Downloads remote changes without merging them"
             case "rebase": return "Moves or replays commits on top of another branch"
+            case "stash": return "Temporarily saves your uncommitted changes so your working directory becomes clean"
+            case "cherry-pick": return "Copies the changes from a specific commit onto your current branch"
+            case "tag": return "Creates a permanent named marker pointing at a commit, like a release version"
+            case "rm": return "Removes files from the working directory and/or Git's tracking"
+            case "revert": return "Creates a new commit that undoes the changes from a previous commit"
+            case "blame": return "Shows which commit and author last changed each line of a file"
             default: return "A Git sub-command"
             }
         }
@@ -131,7 +137,14 @@ private extension CommandSyntaxAnalyzer {
             if index == 2 { return "The remote alias to sync with (usually 'origin')" }
             if index == 3 { return "The branch being uploaded to / downloaded from the remote" }
         }
-        
+
+        if action == "stash" && token == "pop" { return "Tells Git to restore AND remove the most recently stashed changes" }
+        if action == "tag" && index == 2 { return "The name of the tag - a permanent label for this commit, often a version number" }
+        if action == "cherry-pick" && index == 2 { return "The hash of the commit whose changes will be copied onto this branch" }
+        if action == "rm" && index >= 2 && !token.hasPrefix("-") { return "The file or folder to stop tracking" }
+        if action == "blame" && index == 2 { return "The file to inspect - shows the last commit that changed each line" }
+        if token == "--oneline" { return "Flag: condenses each commit to a single line (hash + message)" }
+
         return "An argument that customises or targets the command"
     }
 }
@@ -175,7 +188,14 @@ private extension CommandSyntaxAnalyzer {
             if index == 2 { return "The remote server to sync with" }
             if index == 3 { return "The branch being pushed or pulled" }
         }
-        
+
+        if action == "stash" && lower == "pop" { return "Restores the most recent stash and removes it from the stash list" }
+        if action == "tag" && index == 2 { return "Marks this exact commit so it can be referenced forever, e.g. for releases" }
+        if action == "cherry-pick" && index == 2 { return "Identifies exactly which commit's changes to replay here" }
+        if action == "rm" && index >= 2 && !lower.hasPrefix("-") { return "The target Git stops tracking" }
+        if action == "blame" && index == 2 { return "The file whose line-by-line history is being inspected" }
+        if lower == "--oneline" { return "Compresses the log output for quick scanning" }
+
         return "A required parameter that completes the command"
     }
 }
